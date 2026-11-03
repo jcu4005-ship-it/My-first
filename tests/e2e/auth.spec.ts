@@ -5,8 +5,9 @@ import { uniqueEmail, uniqueNickname } from "../support/fixtures";
 import { latestAuthLink } from "../support/mailpit";
 
 test.beforeAll(requireTestEnv);
-// 로컬 테스트 메일함(Mailpit)이 필요 → 로컬·CI 전용. 스테이징의 실제 메일 인증은 직접 확인 항목
-test.skip(isStaging, "실제 메일 수신이 필요해 스테이징 자동 검증에서 제외");
+// 가입 폼 제출은 실제 메일을 보내고, 인증은 로컬 테스트 메일함(Mailpit)이 필요 → 해당 테스트만 로컬·CI 전용.
+// 스테이징의 실제 메일 인증은 직접 확인 항목
+const MAIL_SKIP = "실제 메일 발송·수신이 필요해 스테이징 자동 검증에서 제외";
 
 async function fillSignup(page: import("@playwright/test").Page, v: { email: string; nickname: string; password: string }) {
   await page.goto("/signup");
@@ -21,6 +22,7 @@ async function fillSignup(page: import("@playwright/test").Page, v: { email: str
 }
 
 test("이메일 가입 → 인증 → 로그인 → 로그아웃 → 비밀번호 재설정", async ({ page }) => {
+  test.skip(isStaging, MAIL_SKIP);
   const email = uniqueEmail("e2e");
   const nickname = uniqueNickname("e2e");
 
@@ -83,6 +85,7 @@ test("이메일 가입 → 인증 → 로그인 → 로그아웃 → 비밀번�
 });
 
 test("가입 화면 검증: 약한 비밀번호, 대소문자·공백만 다른 닉네임 중복, 필수 동의", async ({ page }) => {
+  test.skip(isStaging, MAIL_SKIP);
   const nickname = uniqueNickname("dup");
   await fillSignup(page, { email: uniqueEmail("dup1"), nickname, password: "Goodpass123" });
   await expect(page.getByTestId("check-email")).toBeVisible();

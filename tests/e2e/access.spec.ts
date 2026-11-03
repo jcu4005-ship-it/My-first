@@ -2,7 +2,7 @@ import type { Page } from "@playwright/test";
 
 import { expect, test } from "./fixtures";
 
-import { requireTestEnv } from "../support/env";
+import { requireTestEnv, testEnv } from "../support/env";
 import { PASSWORD, createMember, grantRoleDirect, makeApprovedHost, revokeRoleDirect } from "../support/fixtures";
 import { totp } from "../support/totp";
 
@@ -43,7 +43,8 @@ test("참가자: 관리자 화면 403, 호스트 화면은 호스트 신청으�
 test("열린 리디렉트 차단: 외부 주소 next는 /me로 대체", async ({ page }) => {
   const p = await createMember("e2eredir");
   await login(page, p.email, "//evil.example.com/steal");
-  await expect(page).toHaveURL(/localhost:3000\/me$/);
+  // 같은 사이트(앱 주소)의 /me로 가야 함 — 외부 주소로 나가면 실패
+  await expect(page).toHaveURL(`${new URL(testEnv.appUrl).origin}/me`);
 });
 
 test("호스트: 호스트 화면 가능, 관리자 화면 403", async ({ page }) => {
