@@ -21,6 +21,10 @@ export type MyHostProfile = {
   bio: string;
   expertise: string[];
   instagram_handle: string | null;
+  career: string;
+  credentials: string;
+  portfolio_url: string | null;
+  teaching_experience: string;
   status: HostStatus;
   review_note: string | null;
 };
@@ -29,7 +33,7 @@ export async function getMyHostProfile(userId: string): Promise<MyHostProfile | 
   const supabase = await createSupabaseServerClient();
   const { data } = await supabase
     .from("host_profiles")
-    .select("user_id, display_name, headline, bio, expertise, instagram_handle, status, review_note")
+    .select("user_id, display_name, headline, bio, expertise, instagram_handle, career, credentials, portfolio_url, teaching_experience, status, review_note")
     .eq("user_id", userId)
     .maybeSingle();
   return data as MyHostProfile | null;
@@ -53,7 +57,7 @@ export async function listMyMeetups(userId: string): Promise<HostMeetupRow[]> {
     .select("id, title, category_slug, status, price, review_note, updated_at, sessions:meetup_sessions(id, starts_at, capacity, reserved_count, status)")
     .eq("host_id", userId)
     .order("updated_at", { ascending: false });
-  if (error) throw new Error(`내 모임 조회 실패: ${error.message}`);
+  if (error) throw new Error(`내 클래스 조회 실패: ${error.message}`);
   return (data ?? []) as HostMeetupRow[];
 }
 
@@ -72,6 +76,9 @@ export type EditableMeetup = {
   what_to_bring: string;
   agenda: { time: string; title: string }[];
   refund_policy_text: string;
+  level: "all" | "beginner" | "intermediate" | "advanced";
+  learning_outcomes: string;
+  materials_note: string;
   status: MeetupStatus;
   review_note: string | null;
 };
@@ -81,7 +88,7 @@ export async function getMyMeetup(userId: string, id: string): Promise<EditableM
   const supabase = await createSupabaseServerClient();
   const { data } = await supabase
     .from("meetups")
-    .select("id, host_id, title, category_slug, meetup_type, summary, description, price, max_quantity_per_booking, target_audience, requirements, what_to_bring, agenda, refund_policy_text, status, review_note")
+    .select("id, host_id, title, category_slug, meetup_type, summary, description, price, max_quantity_per_booking, target_audience, requirements, what_to_bring, agenda, refund_policy_text, level, learning_outcomes, materials_note, status, review_note")
     .eq("id", id)
     .eq("host_id", userId)
     .maybeSingle();
@@ -128,7 +135,7 @@ export async function listHostApplications(): Promise<HostApplication[]> {
   const supabase = await createSupabaseServerClient();
   const { data, error } = await supabase
     .from("host_profiles")
-    .select("user_id, display_name, headline, bio, expertise, instagram_handle, status, review_note, applied_at, reviewed_at")
+    .select("user_id, display_name, headline, bio, expertise, instagram_handle, career, credentials, portfolio_url, teaching_experience, status, review_note, applied_at, reviewed_at")
     .eq("is_sample", false)
     .order("applied_at", { ascending: false })
     .limit(100);
@@ -146,10 +153,10 @@ export async function listMeetupsByStatus(status: MeetupStatus): Promise<ReviewM
   const supabase = await createSupabaseServerClient();
   const { data, error } = await supabase
     .from("meetups")
-    .select("id, host_id, title, category_slug, meetup_type, summary, description, price, max_quantity_per_booking, target_audience, requirements, what_to_bring, agenda, refund_policy_text, status, review_note, is_sample, host:host_profiles(display_name), sessions:meetup_sessions(id, starts_at, area, venue_name, capacity, reserved_count, status)")
+    .select("id, host_id, title, category_slug, meetup_type, summary, description, price, max_quantity_per_booking, target_audience, requirements, what_to_bring, agenda, refund_policy_text, level, learning_outcomes, materials_note, status, review_note, is_sample, host:host_profiles(display_name), sessions:meetup_sessions(id, starts_at, area, venue_name, capacity, reserved_count, status)")
     .eq("status", status)
     .order("updated_at", { ascending: true })
     .limit(100);
-  if (error) throw new Error(`모임 조회 실패: ${error.message}`);
+  if (error) throw new Error(`클래스 조회 실패: ${error.message}`);
   return (data ?? []) as unknown as ReviewMeetup[];
 }

@@ -13,7 +13,7 @@ import { MEETUP_STATUS_LABEL, getHostSessionsAndParticipants, getMyMeetup } from
 import { hostCancelMeetupAction, hostCancelSessionAction, meetupStatusAction, sessionStatusAction } from "../../actions";
 import { AddSessionForm, CapacityForm } from "./session-forms";
 
-export const metadata: Metadata = { title: "모임 관리" };
+export const metadata: Metadata = { title: "클래스 관리" };
 export const instant = false;
 
 const SESSION_LABEL = { open: "모집 중", closed: "모집 마감", cancelled: "취소됨", completed: "종료" } as const;
@@ -31,7 +31,7 @@ export default async function ManageMeetupPage({ params, searchParams }: PagePro
     <>
       <SiteHeader />
       <main className="mx-auto w-full max-w-4xl flex-1 px-4 py-8 sm:px-8">
-        <Link href="/host" className="text-sm text-muted-foreground">← 내 모임</Link>
+        <Link href="/host" className="text-sm text-muted-foreground">← 내 클래스</Link>
         {saved && <p className="mt-4 rounded-xl bg-notice px-4 py-3 text-sm text-notice-foreground" data-testid="saved-notice">저장했어요.</p>}
 
         <div className="mt-4 flex flex-wrap items-start justify-between gap-4">
@@ -75,7 +75,7 @@ export default async function ManageMeetupPage({ params, searchParams }: PagePro
               confirmText="모집을 종료하면 목록에서 내려가요. 계속할까요?" />
           )}
           {["published", "pending_review"].includes(meetup.status) && sessions.some((s) => s.status !== "cancelled" && isFuture(s.starts_at)) && (
-            <ActionForm action={hostCancelMeetupAction} hidden={{ meetupId: meetup.id }} label="모임 전체 취소" variant="ghost"
+            <ActionForm action={hostCancelMeetupAction} hidden={{ meetupId: meetup.id }} label="클래스 전체 취소" variant="ghost"
               note={{ name: "reason", placeholder: "취소 사유 (신청자에게 전달)" }}
               confirmText="앞으로의 모든 일정을 취소할까요? 신청자에게 알림이 가고 결제는 전액 환불됩니다." testId="cancel-meetup" />
           )}

@@ -1,7 +1,7 @@
 -- 테스트 결제·환불, 결제 대기 만료, 호스트 일정 취소, 알림, 회원 탈퇴
 begin;
 \ir _helpers.psql
-select plan(45);
+select plan(47);
 
 select pg_temp.create_member('host@test.local', 'payHost') as h \gset
 select pg_temp.create_member('p@test.local', 'payP') as p \gset
@@ -109,6 +109,16 @@ select pg_temp.logout();
 select pg_temp.login_as(:'h');
 select throws_ok($$ select public.withdraw_my_account() $$, 'P0001', null, '참가자가 있는 호스트는 바로 탈퇴할 수 없다');
 select pg_temp.logout();
+
+-- 참가자가 없는 호스트 탈퇴: 경력·자격·포트폴리오도 삭제
+select pg_temp.create_member('h2@test.local', 'hostTwo') as h2 \gset
+insert into public.host_profiles (user_id, display_name, status, career, credentials, portfolio_url, teaching_experience)
+values (:'h2', '두 번째 호스트', 'approved', '디자인 회사 아트디렉터 10년 경력입니다', '공모전 수상', 'https://example.com/me', '클래스 20회');
+select pg_temp.login_as(:'h2');
+select lives_ok($$ select public.withdraw_my_account() $$, '참가자가 없는 호스트 탈퇴');
+select pg_temp.logout();
+select ok((select career = '' and credentials = '' and portfolio_url is null and teaching_experience = '' and display_name = '탈퇴한 호스트'
+           from public.host_profiles where user_id = :'h2'), '호스트 전문성 정보(경력·자격·포트폴리오)도 삭제');
 
 select * from finish();
 rollback;

@@ -45,7 +45,7 @@ export default async function CheckoutPage({ params }: PageProps<"/checkout/[boo
         {expired ? (
           <div className="mt-6">
             <p className="text-sm text-destructive">결제 시간이 지났거나 결제할 수 없는 신청이에요.</p>
-            <Link href={`/meetups/${p.meetup_id}`} className="mt-3 inline-block text-sm underline underline-offset-4">모임 페이지에서 다시 신청하기</Link>
+            <Link href={`/meetups/${p.meetup_id}`} className="mt-3 inline-block text-sm underline underline-offset-4">클래스 페이지에서 다시 신청하기</Link>
           </div>
         ) : (
           <div className="mt-6 flex flex-col gap-4">

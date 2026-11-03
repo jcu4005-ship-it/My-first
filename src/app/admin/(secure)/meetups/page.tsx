@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils";
 
 import { reviewMeetupAction } from "../actions";
 
-export const metadata: Metadata = { title: "모임 심사·운영" };
+export const metadata: Metadata = { title: "클래스 심사·운영" };
 export const instant = false;
 
 const TABS: MeetupStatus[] = ["pending_review", "published", "suspended", "rejected"];
@@ -22,7 +22,7 @@ export default async function AdminMeetupsPage({ searchParams }: PageProps<"/adm
 
   return (
     <div>
-      <h1 className="mb-6 font-display text-3xl font-bold">모임 심사·운영</h1>
+      <h1 className="mb-6 font-display text-3xl font-bold">클래스 심사·운영</h1>
       <nav className="mb-6 flex flex-wrap gap-2" aria-label="상태">
         {TABS.map((t) => (
           <Link key={t} href={`/admin/meetups?status=${t}`}
@@ -31,7 +31,7 @@ export default async function AdminMeetupsPage({ searchParams }: PageProps<"/adm
           </Link>
         ))}
       </nav>
-      {meetups.length === 0 && <p className="text-sm text-muted-foreground">해당 상태의 모임이 없어요.</p>}
+      {meetups.length === 0 && <p className="text-sm text-muted-foreground">해당 상태의 클래스가 없어요.</p>}
       <ul className="flex flex-col gap-4">
         {meetups.map((m) => (
           <li key={m.id} className="rounded-2xl border p-5" data-testid="review-meetup" data-title={m.title}>

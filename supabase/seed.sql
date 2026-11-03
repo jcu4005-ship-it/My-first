@@ -1,7 +1,9 @@
 -- ============================================================================
--- 샘플 데이터 (로컬·CI 전용). 스테이징·운영 DB에는 자동으로 들어가지 않습니다.
+-- 샘플 데이터 (로컬·CI, 그리고 승인된 스테이징 실행에서 seed_samples=yes일 때만). 운영 DB에는 넣지 않습니다.
 -- 모든 행은 is_sample = true 이며 화면에 "샘플"로 표시됩니다.
 -- 샘플 호스트 계정은 로그인할 수 없도록 임의 비밀번호로 생성됩니다.
+-- 다시 실행해도 됩니다: 샘플 호스트는 갱신하고, 샘플 클래스·일정만 지우고 다시 넣습니다.
+-- (샘플 클래스는 신청할 수 없으므로 신청·결제 기록이 없습니다. 있으면 외래키 때문에 실패하고 아무것도 바뀌지 않습니다.)
 -- ============================================================================
 
 do $$
@@ -22,145 +24,196 @@ begin
            jsonb_build_object('terms_version','sample','privacy_version','sample','age_14_plus',true)),
          now(), now()
   from (values
-    (h1, 'host-reading@sample.invalid', '책방지기 윤서'),
-    (h2, 'host-photo@sample.invalid',   '필름로그 도현'),
-    (h3, 'host-music@sample.invalid',   '바이닐 수요일'),
-    (h4, 'host-salon@sample.invalid',   '살롱 마루')
-  ) as t(id, email, nick);
+    (h1, 'host-reading@sample.invalid', '필름로그 도현'),
+    (h2, 'host-photo@sample.invalid',   '드로잉 스튜디오 오후'),
+    (h3, 'host-music@sample.invalid',   '기타 선생 민재'),
+    (h4, 'host-salon@sample.invalid',   '실무 코치 지훈')
+  ) as t(id, email, nick)
+  on conflict (id) do nothing;
 
-  insert into public.user_roles (user_id, role) values (h1,'host'),(h2,'host'),(h3,'host'),(h4,'host');
+  insert into public.user_roles (user_id, role) values (h1,'host'),(h2,'host'),(h3,'host'),(h4,'host')
+    on conflict (user_id, role) do nothing;
 
-  insert into public.host_profiles (user_id, display_name, headline, bio, expertise, instagram_handle, status, is_sample) values
-  (h1, '책방지기 윤서', '연남동 작은 책방에서 7년째 독서모임을 엽니다',
-   '출판사 편집자로 일하다 연남동에 작은 책방을 열었습니다. 혼자 읽으면 지나쳤을 문장을 함께 읽으며 다시 발견하는 시간을 좋아해요. 처음 오시는 분도 편하게 이야기할 수 있도록 진행합니다.',
-   array['한국 문학','에세이','글쓰기'], 'yunseo.books', 'approved', true),
-  (h2, '필름로그 도현', '필름 카메라로 서울의 오래된 골목을 기록합니다',
-   '10년 차 사진가이자 필름 현상소 운영자입니다. 비싼 장비보다 천천히 바라보는 눈이 중요하다고 믿어요. 카메라가 없어도 대여해 드립니다.',
-   array['필름 사진','거리 사진','현상'], 'filmlog.dh', 'approved', true),
-  (h3, '바이닐 수요일', '좋은 스피커로 앨범 한 장을 처음부터 끝까지',
-   '을지로에서 리스닝 바를 운영하는 두 사람입니다. 플레이리스트가 아닌 앨범 단위로 음악을 듣고, 그 앨범이 만들어진 시대 이야기를 나눕니다.',
-   array['시티팝','재즈','LP 큐레이션'], 'vinyl.wed', 'approved', true),
-  (h4, '살롱 마루', '일과 삶에 대한 질문을 함께 생각하는 인문 살롱',
-   '철학을 전공한 기획자와 HR 담당자가 함께 만드는 살롱입니다. 정답을 찾기보다 좋은 질문을 함께 만들어 가는 대화를 지향합니다.',
-   array['철학','커리어','대화 진행'], null, 'approved', true);
+  insert into public.host_profiles (user_id, display_name, headline, bio, expertise, instagram_handle,
+                                    career, credentials, portfolio_url, teaching_experience, status, is_sample)
+  values
+  (h1, '필름로그 도현', '필름 현상소를 운영하는 10년 차 사진가',
+   '상업 사진 스튜디오에서 7년간 일했고, 지금은 을지로에서 필름 현상소를 운영합니다. 비싼 장비보다 천천히 바라보는 눈이 중요하다고 믿어요.',
+   array['필름 사진','노출','현상'], 'filmlog.dh',
+   '상업 사진 스튜디오 포토그래퍼 7년, 필름 현상소 운영 3년. 브랜드 룩북·매거진 촬영 다수.',
+   '서울 사진 공모전 입선(샘플)', 'https://example.com/filmlog', '필름 입문 클래스 누적 120회 진행', 'approved', true),
+  (h2, '드로잉 스튜디오 오후', '그림 초보도 완성작을 들고 가는 드로잉·공예 공방',
+   '시각디자인을 전공하고 일러스트레이터로 일하다 익선동에 작은 공방을 열었습니다. "못 그린다"는 분들이 한 장을 완성하는 순간을 가장 좋아해요.',
+   array['어반 스케치','수채화','가죽 공예'], null,
+   '일러스트레이터 8년, 공방 운영 4년. 출판·광고 일러스트 작업.',
+   '가죽공예 지도사 자격(샘플)', 'https://example.com/ohu-studio', '원데이 클래스 누적 300회, 기업 출강 20회', 'approved', true),
+  (h3, '기타 선생 민재', '첫 코드부터 한 곡 완주까지, 통기타 입문 전문',
+   '실용음악과를 졸업하고 세션 기타리스트로 활동했습니다. 손가락이 아프지 않게 시작하는 법부터 차근차근 알려 드려요.',
+   array['통기타','코드 반주','핑거스타일'], null,
+   '세션 기타리스트 9년, 실용음악 학원 강사 5년.',
+   '실용음악과 졸업(샘플)', null, '성인 입문반 강의 5년', 'approved', true),
+  (h4, '실무 코치 지훈', '내일 회사에서 바로 쓰는 엑셀·보고서·발표',
+   '대기업 전략기획팀에서 12년간 보고서와 데이터를 다뤘습니다. 이론보다 실제 회사 파일로 연습합니다.',
+   array['엑셀','보고서 작성','프레젠테이션'], null,
+   '대기업 전략기획팀 12년, 사내 엑셀·보고서 강사 6년.',
+   'MOS Excel Expert(샘플)', 'https://example.com/jihoon', '기업 교육 150회, 직장인 소규모 클래스 80회', 'approved', true)
+  on conflict (user_id) do update set
+    display_name = excluded.display_name, headline = excluded.headline, bio = excluded.bio,
+    expertise = excluded.expertise, instagram_handle = excluded.instagram_handle, career = excluded.career,
+    credentials = excluded.credentials, portfolio_url = excluded.portfolio_url,
+    teaching_experience = excluded.teaching_experience, status = 'approved', is_sample = true;
 
-  -- 1. 독서
-  insert into public.meetups (host_id, category_slug, title, summary, description, price, max_quantity_per_booking,
-    target_audience, requirements, what_to_bring, agenda, refund_policy_text, status, is_sample, published_at)
-  values (h1, 'reading', '한 달에 한 권, 『작별하지 않는다』 함께 읽기',
-    '한강 작가의 소설을 미리 읽고 와서, 가장 오래 남은 문장 하나로 대화를 시작해요.',
-    E'한 달에 한 권, 같은 책을 읽고 모여 이야기하는 독서 모임입니다.\n\n이번 달은 한강 작가의 『작별하지 않는다』를 함께 읽습니다. 책을 다 읽지 못했어도 괜찮아요. 각자 가장 오래 마음에 남은 문장을 하나씩 가져와 그 문장에서 대화를 시작합니다.\n\n모임이 끝나면 다음 달에 읽을 책을 함께 고릅니다.',
-    25000, 1, '책을 좋아하지만 혼자 읽는 게 아쉬웠던 분, 처음 독서모임에 참여해 보는 분',
-    '책을 미리 읽어 오시면 좋아요 (완독 필수 아님)', '책 (종이책·전자책 모두 가능), 마음에 남은 문장 메모',
-    '[{"time":"14:00","title":"인사와 자기소개"},{"time":"14:20","title":"각자의 문장 나누기"},{"time":"15:10","title":"주제 토론"},{"time":"15:50","title":"다음 달 책 고르기"}]',
-    '모임 3일 전까지 전액 환불, 이후 취소 시 환불이 어렵습니다. (샘플 문구)', 'published', true, now())
-  returning id into m;
-  insert into public.meetup_sessions (meetup_id, starts_at, ends_at, area, venue_name, address_detail, capacity, reserved_count) values
-    (m, base + interval '5 days 14 hours', base + interval '5 days 16 hours', '연남동', '책방 오후의 문장', '서울 마포구 (샘플 주소)', 8, 6),
-    (m, base + interval '19 days 14 hours', base + interval '19 days 16 hours', '연남동', '책방 오후의 문장', '서울 마포구 (샘플 주소)', 8, 1);
+  -- 이전 샘플 클래스·일정 정리 (샘플만)
+  delete from public.meetup_sessions where meetup_id in (select id from public.meetups where is_sample);
+  delete from public.meetups where is_sample;
 
-  -- 2. 사진
+  -- 1. 사진·영상
   insert into public.meetups (host_id, category_slug, meetup_type, title, summary, description, price, max_quantity_per_booking,
+    level, learning_outcomes, materials_note,
     target_audience, requirements, what_to_bring, agenda, refund_policy_text, status, is_sample, published_at)
-  values (h2, 'photo', 'outdoor', '필름 카메라로 걷는 서촌 골목 출사',
-    '필름 한 롤을 들고 서촌의 오래된 골목을 천천히 걸어요. 카메라는 무료로 빌려드립니다.',
-    E'디지털과 달리 한 롤에 36장뿐인 필름 카메라는 셔터를 누르기 전 한 번 더 바라보게 만듭니다.\n\n통인시장에서 출발해 서촌의 골목과 수성동 계곡까지 약 2시간 동안 걸으며 촬영합니다. 노출과 구도의 기본을 현장에서 알려드리고, 촬영한 필름은 현상해서 스캔본을 보내드립니다.\n\n카메라가 없으신 분은 신청 시 알려주시면 대여해 드려요.',
-    35000, 2, '필름 사진을 처음 시작하는 분, 친구와 함께 새로운 취미를 찾는 분',
+  values (h1, 'photo', 'outdoor', '필름 카메라 입문 클래스 — 서촌 출사와 노출 기초',
+    '노출의 원리를 배우고, 필름 한 롤로 서촌 골목을 직접 찍어 봐요. 카메라는 무료 대여.',
+    E'필름 카메라를 처음 잡는 분을 위한 2시간 30분 클래스입니다.\n\n처음 40분은 조리개·셔터·감도가 사진을 어떻게 바꾸는지 실제 카메라로 익히고, 이후 서촌 골목에서 한 롤(36장)을 직접 찍습니다. 촬영 중 강사가 한 분씩 노출과 구도를 봐 드려요.\n\n촬영한 필름은 현상소에서 현상·스캔해 일주일 안에 보내 드립니다.',
+    45000, 2, 'beginner',
+    E'조리개·셔터·감도를 이해하고 스스로 노출을 맞출 수 있어요.\n필름 한 롤을 끝까지 찍고 현상 결과로 내 사진을 돌아볼 수 있어요.',
+    '필름 1롤, 현상·스캔비, 카메라 대여 포함',
+    '필름 사진을 처음 시작하는 분, 휴대폰 사진에서 한 단계 나아가고 싶은 분',
     '2시간 정도 걸을 수 있는 체력', '편한 신발, (있다면) 필름 카메라',
-    '[{"time":"10:00","title":"통인시장 앞 집결, 카메라 사용법"},{"time":"10:30","title":"서촌 골목 출사"},{"time":"11:40","title":"수성동 계곡"},{"time":"12:10","title":"근처 카페에서 마무리"}]',
-    '모임 2일 전까지 전액 환불. 필름 현상비가 포함되어 있습니다. (샘플 문구)', 'published', true, now())
+    '[{"time":"10:00","title":"카메라 구조와 노출 기초"},{"time":"10:40","title":"서촌 골목 출사 (개별 코칭)"},{"time":"12:00","title":"촬영 돌아보기와 현상 안내"}]',
+    '클래스 2일 전까지 전액 환불. 필름·현상비가 포함되어 있습니다. (샘플 문구)', 'published', true, now())
   returning id into m;
   insert into public.meetup_sessions (meetup_id, starts_at, ends_at, area, venue_name, address_detail, capacity, reserved_count) values
-    (m, base + interval '6 days 10 hours', base + interval '6 days 12 hours 30 minutes', '서촌', '통인시장 정문', '서울 종로구 (샘플 주소)', 6, 5);
+    (m, base + interval '6 days 10 hours', base + interval '6 days 12 hours 30 minutes', '서촌', '필름로그 현상소', '서울 종로구 (샘플 주소)', 6, 5);
 
-  -- 3. 음악
-  insert into public.meetups (host_id, category_slug, title, summary, description, price, max_quantity_per_booking,
-    target_audience, requirements, what_to_bring, agenda, refund_policy_text, status, is_sample, published_at)
-  values (h3, 'music', 'LP 리스닝 세션 — 80년대 시티팝 특집',
-    '좋은 스피커로 앨범 두 장을 처음부터 끝까지. 노래가 만들어진 시대 이야기도 함께.',
-    E'플레이리스트가 아닌 "앨범"으로 음악을 듣는 시간입니다.\n\n이번 회차는 80년대 일본 시티팝 명반 두 장을 A면부터 B면까지 온전히 듣습니다. 곡 사이사이 앨범이 만들어진 배경과 당시 도시의 분위기를 짧게 소개해 드려요.\n\n음악을 들을 때는 대화를 멈추고, 듣고 난 뒤 자유롭게 감상을 나눕니다. 논알콜 음료가 제공됩니다.',
-    30000, 2, '음악을 좋아하는 누구나, 혼자 와도 어색하지 않은 모임을 찾는 분',
-    '', '없음',
-    '[{"time":"19:30","title":"웰컴 드링크(논알콜)와 소개"},{"time":"19:45","title":"첫 번째 앨범 감상"},{"time":"20:30","title":"쉬는 시간과 이야기"},{"time":"20:45","title":"두 번째 앨범 감상"},{"time":"21:30","title":"감상 나누기"}]',
-    '모임 3일 전까지 전액 환불. (샘플 문구)', 'published', true, now())
-  returning id into m;
-  insert into public.meetup_sessions (meetup_id, starts_at, ends_at, area, venue_name, address_detail, capacity, reserved_count) values
-    (m, base + interval '3 days 19 hours 30 minutes', base + interval '3 days 22 hours', '을지로', '리스닝룸 수요일', '서울 중구 (샘플 주소)', 12, 12),
-    (m, base + interval '10 days 19 hours 30 minutes', base + interval '10 days 22 hours', '을지로', '리스닝룸 수요일', '서울 중구 (샘플 주소)', 12, 4);
-
-  -- 4. 철학
-  insert into public.meetups (host_id, category_slug, title, summary, description, price, max_quantity_per_booking,
-    target_audience, requirements, what_to_bring, agenda, refund_policy_text, status, is_sample, published_at)
-  values (h4, 'philosophy', '퇴근 후 철학 살롱: 우리는 왜 일하는가',
-    '짧은 철학 텍스트 한 편을 함께 읽고, 각자의 일에 대해 솔직하게 이야기하는 저녁.',
-    E'"일을 좋아해야 한다"는 말이 부담스러웠던 적 있나요?\n\n이번 살롱에서는 한나 아렌트의 『인간의 조건』 중 노동과 작업에 관한 짧은 발췌문을 함께 읽습니다. 사전 지식은 필요 없어요. 진행자가 핵심을 쉽게 풀어 드리고, 각자의 일 경험과 연결해 이야기 나눕니다.\n\n발췌문은 신청 후 미리 보내 드립니다.',
-    20000, 1, '일의 의미를 한 번쯤 고민해 본 직장인, 다른 업계 사람들과 대화하고 싶은 분',
-    '', '없음 (읽을거리는 현장에서도 제공)',
-    '[{"time":"19:30","title":"발췌문 함께 읽기"},{"time":"20:00","title":"소그룹 대화"},{"time":"20:50","title":"전체 나눔과 마무리"}]',
-    '모임 2일 전까지 전액 환불. (샘플 문구)', 'published', true, now())
-  returning id into m;
-  insert into public.meetup_sessions (meetup_id, starts_at, ends_at, area, venue_name, address_detail, capacity, reserved_count) values
-    (m, base + interval '8 days 19 hours 30 minutes', base + interval '8 days 21 hours 30 minutes', '합정동', '살롱 마루', '서울 마포구 (샘플 주소)', 10, 3);
-
-  -- 5. 네트워킹
-  insert into public.meetups (host_id, category_slug, title, summary, description, price, max_quantity_per_booking,
-    target_audience, requirements, what_to_bring, agenda, refund_policy_text, status, is_sample, published_at)
-  values (h4, 'networking', '1인 브랜드 운영자 모닝 커피 네트워킹',
-    '혼자 일하는 사람들끼리 고민과 노하우를 나누는 토요일 아침 2시간.',
-    E'프리랜서, 1인 창업자, 사이드 프로젝트를 운영하는 분들이 모이는 아침 네트워킹입니다.\n\n명함 교환보다 대화에 집중할 수 있도록 4~5명씩 테이블을 나누고, 30분마다 자리를 바꿉니다. 각 테이블에는 "요즘 가장 큰 고민" 카드가 놓여 있어요.\n\n커피 한 잔이 참가비에 포함되어 있습니다.',
-    15000, 2, '프리랜서, 1인 창업자, 사이드 프로젝트 운영자',
-    '', '자기소개 한 줄 (명함은 선택)',
-    '[{"time":"10:00","title":"체크인과 커피"},{"time":"10:15","title":"테이블 대화 1"},{"time":"10:45","title":"테이블 대화 2"},{"time":"11:15","title":"테이블 대화 3"},{"time":"11:45","title":"자유 네트워킹"}]',
-    '모임 1일 전까지 전액 환불. (샘플 문구)', 'published', true, now())
-  returning id into m;
-  insert into public.meetup_sessions (meetup_id, starts_at, ends_at, area, venue_name, address_detail, capacity, reserved_count) values
-    (m, base + interval '4 days 10 hours', base + interval '4 days 12 hours', '성수동', '카페 레이어드 2층', '서울 성동구 (샘플 주소)', 16, 9);
-
-  -- 6. 아트·클래스
+  -- 2. 드로잉·공예: 어반 스케치
   insert into public.meetups (host_id, category_slug, meetup_type, title, summary, description, price, max_quantity_per_booking,
+    level, learning_outcomes, materials_note,
     target_audience, requirements, what_to_bring, agenda, refund_policy_text, status, is_sample, published_at)
-  values (h2, 'art', 'class', '그림 초보를 위한 익선동 어반 스케치',
-    '펜 하나와 작은 수채 팔레트로 한옥 골목을 그려요. 재료는 모두 준비되어 있습니다.',
-    E'"그림은 못 그려요"라고 말하는 분들을 위한 클래스입니다.\n\n처음 30분은 선 긋기와 원근의 아주 기본만 연습하고, 이후 익선동 한옥 골목으로 나가 한 장면을 골라 그립니다. 잘 그리는 것보다 오래 바라보는 경험에 집중해요.\n\n스케치북, 펜, 휴대용 수채 팔레트를 드리며 가져가실 수 있습니다.',
-    40000, 2, '그림을 배워 본 적 없는 분, 손으로 하는 취미를 찾는 분',
+  values (h2, 'art', 'class', '그림 초보를 위한 어반 스케치 원데이 클래스',
+    '펜 선 긋기부터 수채 채색까지, 한옥 골목 한 장면을 완성해 가져가요.',
+    E'"그림은 못 그려요"라고 말하는 분들을 위한 클래스입니다.\n\n처음 30분은 선 긋기와 원근의 기본을 연습하고, 익선동 한옥 골목에서 한 장면을 골라 그립니다. 강사가 한 분씩 구도를 잡아 드리고, 마지막 30분은 수채 채색으로 완성합니다.',
+    48000, 2, 'beginner',
+    E'원근의 기본 규칙으로 건물과 골목을 그릴 수 있어요.\n펜 드로잉 위에 수채로 가볍게 채색해 한 장을 완성할 수 있어요.',
+    '스케치북, 드로잉 펜, 휴대용 수채 팔레트 제공 (가져가실 수 있어요)',
+    '그림을 배워 본 적 없는 분, 여행지에서 그림을 남기고 싶은 분',
     '', '없음 (재료 제공)',
-    '[{"time":"14:00","title":"선 긋기·원근 기초"},{"time":"14:30","title":"골목 스케치"},{"time":"15:40","title":"채색"},{"time":"16:10","title":"작품 나누기"}]',
-    '재료 준비로 인해 모임 4일 전까지만 전액 환불됩니다. (샘플 문구)', 'published', true, now())
+    '[{"time":"14:00","title":"선 긋기·원근 기초"},{"time":"14:30","title":"골목 스케치 (개별 코칭)"},{"time":"15:40","title":"수채 채색"},{"time":"16:10","title":"작품 돌아보기"}]',
+    '재료 준비로 인해 클래스 4일 전까지만 전액 환불됩니다. (샘플 문구)', 'published', true, now())
   returning id into m;
   insert into public.meetup_sessions (meetup_id, starts_at, ends_at, area, venue_name, address_detail, capacity, reserved_count) values
-    (m, base + interval '12 days 14 hours', base + interval '12 days 16 hours 30 minutes', '익선동', '익선 스튜디오', '서울 종로구 (샘플 주소)', 8, 2);
+    (m, base + interval '12 days 14 hours', base + interval '12 days 16 hours 30 minutes', '익선동', '드로잉 스튜디오 오후', '서울 종로구 (샘플 주소)', 8, 2);
 
-  -- 7. 아웃도어
+  -- 3. 드로잉·공예: 가죽
   insert into public.meetups (host_id, category_slug, meetup_type, title, summary, description, price, max_quantity_per_booking,
+    level, learning_outcomes, materials_note,
     target_audience, requirements, what_to_bring, agenda, refund_policy_text, status, is_sample, published_at)
-  values (h4, 'outdoor', 'outdoor', '한강 선셋 5km 러닝 & 가벼운 저녁',
-    '노을이 지는 반포 한강을 천천히 5km 달리고, 근처에서 가볍게 저녁을 먹어요.',
-    E'기록보다 함께 달리는 즐거움에 집중하는 러닝 모임입니다.\n\n1km당 6분 30초~7분 페이스로 반포 한강공원을 달리며, 페이스가 다른 분들을 위해 두 그룹으로 나눕니다. 러닝 후에는 근처 식당에서 가볍게 식사하며 이야기 나눠요 (식사비 개인 부담).\n\n우천 시 일정이 변경되며, 변경 시 전액 환불됩니다.',
-    10000, 2, '5km를 쉬지 않고 뛰어 본 적 있는 분, 함께 달릴 친구를 찾는 분',
-    '5km 완주 경험 권장', '러닝화, 물, 가벼운 겉옷',
-    '[{"time":"18:30","title":"집결과 스트레칭"},{"time":"18:45","title":"5km 러닝"},{"time":"19:30","title":"쿨다운"},{"time":"19:45","title":"저녁 식사(선택)"}]',
-    '모임 1일 전까지 전액 환불, 우천 취소 시 전액 환불. (샘플 문구)', 'published', true, now())
+  values (h2, 'art', 'class', '손바느질로 만드는 가죽 카드지갑',
+    '재단부터 새들 스티치까지, 3시간 만에 평생 쓸 카드지갑을 직접 만들어요.',
+    E'이탈리아 베지터블 가죽으로 카드지갑을 만드는 공예 클래스입니다.\n\n가죽 고르기, 재단, 구멍 뚫기, 새들 스티치, 마감까지 전 과정을 직접 합니다. 4명 이하 소수로 진행해 손이 느린 분도 충분히 따라올 수 있어요.',
+    68000, 1, 'beginner',
+    E'새들 스티치로 튼튼하게 바느질할 수 있어요.\n가죽 재단과 마감의 기본을 익혀 다른 소품도 혼자 도전할 수 있어요.',
+    '가죽·실·도구 모두 제공, 완성품 지참',
+    '손으로 무언가를 끝까지 만들어 보고 싶은 분, 선물을 직접 만들고 싶은 분',
+    '', '없음',
+    '[{"time":"13:00","title":"가죽 고르기와 재단"},{"time":"13:50","title":"치즐로 구멍 내기"},{"time":"14:30","title":"새들 스티치"},{"time":"15:40","title":"엣지 마감과 각인"}]',
+    '재료 준비로 인해 클래스 5일 전까지만 전액 환불됩니다. (샘플 문구)', 'published', true, now())
   returning id into m;
   insert into public.meetup_sessions (meetup_id, starts_at, ends_at, area, venue_name, address_detail, capacity, reserved_count) values
-    (m, base + interval '2 days 18 hours 30 minutes', base + interval '2 days 20 hours 30 minutes', '반포', '반포 한강공원 달빛광장', '서울 서초구 (샘플 주소)', 20, 14),
-    (m, base + interval '9 days 18 hours 30 minutes', base + interval '9 days 20 hours 30 minutes', '반포', '반포 한강공원 달빛광장', '서울 서초구 (샘플 주소)', 20, 3);
+    (m, base + interval '9 days 13 hours', base + interval '9 days 16 hours', '익선동', '드로잉 스튜디오 오후', '서울 종로구 (샘플 주소)', 4, 1);
 
-  -- 8. 여행
-
-  insert into public.meetups (host_id, category_slug, title, summary, description, price, max_quantity_per_booking,
+  -- 4. 악기·보컬
+  insert into public.meetups (host_id, category_slug, meetup_type, title, summary, description, price, max_quantity_per_booking,
+    level, learning_outcomes, materials_note,
     target_audience, requirements, what_to_bring, agenda, refund_policy_text, status, is_sample, published_at)
-  values (h1, 'travel', '혼자 떠나는 첫 제주 여행 준비 모임',
-    '혼자 여행이 처음이라면, 다녀온 사람들과 동선과 숙소, 안전 팁을 함께 짜 봐요.',
-    E'혼자 여행을 꿈꾸지만 막상 떠나기 망설여지는 분들을 위한 모임입니다.\n\n제주를 혼자 여러 번 다녀온 진행자가 계절별 추천 동선, 1인 여행자에게 좋은 숙소 고르는 법, 대중교통 이용 팁을 정리해 드려요. 이후 각자 가고 싶은 곳을 바탕으로 2박 3일 일정을 직접 짜 봅니다.',
-    18000, 1, '혼자 여행을 처음 계획하는 분', '', '노트북 또는 메모할 수 있는 도구',
-    '[{"time":"14:00","title":"제주 1인 여행 기본 정보"},{"time":"14:40","title":"내 일정 짜기"},{"time":"15:30","title":"일정 공유와 피드백"}]',
-    '모임 2일 전까지 전액 환불. (샘플 문구)', 'published', true, now())
+  values (h3, 'music', 'class', '통기타 첫 코드 클래스 — 2시간 만에 한 곡 반주',
+    '기타를 처음 잡아도 괜찮아요. 코드 4개로 익숙한 노래 한 곡을 끝까지 쳐 봅니다.',
+    E'기타를 사 놓고 몇 번 못 친 분, 처음 시작하는 분을 위한 입문 클래스입니다.\n\n손가락이 덜 아픈 자세, 코드 4개(C·G·Am·F), 기본 스트로크를 배운 뒤 모두 함께 한 곡을 반주합니다. 6명 이하로 진행해 한 분씩 손 모양을 봐 드려요.',
+    39000, 2, 'beginner',
+    E'C·G·Am·F 코드를 잡고 바꿀 수 있어요.\n기본 스트로크로 익숙한 노래 한 곡을 처음부터 끝까지 반주할 수 있어요.',
+    '연습용 기타 대여 가능 (신청 시 요청), 코드 악보 제공',
+    '기타를 처음 배우는 분, 독학하다 멈춘 분',
+    '', '(있다면) 본인 기타',
+    '[{"time":"19:30","title":"자세와 조율"},{"time":"19:50","title":"코드 4개 익히기"},{"time":"20:40","title":"스트로크 패턴"},{"time":"21:00","title":"한 곡 함께 반주"}]',
+    '클래스 3일 전까지 전액 환불. (샘플 문구)', 'published', true, now())
   returning id into m;
   insert into public.meetup_sessions (meetup_id, starts_at, ends_at, area, venue_name, address_detail, capacity, reserved_count) values
-    (m, base + interval '13 days 14 hours', base + interval '13 days 16 hours', '망원동', '책방 오후의 문장 2층', '서울 마포구 (샘플 주소)', 10, 2);
+    (m, base + interval '3 days 19 hours 30 minutes', base + interval '3 days 21 hours 30 minutes', '합정동', '민재 기타 스튜디오', '서울 마포구 (샘플 주소)', 6, 6),
+    (m, base + interval '10 days 19 hours 30 minutes', base + interval '10 days 21 hours 30 minutes', '합정동', '민재 기타 스튜디오', '서울 마포구 (샘플 주소)', 6, 2);
 
-  -- 검토 중(비공개) 모임 — 목록에 보이지 않아야 함
+  -- 5. 커리어·실무: 엑셀
+  insert into public.meetups (host_id, category_slug, meetup_type, title, summary, description, price, max_quantity_per_booking,
+    level, learning_outcomes, materials_note,
+    target_audience, requirements, what_to_bring, agenda, refund_policy_text, status, is_sample, published_at)
+  values (h4, 'career', 'class', '직장인 엑셀 실무 — 피벗 테이블과 XLOOKUP',
+    '매주 하던 집계 작업을 10분으로 줄이는 실무 엑셀. 실제 회사 데이터 형식으로 연습해요.',
+    E'함수 이름은 아는데 막상 업무에선 손이 안 가는 분들을 위한 3시간 실무 클래스입니다.\n\n매출·재고 같은 실제 업무 형식의 예제 파일로 피벗 테이블, XLOOKUP, 조건부 서식을 익히고, 마지막에는 각자 업무 파일 하나를 골라 함께 개선합니다.',
+    55000, 1, 'intermediate',
+    E'피벗 테이블로 월별·담당자별 집계 표를 직접 만들 수 있어요.\nXLOOKUP으로 다른 시트의 데이터를 정확하게 불러올 수 있어요.',
+    '예제 파일 제공. 엑셀이 설치된 노트북 필요',
+    'SUM·IF 정도는 써 본 직장인, 반복 집계 업무가 많은 분',
+    '엑셀 기본 사용 경험', '엑셀이 설치된 노트북, 충전기',
+    '[{"time":"10:00","title":"데이터 정리 원칙"},{"time":"10:30","title":"피벗 테이블 실습"},{"time":"11:30","title":"XLOOKUP과 조건부 서식"},{"time":"12:20","title":"내 업무 파일 개선"}]',
+    '클래스 2일 전까지 전액 환불. (샘플 문구)', 'published', true, now())
+  returning id into m;
+  insert into public.meetup_sessions (meetup_id, starts_at, ends_at, area, venue_name, address_detail, capacity, reserved_count) values
+    (m, base + interval '4 days 10 hours', base + interval '4 days 13 hours', '강남역', '스터디룸 포커스', '서울 강남구 (샘플 주소)', 10, 7);
+
+  -- 6. 글쓰기
+  insert into public.meetups (host_id, category_slug, meetup_type, title, summary, description, price, max_quantity_per_booking,
+    level, learning_outcomes, materials_note,
+    target_audience, requirements, what_to_bring, agenda, refund_policy_text, status, is_sample, published_at)
+  values (h4, 'writing', 'class', '한 장으로 끝내는 보고서 글쓰기',
+    '결론부터 쓰는 구조, 숫자로 말하는 문장. 내 보고서를 직접 고쳐 보는 첨삭 클래스.',
+    E'"그래서 결론이 뭐야?"라는 말을 듣지 않는 보고서를 쓰는 법을 배웁니다.\n\n좋은 보고서와 아쉬운 보고서를 나란히 비교한 뒤, 각자 가져온 보고서 한 장을 구조부터 다시 씁니다. 강사가 모든 분의 결과물을 현장에서 첨삭해 드려요.',
+    45000, 1, 'all',
+    E'결론-근거-다음 행동 순서로 한 장짜리 보고서를 구성할 수 있어요.\n모호한 표현을 숫자와 사실로 바꿔 쓸 수 있어요.',
+    '첨삭 양식 제공',
+    '보고서를 자주 쓰는 직장인, 사회초년생',
+    '', '최근에 쓴 보고서 1부 (민감 정보는 지워 주세요), 노트북',
+    '[{"time":"19:30","title":"좋은 보고서의 구조"},{"time":"20:00","title":"내 보고서 다시 쓰기"},{"time":"20:50","title":"현장 첨삭과 정리"}]',
+    '클래스 2일 전까지 전액 환불. (샘플 문구)', 'published', true, now())
+  returning id into m;
+  insert into public.meetup_sessions (meetup_id, starts_at, ends_at, area, venue_name, address_detail, capacity, reserved_count) values
+    (m, base + interval '8 days 19 hours 30 minutes', base + interval '8 days 21 hours 30 minutes', '여의도', '스터디룸 포커스 여의도점', '서울 영등포구 (샘플 주소)', 8, 3);
+
+  -- 7. 커리어·실무: 발표
+  insert into public.meetups (host_id, category_slug, meetup_type, title, summary, description, price, max_quantity_per_booking,
+    level, learning_outcomes, materials_note,
+    target_audience, requirements, what_to_bring, agenda, refund_policy_text, status, is_sample, published_at)
+  values (h4, 'career', 'class', '떨지 않는 5분 발표 코칭',
+    '내 발표를 영상으로 찍고, 강사 피드백을 받아 다시 해 보는 소수 정예 코칭.',
+    E'회의나 면접에서 짧게 말해야 할 때 늘 떨리는 분을 위한 실습 중심 클래스입니다.\n\n5분 발표 구조를 배운 뒤, 한 사람씩 발표하고 영상으로 돌려 보며 피드백을 받습니다. 피드백을 반영해 한 번 더 발표하고 달라진 점을 확인해요. 6명 이하로 진행합니다.',
+    60000, 1, 'all',
+    E'5분 발표를 도입-핵심-마무리 구조로 준비할 수 있어요.\n내 말버릇과 시선 처리를 알고 고칠 수 있어요.',
+    '발표 영상은 본인에게만 전달 후 삭제',
+    '회의·면접 발표가 부담스러운 분',
+    '', '발표하고 싶은 주제 하나 (업무·자기소개 모두 가능)',
+    '[{"time":"14:00","title":"5분 발표 구조"},{"time":"14:30","title":"1차 발표와 영상 피드백"},{"time":"15:30","title":"2차 발표와 비교"}]',
+    '클래스 3일 전까지 전액 환불. (샘플 문구)', 'published', true, now())
+  returning id into m;
+  insert into public.meetup_sessions (meetup_id, starts_at, ends_at, area, venue_name, address_detail, capacity, reserved_count) values
+    (m, base + interval '13 days 14 hours', base + interval '13 days 16 hours', '강남역', '스터디룸 포커스', '서울 강남구 (샘플 주소)', 6, 2);
+
+  -- 8. 드로잉·공예: 수채 엽서
+  insert into public.meetups (host_id, category_slug, meetup_type, title, summary, description, price, max_quantity_per_booking,
+    level, learning_outcomes, materials_note,
+    target_audience, requirements, what_to_bring, agenda, refund_policy_text, status, is_sample, published_at)
+  values (h2, 'art', 'class', '번지기 기법으로 그리는 수채화 꽃 엽서',
+    '물 조절과 번지기만 익히면 꽃 그림이 쉬워져요. 엽서 4장을 완성해 가져가요.',
+    E'수채화에서 가장 어려운 물 조절을 집중해서 연습하는 클래스입니다.\n\n색 섞기와 번지기 연습 후, 튤립·라넌큘러스·유칼립투스를 순서대로 그려 엽서 4장을 완성합니다.',
+    42000, 2, 'all',
+    E'물과 물감의 비율을 조절해 번지기 효과를 낼 수 있어요.\n간단한 꽃을 3단계로 나눠 그릴 수 있어요.',
+    '수채 물감·붓·엽서 용지 제공',
+    '수채화를 처음 해 보는 분, 손편지를 좋아하는 분',
+    '', '없음 (재료 제공)',
+    '[{"time":"11:00","title":"색 섞기와 번지기 연습"},{"time":"11:40","title":"꽃 3종 그리기"},{"time":"12:40","title":"엽서 완성과 정리"}]',
+    '재료 준비로 인해 클래스 3일 전까지만 전액 환불됩니다. (샘플 문구)', 'published', true, now())
+  returning id into m;
+  insert into public.meetup_sessions (meetup_id, starts_at, ends_at, area, venue_name, address_detail, capacity, reserved_count) values
+    (m, base + interval '2 days 11 hours', base + interval '2 days 13 hours', '익선동', '드로잉 스튜디오 오후', '서울 종로구 (샘플 주소)', 8, 4);
+
+  -- 검토 중(비공개) 클래스 — 목록에 보이지 않아야 함
   insert into public.meetups (host_id, category_slug, title, summary, description, price, status, is_sample)
-  values (h3, 'music', '재즈 피아노 트리오 감상회 (검토 중)', '공개 전 검토 중인 샘플 모임입니다. 목록에 나오면 안 됩니다.',
-    '검토 중인 샘플 모임입니다. 공개 목록과 상세 화면에 노출되지 않아야 합니다.', 25000, 'pending_review', true);
+  values (h3, 'music', '핑거스타일 기타 중급반 (검토 중)', '공개 전 검토 중인 샘플 클래스입니다. 목록에 나오면 안 됩니다.',
+    '검토 중인 샘플 클래스입니다. 공개 목록과 상세 화면에 노출되지 않아야 합니다.', 25000, 'pending_review', true);
 end $$;

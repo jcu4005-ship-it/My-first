@@ -7,7 +7,7 @@ import { getPaymentProvider } from "./provider";
 /**
  * PG 환불 → DB 환불 기록. 서버에서만 호출합니다.
  * 결제 키는 화면·사용자 연결로 전달하지 않고 여기서 서버 비밀키로만 조회합니다.
- * 권한(본인 신청 / 내 모임)은 DB 함수 refund_booking이 actor 기준으로 다시 확인합니다.
+ * 권한(본인 신청 / 내 클래스)은 DB 함수 refund_booking이 actor 기준으로 다시 확인합니다.
  */
 export async function refundBooking(
   bookingId: string,

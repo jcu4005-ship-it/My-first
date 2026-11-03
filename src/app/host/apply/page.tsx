@@ -24,7 +24,7 @@ export default async function HostApplyPage() {
         <p className="text-xs tracking-[0.25em] text-accent">BECOME A HOST</p>
         <h1 className="mt-2 font-display text-3xl font-bold">호스트 신청</h1>
         <p className="mt-3 leading-relaxed text-muted-foreground">
-          취향과 경험을 모임으로 만들어 보세요. 운영팀이 신청 내용을 확인한 뒤 승인하면 바로 모임을 만들 수 있어요.
+          가르칠 수 있는 전문성을 클래스로 만들어 보세요. 운영팀이 경력과 포트폴리오를 확인한 뒤 승인하면 바로 클래스를 만들 수 있어요.
         </p>
 
         <div className="mt-8">
@@ -46,7 +46,7 @@ export default async function HostApplyPage() {
                 </div>
               )}
               <ApplyForm
-                defaults={host ? { displayName: host.display_name, headline: host.headline, bio: host.bio, expertise: host.expertise.join(", "), instagram: host.instagram_handle ?? "" } : undefined}
+                defaults={host ? { displayName: host.display_name, headline: host.headline, bio: host.bio, expertise: host.expertise.join(", "), instagram: host.instagram_handle ?? "", career: host.career, credentials: host.credentials, portfolioUrl: host.portfolio_url ?? "", teachingExperience: host.teaching_experience } : undefined}
               />
             </>
           )}

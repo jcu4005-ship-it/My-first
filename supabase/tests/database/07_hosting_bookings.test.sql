@@ -1,7 +1,7 @@
 -- 호스트 신청·승인 → 모임 등록·검수 → 공개 → 참가 신청·취소 (무료 모임: 즉시 확정), 권한·정원·중복
 begin;
 \ir _helpers.psql
-select plan(40);
+select plan(43);
 
 select pg_temp.create_member('h@test.local', 'hostApplicant') as h \gset
 select pg_temp.create_member('p@test.local', 'participantP') as p \gset
@@ -11,9 +11,14 @@ select pg_temp.grant_role_direct(:'adm', 'admin');
 
 -- ---------- 호스트 신청 ----------
 select pg_temp.login_as(:'h');
-select lives_ok($$ select public.apply_host('테스트 호스트', '한 줄 소개', '소개', array['독서'], null) $$, '회원은 호스트 신청 가능');
-select throws_ok($$ select public.apply_host('테스트 호스트', '', '', null, null) $$, '22023', null, '중복 신청 불가');
-select throws_ok($$ insert into public.meetups (host_id, category_slug, title, summary, description, price) values (auth.uid(), 'reading', '승인 전 모임 등록', '승인 전 모임 등록 요약입니다', '승인 전 모임 등록 상세 설명입니다.', 0) $$,
+select throws_ok($$ select public.apply_host('테스트 호스트', '한 줄 소개', '소개', array['글쓰기'], null, '짧은 경력', '', '', '') $$,
+  '22023', null, '경력을 20자 미만으로 쓰면 신청할 수 없다');
+select throws_ok($$ select public.apply_host('테스트 호스트', '한 줄 소개', '소개', array['글쓰기'], null, '출판사 편집자 10년, 글쓰기 강의 5년 진행', '', 'http://insecure.example', '') $$,
+  '23514', null, '포트폴리오 링크는 https만 허용');
+select lives_ok($$ select public.apply_host('테스트 호스트', '한 줄 소개', '소개', array['글쓰기'], null, '출판사 편집자 10년, 글쓰기 강의 5년 진행', '문예 공모전 입선', 'https://example.com/portfolio', '원데이 클래스 30회') $$, '회원은 경력과 함께 호스트 신청 가능');
+select is((select career from public.host_profiles where user_id = auth.uid()), '출판사 편집자 10년, 글쓰기 강의 5년 진행', '경력이 저장된다');
+select throws_ok($$ select public.apply_host('테스트 호스트', '', '', null, null, '출판사 편집자 10년, 글쓰기 강의 5년 진행', '', '', '') $$, '22023', null, '중복 신청 불가');
+select throws_ok($$ insert into public.meetups (host_id, category_slug, title, summary, description, price) values (auth.uid(), 'writing', '승인 전 모임 등록', '승인 전 모임 등록 요약입니다', '승인 전 모임 등록 상세 설명입니다.', 0) $$,
   '42501', null, '승인 전에는 모임을 만들 수 없다');
 select throws_ok($$ select public.admin_review_host(auth.uid(), true, null) $$, '42501', null, '스스로 승인할 수 없다');
 select throws_ok($$ update public.host_profiles set status = 'approved' where user_id = auth.uid() $$, '42501', null, '승인 상태를 직접 바꿀 수 없다');
@@ -33,13 +38,13 @@ select ok(exists(select 1 from public.audit_logs where action = 'host.approve' a
 -- ---------- 모임 등록·회차·검수 요청 ----------
 select pg_temp.login_as(:'h');
 select lives_ok($$ insert into public.meetups (host_id, category_slug, title, summary, description, price, max_quantity_per_booking)
-  values (auth.uid(), 'reading', '테스트 독서 모임입니다', '테스트 독서 모임의 요약입니다', '테스트 독서 모임의 상세 설명입니다.', 0, 2) $$,
+  values (auth.uid(), 'writing', '테스트 독서 모임입니다', '테스트 독서 모임의 요약입니다', '테스트 독서 모임의 상세 설명입니다.', 0, 2) $$,
   '승인된 호스트는 모임을 만들 수 있다');
 select pg_temp.logout();
 select set_config('t.mid', id::text, false) from public.meetups where title = '테스트 독서 모임입니다';
 select pg_temp.login_as(:'h');
 select throws_ok($$ insert into public.meetups (host_id, category_slug, title, summary, description, price, status)
-  values (auth.uid(), 'reading', '바로 공개 시도 모임', '바로 공개 시도 모임 요약입니다', '바로 공개 시도 모임 상세 설명입니다.', 0, 'published') $$,
+  values (auth.uid(), 'writing', '바로 공개 시도 모임', '바로 공개 시도 모임 요약입니다', '바로 공개 시도 모임 상세 설명입니다.', 0, 'published') $$,
   '42501', null, '호스트는 공개 상태로 직접 만들 수 없다');
 select throws_ok($$ update public.meetups set status = 'published' where id = current_setting('t.mid')::uuid $$,
   '42501', null, '호스트는 공개 상태로 직접 바꿀 수 없다');

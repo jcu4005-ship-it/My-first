@@ -28,8 +28,21 @@ export default async function AdminHostsPage() {
           <li key={a.user_id} className="rounded-2xl border p-5" data-testid="host-application" data-name={a.display_name}>
             <p className="font-semibold">{a.display_name}</p>
             <p className="text-sm">{a.headline}</p>
+            <dl className="mt-3 grid gap-2 rounded-xl bg-secondary/60 p-3 text-sm" data-testid="host-application-credentials">
+              <div><dt className="text-xs text-muted-foreground">경력</dt><dd className="whitespace-pre-line">{a.career || "(미입력)"}</dd></div>
+              {a.credentials && <div><dt className="text-xs text-muted-foreground">자격·수상</dt><dd>{a.credentials}</dd></div>}
+              {a.teaching_experience && <div><dt className="text-xs text-muted-foreground">가르친 경험</dt><dd>{a.teaching_experience}</dd></div>}
+              <div>
+                <dt className="text-xs text-muted-foreground">포트폴리오</dt>
+                <dd className="break-all">
+                  {a.portfolio_url ? (
+                    <a href={a.portfolio_url} target="_blank" rel="noopener noreferrer nofollow" className="underline underline-offset-4">{a.portfolio_url}</a>
+                  ) : "(없음)"}
+                </dd>
+              </div>
+            </dl>
             <p className="mt-2 text-sm leading-relaxed whitespace-pre-line text-muted-foreground">{a.bio}</p>
-            {a.expertise.length > 0 && <p className="mt-2 text-xs text-muted-foreground">관심 분야: {a.expertise.join(", ")}</p>}
+            {a.expertise.length > 0 && <p className="mt-2 text-xs text-muted-foreground">전문 분야: {a.expertise.join(", ")}</p>}
             {a.instagram_handle && <p className="text-xs text-muted-foreground">Instagram @{a.instagram_handle}</p>}
             <div className="mt-4 flex flex-wrap items-start gap-4 border-t pt-4">
               <ActionForm action={reviewHostAction} hidden={{ userId: a.user_id, decision: "approve", note: "" }} label="승인" variant="default" testId="approve-host" />

@@ -2,7 +2,7 @@ import { cn } from "@/lib/utils";
 
 import { categoryStyle } from "./category-style";
 
-/** 사진 없이도 모임의 개성이 드러나는 잡지형 표지 */
+/** 사진 없이도 클래스의 개성이 드러나는 잡지형 표지 */
 export function EditorialCover({
   category,
   categoryName,

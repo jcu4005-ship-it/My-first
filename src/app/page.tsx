@@ -20,17 +20,17 @@ async function UpcomingSection() {
       </div>
       {hasSample && (
         <p className="mb-8 rounded-xl bg-notice px-4 py-3 text-sm text-notice-foreground" data-testid="sample-notice">
-          지금 보이는 모임은 서비스 준비 중 보여 드리는 <strong>샘플</strong>입니다. 실제로 신청할 수 없어요.
+          지금 보이는 클래스는 서비스 준비 중 보여 드리는 <strong>샘플</strong>입니다. 실제로 신청할 수 없어요.
         </p>
       )}
       {meetups.length ? (
         <MeetupGrid meetups={meetups} categoryNames={names} />
       ) : (
-        <p className="py-16 text-center text-muted-foreground">곧 첫 모임이 열립니다.</p>
+        <p className="py-16 text-center text-muted-foreground">곧 첫 클래스가 열립니다.</p>
       )}
       <div className="mt-12 flex justify-center">
         <Button asChild variant="outline" size="lg">
-          <Link href="/meetups">모든 모임 보기</Link>
+          <Link href="/meetups">모든 클래스 보기</Link>
         </Button>
       </div>
     </>
@@ -75,9 +75,9 @@ function GridSkeleton() {
 }
 
 const STEPS = [
-  { no: "01", title: "취향으로 고르기", body: "독서, 음악, 사진, 러닝까지. 관심사와 날짜, 동네로 모임을 찾아요." },
-  { no: "02", title: "혼자서도 가볍게", body: "대부분의 참가자가 혼자 옵니다. 호스트가 처음 온 사람도 편하게 이끌어요." },
-  { no: "03", title: "다음 만남으로", body: "좋았던 호스트를 팔로우하고, 비슷한 취향의 다른 모임으로 이어가요." },
+  { no: "01", title: "배울 것을 먼저 확인", body: "난이도와 '수업 후 할 수 있는 것'을 보고 나에게 맞는 클래스를 골라요." },
+  { no: "02", title: "경력을 확인한 호스트", body: "운영팀이 경력과 포트폴리오를 확인한 호스트만 클래스를 열 수 있어요." },
+  { no: "03", title: "소수 정예로 직접 실습", body: "적은 인원으로 진행해 한 사람씩 봐 드려요. 수업 뒤엔 같은 관심사를 가진 사람들과 자연스럽게 이야기 나눠요." },
 ];
 
 export default function Home() {
@@ -86,16 +86,16 @@ export default function Home() {
       <SiteHeader />
       <main className="flex-1">
         <section className="mx-auto w-full max-w-6xl px-4 pt-10 pb-16 sm:px-8 sm:pt-20 sm:pb-24">
-          <p className="mb-5 text-xs tracking-[0.3em] text-accent">OFFLINE COMMUNITY</p>
+          <p className="mb-5 text-xs tracking-[0.3em] text-accent">SMALL CLASS, REAL SKILLS</p>
           <h1 className="max-w-3xl font-display text-[2.6rem] leading-[1.15] font-bold break-keep sm:text-7xl">
             {brand.tagline}
           </h1>
           <p className="mt-6 max-w-xl text-base leading-relaxed text-muted-foreground sm:text-lg">
-            호스트가 자신의 취향과 경험으로 기획한 작은 모임들. 마음에 드는 하루를 골라, 새로운 사람들과 만나 보세요.
+            사진, 드로잉·공예, 악기, 커리어 실무까지. 현장에서 일해 온 전문가에게 하루 만에 배우고, 결과물을 들고 돌아가세요.
           </p>
           <div className="mt-9 flex flex-wrap gap-3">
             <Button asChild size="lg">
-              <Link href="/meetups">모임 둘러보기</Link>
+              <Link href="/meetups">클래스 둘러보기</Link>
             </Button>
             <Button asChild size="lg" variant="outline">
               <Link href="#host">호스트가 되고 싶다면</Link>
@@ -106,7 +106,7 @@ export default function Home() {
         <section className="mx-auto w-full max-w-6xl px-4 sm:px-8" aria-labelledby="upcoming-title">
           <div className="mb-6 flex items-end justify-between">
             <h2 id="upcoming-title" className="font-display text-2xl font-bold sm:text-3xl">
-              곧 열리는 모임
+              곧 열리는 클래스
             </h2>
           </div>
           <Suspense fallback={<GridSkeleton />}>
@@ -131,7 +131,7 @@ export default function Home() {
 
         <section className="mx-auto mt-24 w-full max-w-6xl px-4 sm:px-8" aria-labelledby="hosts-title">
           <h2 id="hosts-title" className="mb-8 font-display text-2xl font-bold sm:text-3xl">
-            모임을 여는 사람들
+            클래스를 여는 사람들
           </h2>
           <Suspense fallback={<div className="h-40 animate-pulse rounded-2xl bg-muted" />}>
             <HostsSection />
@@ -142,10 +142,10 @@ export default function Home() {
           <div className="rounded-3xl bg-foreground px-6 py-12 text-background sm:px-12 sm:py-16">
             <p className="text-xs tracking-[0.3em] opacity-70">BECOME A HOST</p>
             <h2 className="mt-4 max-w-xl font-display text-3xl leading-snug font-bold break-keep sm:text-4xl">
-              당신의 취향도 누군가에게는 기다리던 모임이 됩니다
+              당신의 전문성이 누군가에게는 기다리던 클래스가 됩니다
             </h2>
             <p className="mt-4 max-w-lg text-sm leading-relaxed opacity-80">
-              취향과 경험을 소개해 주시면 운영팀이 확인 후 승인해 드려요. 승인되면 바로 모임을 만들고 참가자를 모집할 수 있어요.
+              경력과 포트폴리오를 보내 주시면 운영팀이 확인 후 승인해 드려요. 승인되면 바로 클래스를 만들고 수강생을 모집할 수 있어요.
             </p>
             <Button asChild size="lg" variant="secondary" className="mt-8">
               <Link href="/host/apply">호스트 신청하기</Link>

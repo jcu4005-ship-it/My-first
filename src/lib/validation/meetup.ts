@@ -4,15 +4,34 @@ const text = (max: number, label: string) =>
   z.string().trim().max(max, `${label}은(는) ${max}자 이내로 입력해 주세요.`);
 
 export const MEETUP_TYPES = [
-  { value: "general", label: "일반 모임" },
-  { value: "class", label: "클래스 (재료·실습 포함)" },
-  { value: "outdoor", label: "야외 활동" },
+  { value: "class", label: "실습 클래스 (실내)" },
+  { value: "outdoor", label: "현장 클래스 (출사·야외 수업)" },
+  { value: "general", label: "강의·토크형" },
 ] as const;
+
+export const CLASS_LEVELS = [
+  { value: "beginner", label: "입문" },
+  { value: "intermediate", label: "중급" },
+  { value: "advanced", label: "고급" },
+  { value: "all", label: "누구나" },
+] as const;
+export type ClassLevel = (typeof CLASS_LEVELS)[number]["value"];
+export const CLASS_LEVEL_LABEL: Record<ClassLevel, string> = Object.fromEntries(
+  CLASS_LEVELS.map((l) => [l.value, l.label]),
+) as Record<ClassLevel, string>;
 
 export const hostApplicationSchema = z.object({
   displayName: z.string().trim().min(2, "호스트 이름은 2자 이상이에요.").max(30, "호스트 이름은 30자 이내로 입력해 주세요."),
   headline: text(60, "한 줄 소개").min(5, "한 줄 소개를 5자 이상 입력해 주세요."),
-  bio: text(2000, "소개").min(20, "어떤 모임을 열고 싶은지 20자 이상 소개해 주세요."),
+  bio: text(2000, "소개").min(20, "어떤 클래스를 열고 싶은지 20자 이상 소개해 주세요."),
+  career: text(1000, "경력").min(20, "가르칠 분야의 경력을 20자 이상 적어 주세요."),
+  credentials: text(500, "자격·수상"),
+  portfolioUrl: z
+    .string()
+    .trim()
+    .max(300, "링크는 300자 이내로 입력해 주세요.")
+    .refine((v) => v === "" || /^https:\/\/[^\s]+$/.test(v), "https:// 로 시작하는 링크를 입력해 주세요."),
+  teachingExperience: text(500, "수업 경험"),
   expertise: z
     .string()
     .transform((v) => v.split(",").map((s) => s.trim()).filter(Boolean).slice(0, 8)),
@@ -43,7 +62,10 @@ export function agendaToText(agenda: { time: string; title: string }[]): string 
 export const meetupFormSchema = z.object({
   title: z.string().trim().min(5, "제목은 5자 이상이에요.").max(60, "제목은 60자 이내로 입력해 주세요."),
   categorySlug: z.string().regex(/^[a-z][a-z0-9-]{1,30}$/, "카테고리를 선택해 주세요."),
-  meetupType: z.enum(["general", "class", "outdoor"], "모임 유형을 선택해 주세요."),
+  meetupType: z.enum(["general", "class", "outdoor"], "수업 방식을 선택해 주세요."),
+  level: z.enum(["all", "beginner", "intermediate", "advanced"], "난이도를 선택해 주세요."),
+  learningOutcomes: text(500, "수업 후 할 수 있는 것").min(10, "수업이 끝나면 무엇을 할 수 있게 되는지 10자 이상 적어 주세요."),
+  materialsNote: text(300, "재료·도구 안내"),
   summary: z.string().trim().min(10, "한 줄 요약은 10자 이상이에요.").max(120, "한 줄 요약은 120자 이내로 입력해 주세요."),
   description: z.string().trim().min(20, "소개는 20자 이상 입력해 주세요.").max(5000, "소개는 5000자 이내로 입력해 주세요."),
   price: z

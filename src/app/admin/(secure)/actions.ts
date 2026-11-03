@@ -108,7 +108,7 @@ const meetupReviewSchema = z.object({
   note: z.string().trim().max(500),
 });
 
-/** 모임 공개·반려·정지 (감사 기록) */
+/** 클래스 공개·반려·정지 (감사 기록) */
 export async function reviewMeetupAction(_prev: FormState, formData: FormData): Promise<FormState> {
   if (!(await checkAdminForAction())) return FORBIDDEN;
   const parsed = meetupReviewSchema.safeParse({

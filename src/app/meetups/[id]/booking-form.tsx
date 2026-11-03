@@ -31,7 +31,7 @@ export function BookingForm({
   price: number;
   maxQuantity: number;
   sessions: BookingSession[];
-  /** guest: 비로그인, sample: 샘플, own: 내 모임, ok: 신청 가능 */
+  /** guest: 비로그인, sample: 샘플, own: 내 클래스, ok: 신청 가능 */
   state: "guest" | "sample" | "own" | "ok";
 }) {
   const [result, action, pending] = useActionState(bookAction, initialFormState);
@@ -109,9 +109,9 @@ export function BookingForm({
           <Link href={`/login?next=/meetups/${meetupId}`}>로그인하고 신청하기</Link>
         </Button>
       ) : viewerState === "sample" ? (
-        <Button size="lg" disabled>샘플 모임은 신청할 수 없어요</Button>
+        <Button size="lg" disabled>샘플 클래스는 신청할 수 없어요</Button>
       ) : viewerState === "own" ? (
-        <Button size="lg" disabled>내가 연 모임이에요</Button>
+        <Button size="lg" disabled>내가 연 클래스예요</Button>
       ) : firstAvailable ? (
         <Button type="submit" size="lg" disabled={pending || !sessionId} data-testid="book-submit">
           {pending ? "신청 중…" : `${formatPrice(price * quantity)} · 참가 신청`}

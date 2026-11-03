@@ -67,7 +67,7 @@ begin
     on conflict (user_id) do update set status = 'approved';
   insert into public.user_roles (user_id, role) values (p_host, 'host') on conflict do nothing;
   insert into public.meetups (host_id, category_slug, title, summary, description, price, max_quantity_per_booking, status, published_at)
-  values (p_host, 'reading', '결제 테스트 모임입니다', '결제 테스트 모임 요약입니다', '결제 테스트 모임의 상세 설명 문장입니다. 충분히 길게.', p_price, p_max, 'published', now())
+  values (p_host, 'writing', '결제 테스트 모임입니다', '결제 테스트 모임 요약입니다', '결제 테스트 모임의 상세 설명 문장입니다. 충분히 길게.', p_price, p_max, 'published', now())
   returning id into v_m;
   insert into public.meetup_sessions (meetup_id, starts_at, ends_at, area, venue_name, address_detail, capacity)
   values (v_m, now() + interval '5 days', now() + interval '5 days 2 hours', '성수동', '테스트 장소', '비밀 주소', p_capacity)

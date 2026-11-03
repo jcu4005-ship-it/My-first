@@ -11,7 +11,7 @@ export const LOCKED = {
   autoSettlementEnabled: false,
   /** 실결제는 PG 계약·정산 구조 확인 + 승인 전까지 비활성 (env.ts에서도 차단) */
   livePaymentsEnabled: false,
-  /** 예약 1건당 인원 허용 범위 (호스트가 이 범위 안에서 모임별 설정) */
+  /** 예약 1건당 인원 허용 범위 (호스트가 이 범위 안에서 클래스별 설정) */
   bookingQuantity: { min: 1, max: 4, default: 1 },
   /** 인원 변경·부분 취소는 MVP 제외 */
   partialCancellationEnabled: false,
@@ -20,11 +20,11 @@ export const LOCKED = {
   hostCancellationRefundPercent: 100,
 } as const;
 
-/** 법률·운영 검토 완료 전까지 개설할 수 없는 모임 유형 (설계안 9-5) */
+/** 법률·운영 검토 완료 전까지 개설할 수 없는 클래스 유형 (설계안 9-5) */
 export const MEETUP_TYPES_LOCKED_PENDING_REVIEW = ["alcohol"] as const;
 
 export const INITIAL_SETTINGS = {
-  /** 정산 대상: 모임 종료 후 N일 경과 + 열린 분쟁 없음 */
+  /** 정산 대상: 클래스 종료 후 N일 경과 + 열린 분쟁 없음 */
   settlementEligibilityDays: 7,
   /** 정산 주기: 월 2회 (15일·말일 마감) */
   settlementCycle: "semi_monthly",

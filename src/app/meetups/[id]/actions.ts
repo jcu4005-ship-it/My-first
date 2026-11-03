@@ -31,7 +31,7 @@ export async function bookAction(_prev: FormState, formData: FormData): Promise<
     p_quantity: parsed.data.quantity,
   });
   if (error) return { status: "error", message: rpcErrorMessage(error) };
-  // 유료 모임은 결제 대기 → 결제 화면, 무료는 바로 확정
+  // 유료 클래스는 결제 대기 → 결제 화면, 무료는 바로 확정
   const { data: payment } = await supabase.rpc("my_booking_payment", { p_booking_id: data });
   if (payment?.length && payment[0].booking_status === "pending_payment") redirect(`/checkout/${data}`);
   redirect(`/me/bookings?booked=${data}`);

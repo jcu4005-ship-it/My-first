@@ -45,6 +45,38 @@ export default async function HostPage({ params }: PageProps<"/hosts/[id]">) {
                 ))}
               </ul>
             )}
+            {(host.career || host.credentials || host.teaching_experience || host.portfolio_url) && (
+              <dl className="mt-6 grid gap-4 rounded-2xl border p-5 text-sm" data-testid="host-credentials">
+                {host.career && (
+                  <div>
+                    <dt className="text-muted-foreground">경력</dt>
+                    <dd className="mt-1 leading-relaxed whitespace-pre-line">{host.career}</dd>
+                  </div>
+                )}
+                {host.credentials && (
+                  <div>
+                    <dt className="text-muted-foreground">자격·수상</dt>
+                    <dd className="mt-1 leading-relaxed">{host.credentials}</dd>
+                  </div>
+                )}
+                {host.teaching_experience && (
+                  <div>
+                    <dt className="text-muted-foreground">가르친 경험</dt>
+                    <dd className="mt-1 leading-relaxed">{host.teaching_experience}</dd>
+                  </div>
+                )}
+                {host.portfolio_url && (
+                  <div>
+                    <dt className="text-muted-foreground">포트폴리오</dt>
+                    <dd className="mt-1 break-all">
+                      <a href={host.portfolio_url} target="_blank" rel="noopener noreferrer nofollow" className="underline underline-offset-4">
+                        {host.portfolio_url}
+                      </a>
+                    </dd>
+                  </div>
+                )}
+              </dl>
+            )}
             {host.instagram_handle && (
               <p className="mt-4 text-sm text-muted-foreground">Instagram @{host.instagram_handle}</p>
             )}
@@ -52,11 +84,11 @@ export default async function HostPage({ params }: PageProps<"/hosts/[id]">) {
         </section>
 
         <section className="mt-16">
-          <h2 className="mb-8 font-display text-2xl font-bold">열리는 모임</h2>
+          <h2 className="mb-8 font-display text-2xl font-bold">열리는 클래스</h2>
           {meetups.length ? (
             <MeetupGrid meetups={meetups} categoryNames={names} />
           ) : (
-            <p className="py-10 text-muted-foreground">지금 모집 중인 모임이 없어요.</p>
+            <p className="py-10 text-muted-foreground">지금 모집 중인 클래스가 없어요.</p>
           )}
         </section>
       </main>

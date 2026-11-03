@@ -11,6 +11,7 @@ import { getCurrentMember } from "@/lib/auth/session";
 import { myConfirmedSessionIds } from "@/lib/bookings/queries";
 import { formatDate, formatPrice, formatTime } from "@/lib/format";
 import { getMeetup, listCategories } from "@/lib/meetups/queries";
+import { CLASS_LEVEL_LABEL } from "@/lib/validation/meetup";
 
 import { BookingForm } from "./booking-form";
 
@@ -19,7 +20,7 @@ export const instant = false;
 export async function generateMetadata({ params }: PageProps<"/meetups/[id]">): Promise<Metadata> {
   const { id } = await params;
   const meetup = await getMeetup(id);
-  return meetup ? { title: meetup.title, description: meetup.summary } : { title: "모임을 찾을 수 없습니다" };
+  return meetup ? { title: meetup.title, description: meetup.summary } : { title: "클래스를 찾을 수 없습니다" };
 }
 
 function InfoBlock({ title, children }: { title: string; children: React.ReactNode }) {
@@ -71,6 +72,9 @@ export default async function MeetupDetailPage({ params }: PageProps<"/meetups/[
               <Link href={`/meetups?category=${meetup.category_slug}`} className="text-sm text-accent">
                 {category?.name}
               </Link>
+              <span className="rounded-full border px-2 py-0.5 text-xs" data-testid="class-level">
+                {CLASS_LEVEL_LABEL[meetup.level] ?? "누구나"}
+              </span>
               {meetup.is_sample && <SampleBadge />}
             </div>
             <h1 className="mt-2 font-display text-3xl leading-snug font-bold break-keep sm:text-4xl" data-testid="meetup-title">
@@ -78,16 +82,30 @@ export default async function MeetupDetailPage({ params }: PageProps<"/meetups/[
             </h1>
             <p className="mt-4 text-base leading-relaxed text-muted-foreground">{meetup.summary}</p>
 
+            {meetup.learning_outcomes && (
+              <section className="mt-6 rounded-2xl border p-5" data-testid="learning-outcomes">
+                <h2 className="text-sm font-semibold">수업이 끝나면 이렇게 할 수 있어요</h2>
+                <ul className="mt-3 flex flex-col gap-2 text-sm leading-relaxed">
+                  {meetup.learning_outcomes.split("\n").map((line) => line.trim()).filter(Boolean).map((line, i) => (
+                    <li key={i} className="flex gap-2">
+                      <span aria-hidden className="text-accent">✓</span>
+                      <span>{line}</span>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            )}
+
             {meetup.is_sample && (
               <p className="mt-6 rounded-xl bg-notice px-4 py-3 text-sm text-notice-foreground">
-                서비스 준비 중 보여 드리는 <strong>샘플 모임</strong>입니다. 실제로 열리지 않으며 신청할 수 없어요.
+                서비스 준비 중 보여 드리는 <strong>샘플 클래스</strong>입니다. 실제로 열리지 않으며 신청할 수 없어요.
               </p>
             )}
 
             <InfoBlock title="일정 선택">
               {mine.size > 0 && (
                 <p className="mb-4 rounded-xl bg-notice px-4 py-3 text-sm text-notice-foreground" data-testid="already-booked">
-                  이 모임에 신청한 일정이 있어요. <Link href="/me/bookings" className="underline underline-offset-4">신청 내역 보기</Link>
+                  이 클래스에 신청한 일정이 있어요. <Link href="/me/bookings" className="underline underline-offset-4">신청 내역 보기</Link>
                 </p>
               )}
               {bookingSessions.length ? (
@@ -103,7 +121,7 @@ export default async function MeetupDetailPage({ params }: PageProps<"/meetups/[
               )}
             </InfoBlock>
 
-            <InfoBlock title="모임 소개">
+            <InfoBlock title="클래스 소개">
               <p className="leading-relaxed whitespace-pre-line">{meetup.description}</p>
             </InfoBlock>
 
@@ -127,6 +145,12 @@ export default async function MeetupDetailPage({ params }: PageProps<"/meetups/[
                   <div>
                     <dt className="text-muted-foreground">이런 분께 추천해요</dt>
                     <dd className="mt-1 leading-relaxed">{meetup.target_audience}</dd>
+                  </div>
+                )}
+                {meetup.materials_note && (
+                  <div>
+                    <dt className="text-muted-foreground">재료·도구</dt>
+                    <dd className="mt-1 leading-relaxed">{meetup.materials_note}</dd>
                   </div>
                 )}
                 {meetup.what_to_bring && (
@@ -174,6 +198,11 @@ export default async function MeetupDetailPage({ params }: PageProps<"/meetups/[
                   <span>
                     <span className="block font-semibold">{meetup.host.display_name}</span>
                     <span className="mt-1 block text-sm leading-relaxed text-muted-foreground">{meetup.host.headline}</span>
+                    {meetup.host.career && (
+                      <span className="mt-2 block text-xs leading-relaxed text-muted-foreground" data-testid="host-career">
+                        경력 · {meetup.host.career}
+                      </span>
+                    )}
                   </span>
                 </Link>
               </InfoBlock>

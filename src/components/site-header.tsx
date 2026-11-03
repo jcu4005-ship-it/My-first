@@ -70,7 +70,7 @@ export function SiteHeader() {
           {displayName()}
         </Link>
         <Link href="/meetups" className="text-sm text-muted-foreground hover:text-foreground">
-          모임
+          클래스
         </Link>
       </div>
       <Suspense fallback={<div className="h-9" />}>

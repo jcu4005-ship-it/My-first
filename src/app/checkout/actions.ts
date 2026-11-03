@@ -28,7 +28,7 @@ export async function payTestAction(_prev: FormState, formData: FormData): Promi
     return { status: "error", message: "결제할 수 없는 상태예요. 다시 신청해 주세요." };
   }
   if (new Date(p.hold_expires_at).getTime() <= Date.now()) {
-    return { status: "error", message: "결제 시간(10분)이 지났어요. 모임 페이지에서 다시 신청해 주세요." };
+    return { status: "error", message: "결제 시간(10분)이 지났어요. 클래스 페이지에서 다시 신청해 주세요." };
   }
 
   const provider = getPaymentProvider();

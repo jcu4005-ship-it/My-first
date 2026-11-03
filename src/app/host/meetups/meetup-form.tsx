@@ -6,7 +6,7 @@ import { SelectField, TextareaField } from "@/components/forms/controls";
 import { Field, FormMessage } from "@/components/forms/field";
 import { Button } from "@/components/ui/button";
 import { initialFormState } from "@/lib/forms";
-import { MEETUP_TYPES } from "@/lib/validation/meetup";
+import { CLASS_LEVELS, MEETUP_TYPES } from "@/lib/validation/meetup";
 
 import { saveMeetupAction } from "../actions";
 
@@ -29,21 +29,28 @@ export function MeetupForm({
       {meetupId && <input type="hidden" name="meetupId" value={meetupId} />}
       <FormMessage message={state.message} />
 
-      <Field name="title" label="모임 제목" defaultValue={v.title} error={e.title} hint="5~60자. 무엇을 하는 모임인지 한눈에 보이게" />
+      <Field name="title" label="클래스 제목" defaultValue={v.title} error={e.title} hint="5~60자. 무엇을 배우는 클래스인지 한눈에 보이게" />
       <div className="grid gap-5 sm:grid-cols-2">
         <SelectField
           name="categorySlug"
           label="카테고리"
           defaultValue={v.categorySlug ?? categories[0]?.slug}
-          options={categories.filter((c) => c.slug !== "wine").map((c) => ({ value: c.slug, label: c.name }))}
+          options={categories.map((c) => ({ value: c.slug, label: c.name }))}
           error={e.categorySlug}
         />
-        <SelectField name="meetupType" label="모임 유형" defaultValue={v.meetupType ?? "general"}
+        <SelectField name="meetupType" label="수업 방식" defaultValue={v.meetupType ?? "class"}
           options={MEETUP_TYPES.map((t) => ({ value: t.value, label: t.label }))} error={e.meetupType} />
+        <SelectField name="level" label="난이도" defaultValue={v.level ?? "beginner"}
+          options={CLASS_LEVELS.map((l) => ({ value: l.value, label: l.label }))} error={e.level} />
       </div>
       <Field name="summary" label="한 줄 요약" defaultValue={v.summary} error={e.summary} hint="목록 카드에 보이는 문장 (10~120자)" />
-      <TextareaField name="description" label="모임 소개" rows={8} defaultValue={v.description} error={e.description}
-        hint="어떤 시간을 보내게 되는지, 누구와 함께하는지 구체적으로 적어 주세요." />
+      <TextareaField name="description" label="클래스 소개" rows={8} defaultValue={v.description} error={e.description}
+        hint="무엇을 어떤 순서로 배우는지, 호스트가 어떻게 도와주는지 구체적으로 적어 주세요." />
+      <TextareaField name="learningOutcomes" label="수업이 끝나면 할 수 있는 것" rows={3} defaultValue={v.learningOutcomes} error={e.learningOutcomes}
+        placeholder={"조리개·셔터·감도를 이해하고 스스로 노출을 맞출 수 있어요.\n필름 한 롤을 끝까지 찍어 볼 수 있어요."}
+        hint="한 줄에 하나씩. 수강생이 신청 전에 가장 먼저 확인하는 내용이에요." />
+      <Field name="materialsNote" label="재료·도구 제공 안내 (선택)" defaultValue={v.materialsNote} error={e.materialsNote}
+        hint="예: 재료비 포함, 완성품 지참 / 노트북 필요" />
       <div className="grid gap-5 sm:grid-cols-2">
         <Field name="price" label="참가비 (원)" inputMode="numeric" defaultValue={v.price ?? "0"} error={e.price} hint="결제는 아직 연결되지 않았어요. 0이면 무료" />
         <SelectField name="maxQuantity" label="1회 신청 가능 인원" defaultValue={v.maxQuantity ?? "1"}
@@ -56,7 +63,6 @@ export function MeetupForm({
       <TextareaField name="requirements" label="참여 조건" rows={2} defaultValue={v.requirements} error={e.requirements} />
       <TextareaField name="refundPolicyText" label="취소·환불 안내" rows={2} defaultValue={v.refundPolicyText} error={e.refundPolicyText}
         hint="결제 연동 전까지는 안내 문구로만 표시돼요." />
-      <p className="text-xs text-muted-foreground">주류가 포함된 모임은 운영 검토가 끝난 뒤 열 수 있어요.</p>
       <Button type="submit" size="lg" disabled={pending} className="self-start">
         {pending ? "저장 중…" : meetupId ? "변경 내용 저장" : "저장하고 일정 추가하기"}
       </Button>

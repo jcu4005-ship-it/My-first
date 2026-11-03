@@ -17,7 +17,7 @@ beforeAll(async () => {
   await makeApprovedHost(host.id);
   const [m] = await dbQuery<{ id: string }>(
     `insert into public.meetups (host_id, category_slug, title, summary, description, price, max_quantity_per_booking, status, published_at)
-     values ($1, 'reading', '동시 신청 테스트 모임', '동시 신청 테스트 모임 요약입니다', '동시 신청 테스트 모임 상세 설명입니다.', 0, 2, 'published', now())
+     values ($1, 'writing', '동시 신청 테스트 모임', '동시 신청 테스트 모임 요약입니다', '동시 신청 테스트 모임 상세 설명입니다.', 0, 2, 'published', now())
      returning id`,
     [host.id],
   );
@@ -83,7 +83,7 @@ describe("참가 신청 동시성", () => {
   it("유료 모임: 결제 대기 신청도 정원에 포함되고, 동시에 신청해도 정원을 넘지 않는다", async () => {
     const [m] = await dbQuery<{ id: string }>(
       `insert into public.meetups (host_id, category_slug, title, summary, description, price, status, published_at)
-       values ($1, 'reading', '유료 동시 신청 테스트', '유료 동시 신청 테스트 요약입니다', '유료 동시 신청 테스트 상세 설명입니다.', 15000, 'published', now()) returning id`,
+       values ($1, 'writing', '유료 동시 신청 테스트', '유료 동시 신청 테스트 요약입니다', '유료 동시 신청 테스트 상세 설명입니다.', 15000, 'published', now()) returning id`,
       [host.id],
     );
     const [s] = await dbQuery<{ id: string }>(
