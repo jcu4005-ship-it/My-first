@@ -37,3 +37,5 @@
   - run #3 https://github.com/jcu4005-ship-it/My-first/actions/runs/41647144588 — DB 구조 5개 + 샘플 반영, pgTAP·lint 통과, 배포, E2E 13 통과·1 실패(테스트의 주소 비교 오류, 앱은 정상)
   - run #4 https://github.com/jcu4005-ship-it/My-first/actions/runs/41648991875 — 전체 성공, E2E 11 통과(샘플 화면 5개는 이 실행에서 제외 → 다음 실행부터 샘플 자동 감지로 포함)
 - 자동 검증에서 제외(직접 확인): 실제 이메일 가입·인증·비밀번호 재설정 메일, 실제 관리자 OTP 등록
+- 창업자 직접 확인 (2026-11-03): 실제 이메일 가입·인증 완료 → `private.bootstrap_first_admin`으로 첫 관리자 지정 성공(인증 완료 회원만 가능) → 관리자 OTP 등록 완료(창업자 보고)
+- 아직 직접 확인 안 함: 비밀번호 재설정 메일
