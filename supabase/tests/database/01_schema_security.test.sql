@@ -11,24 +11,26 @@ select is_empty(
 );
 
 -- 비로그인(anon) 테이블 권한: profiles 공개 열 조회만
-select is_empty(
-  $$ select table_name || ':' || privilege_type from information_schema.role_table_grants
-     where grantee = 'anon' and table_schema = 'public' $$,
-  'anon은 테이블 단위 권한이 하나도 없다 (열 단위 조회 권한만)'
+select results_eq(
+  $$ select table_name::text collate "C" as t, privilege_type::text collate "C" as p from information_schema.role_table_grants
+     where grantee = 'anon' and table_schema = 'public' order by 1,2 $$,
+  $$ values ('categories' collate "C", 'SELECT' collate "C") $$,
+  'anon 테이블 단위 권한은 카테고리 조회뿐이다 (나머지는 열 단위)'
 );
 select results_eq(
   $$ select table_name::text collate "C" as t, privilege_type::text collate "C" as p from information_schema.column_privileges
      where grantee = 'anon' and table_schema = 'public' group by 1,2 order by 1,2 $$,
-  $$ values ('profiles' collate "C",'SELECT' collate "C") $$,
-  'anon 열 권한은 profiles 조회뿐이다'
+  $$ values ('categories' collate "C",'SELECT' collate "C"), ('host_profiles','SELECT'), ('meetup_sessions','SELECT'),
+            ('meetups','SELECT'), ('profiles','SELECT') $$,
+  'anon 열 권한은 공개 정보(카테고리·호스트·모임·회차·프로필) 조회뿐이다'
 );
 
 -- 로그인 회원(authenticated) 테이블 단위 권한: 조회만, 추가·수정·삭제 없음
 select results_eq(
   $$ select table_name::text collate "C" as t, privilege_type::text collate "C" as p from information_schema.role_table_grants
      where grantee = 'authenticated' and table_schema = 'public' order by 1,2 $$,
-  $$ values ('audit_logs' collate "C",'SELECT' collate "C"), ('legal_consents','SELECT'), ('user_roles','SELECT') $$,
-  'authenticated 테이블 단위 권한은 audit_logs·legal_consents·user_roles 조회뿐이다 (RLS로 범위 제한)'
+  $$ values ('audit_logs' collate "C",'SELECT' collate "C"), ('categories','SELECT'), ('legal_consents','SELECT'), ('user_roles','SELECT') $$,
+  'authenticated 테이블 단위 권한은 조회뿐이다 (RLS로 범위 제한)'
 );
 select results_eq(
   $$ select (table_name::text || '.' || column_name::text) collate "C" as c from information_schema.column_privileges

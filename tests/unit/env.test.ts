@@ -62,6 +62,11 @@ describe("환경변수 검증", () => {
     );
   });
 
+  it("Vercel 운영(Production) 배포는 승인 전까지 거부, Preview는 허용", () => {
+    expect(errorsOf({ VERCEL_ENV: "production" }).join()).toContain("운영(Production) 배포");
+    expect(parseEnv({ VERCEL_ENV: "preview" }).ok).toBe(true);
+  });
+
   it("운영 환경은 사이트 주소와 Supabase 연결 정보가 필수다", () => {
     const errors = errorsOf({ NEXT_PUBLIC_APP_ENV: "production" });
     expect(errors).toHaveLength(3);

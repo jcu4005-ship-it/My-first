@@ -11,7 +11,7 @@ async function AccountNav() {
   if (!member) {
     return (
       <nav className="flex items-center gap-2 text-sm">
-        <Link href="/login" className="px-3 py-2 text-muted-foreground hover:text-foreground">
+        <Link href="/login" className="px-2 py-2 text-muted-foreground hover:text-foreground">
           로그인
         </Link>
         <Button asChild size="sm">
@@ -46,10 +46,15 @@ async function AccountNav() {
 
 export function SiteHeader() {
   return (
-    <header className="mx-auto flex w-full max-w-5xl items-center justify-between gap-4 px-4 py-5 sm:px-8">
-      <Link href="/" className="font-display text-xl font-bold tracking-tight">
-        {displayName()}
-      </Link>
+    <header className="mx-auto flex w-full max-w-6xl items-center justify-between gap-3 px-4 py-4 sm:px-8 sm:py-5">
+      <div className="flex items-center gap-5">
+        <Link href="/" className="font-display text-xl font-bold tracking-tight">
+          {displayName()}
+        </Link>
+        <Link href="/meetups" className="text-sm text-muted-foreground hover:text-foreground">
+          모임
+        </Link>
+      </div>
       <Suspense fallback={<div className="h-9" />}>
         <AccountNav />
       </Suspense>

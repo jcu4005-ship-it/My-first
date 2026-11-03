@@ -8,6 +8,7 @@
 |---|---|
 | 설계 | ✅ v1.0 확정 — [docs/PLATFORM_DESIGN.md](docs/PLATFORM_DESIGN.md) |
 | 0단계 기반 준비 | ✅ 코드 완료, 외부 서비스(Supabase·Vercel) 연결은 계정 생성 후 진행 — [보고서](docs/progress/STAGE-0.md) |
+| 모임 탐색 (메인·목록·상세·호스트) | ✅ 로컬 동작 — [현황](docs/progress/PRODUCT-STATUS.md) |
 | 1단계 회원·권한 | ✅ 코드·로컬·CI 검증 완료 / ⏳ 스테이징 연결 대기 — [보고서](docs/progress/STAGE-1.md) |
 
 - 결제: **테스트 모드만 허용**. 실결제(live) 설정은 빌드 단계에서 차단됩니다.

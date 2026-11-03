@@ -111,7 +111,14 @@ export function parseEnv(source: Record<string, string | undefined>): EnvResult 
     }
   }
 
-  // 4) 운영 환경은 사이트 주소와 Supabase 연결이 필수
+  // 4) 운영 배포는 승인 전까지 차단 (Vercel이 Production으로 빌드하면 실패)
+  if (source.VERCEL_ENV === "production" && source.ALLOW_PRODUCTION_DEPLOY !== "approved") {
+    errors.push(
+      "VERCEL_ENV: 운영(Production) 배포는 아직 허용되지 않습니다. 스테이징(Preview)으로만 배포하세요.",
+    );
+  }
+
+  // 5) 운영 환경은 사이트 주소와 Supabase 연결이 필수
   if (env.NEXT_PUBLIC_APP_ENV === "production") {
     for (const name of [
       "NEXT_PUBLIC_SITE_URL",
