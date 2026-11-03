@@ -11,10 +11,13 @@ import { signInAction } from "../actions";
 
 export function LoginForm() {
   const [state, action, pending] = useActionState(signInAction, initialFormState);
-  const next = useSearchParams().get("next") ?? "";
+  const search = useSearchParams();
+  const next = search.get("next") ?? "";
+  const verified = search.get("notice") === "verified";
   const e = state.fieldErrors ?? {};
   return (
     <form action={action} className="flex flex-col gap-5" noValidate>
+      {verified && !state.message && <FormMessage message="이메일 인증이 완료됐어요. 로그인해 주세요." tone="success" />}
       <FormMessage message={state.message} />
       <input type="hidden" name="next" value={next} />
       <Field name="email" label="이메일" type="email" autoComplete="email" required defaultValue={state.values?.email} error={e.email} />

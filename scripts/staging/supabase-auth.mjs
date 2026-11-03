@@ -3,10 +3,8 @@
  * 스테이징 Supabase 로그인 설정을 코드 기준으로 맞춥니다.
  * - 가입 허용, 이메일 인증 필수, 익명 로그인·수동 연결 끔, 비밀번호 10자+영문·숫자, 2단계 인증(TOTP)
  * - 사이트 주소·리디렉트 주소 = 스테이징 주소
- * - 인증 메일 문구 = supabase/templates/*.html
+ * - 메일 문구는 Supabase 기본 문구 사용 (무료 기본 발송은 문구 변경 불가) → 앱의 /auth/callback 이 처리
  */
-import { readFileSync } from "node:fs";
-
 import { api, need } from "./lib.mjs";
 
 const token = need("SUPABASE_ACCESS_TOKEN");
@@ -26,10 +24,6 @@ const body = {
   mfa_totp_verify_enabled: true,
   site_url: appUrl,
   uri_allow_list: `${appUrl}/**`,
-  mailer_subjects_confirmation: "이메일 주소를 인증해 주세요",
-  mailer_templates_confirmation_content: readFileSync("supabase/templates/confirmation.html", "utf8"),
-  mailer_subjects_recovery: "비밀번호 재설정 안내",
-  mailer_templates_recovery_content: readFileSync("supabase/templates/recovery.html", "utf8"),
 };
 
 await api(`https://api.supabase.com/v1/projects/${ref}/config/auth`, { token, method: "PATCH", body });

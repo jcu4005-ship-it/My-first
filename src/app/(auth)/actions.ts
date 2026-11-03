@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { LEGAL_DOCUMENTS } from "@/config/legal";
 import { formValue, type FormState } from "@/lib/forms";
 import { safeNextPath } from "@/lib/safe-redirect";
+import { requestOrigin } from "@/lib/site-url";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import {
   fieldErrors,
@@ -39,10 +40,13 @@ export async function signUpAction(_prev: FormState, formData: FormData): Promis
     return { status: "error", fieldErrors: { nickname: "이미 사용 중이거나 사용할 수 없는 닉네임입니다." }, values };
   }
 
+  const origin = await requestOrigin();
   const { error } = await supabase.auth.signUp({
     email: input.email,
     password: input.password,
     options: {
+      // Supabase 기본 메일 문구를 쓰는 경우 돌아올 주소
+      emailRedirectTo: `${origin}/auth/callback?flow=signup&next=/me`,
       data: {
         nickname: input.nickname,
         consents: {
@@ -105,7 +109,9 @@ export async function requestPasswordResetAction(_prev: FormState, formData: For
   const parsed = resetRequestSchema.safeParse(values);
   if (!parsed.success) return { status: "error", fieldErrors: fieldErrors(parsed.error), values };
   const supabase = await createSupabaseServerClient();
-  const { error } = await supabase.auth.resetPasswordForEmail(parsed.data.email);
+  const { error } = await supabase.auth.resetPasswordForEmail(parsed.data.email, {
+    redirectTo: `${await requestOrigin()}/auth/callback?flow=recovery`,
+  });
   if (error && error.status === 429) {
     return { status: "error", message: "요청이 많습니다. 잠시 후 다시 시도해 주세요.", values };
   }

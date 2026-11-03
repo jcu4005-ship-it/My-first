@@ -111,3 +111,11 @@ test("외부 주소로의 로그인 후 이동(열린 리디렉트) 차단", asy
   await expect(page.locator("input[name=next]")).toHaveValue("//evil.example.com/steal");
   // 서버가 safeNextPath로 걸러 /me로 보냄 — 실제 이동은 access.spec의 로그인 흐름에서 확인
 });
+
+test("기본 메일 링크 처리(/auth/callback): 코드가 없거나 다른 브라우저면 안내 화면으로", async ({ page }) => {
+  await page.goto("/auth/callback?flow=signup&code=invalid-code");
+  await expect(page).toHaveURL(/\/login\?notice=verified/);
+  await expect(page.getByTestId("form-success")).toContainText("이메일 인증이 완료됐어요");
+  await page.goto("/auth/callback?flow=recovery&code=invalid-code");
+  await expect(page).toHaveURL(/\/auth-error/);
+});
