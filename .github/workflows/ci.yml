@@ -4,20 +4,21 @@ on:
   push:
     branches: ["**"]
   pull_request:
+  workflow_dispatch:
 
 permissions:
   contents: read
 
 jobs:
   check:
-    name: Lint · Typecheck · Test · Build
+    name: Lint · Typecheck · Unit · Build
     runs-on: ubuntu-latest
     env:
       NEXT_PUBLIC_APP_ENV: local
       NEXT_PUBLIC_PAYMENT_MODE: test
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
           node-version: 22
           cache: npm
@@ -26,12 +27,75 @@ jobs:
       - run: npm run typecheck
       - run: npm run test
       - run: npm run build
+      - name: "V1: 빌드 결과물 비밀키 검사"
+        run: npm run scan:bundle
+      - name: "N20: 실결제(live) 모드 빌드는 실패해야 함"
+        run: |
+          if NEXT_PUBLIC_PAYMENT_MODE=live npx next build > live-build.log 2>&1; then
+            echo "::error::live 결제 모드로 빌드가 성공했습니다. 실결제 차단이 깨졌습니다."
+            exit 1
+          fi
+          grep -q "실결제(live) 모드는 아직 허용되지 않습니다" live-build.log
+          echo "확인: live 모드 빌드가 의도대로 실패"
+
+  db-tests:
+    name: DB · RLS · Integration · E2E (일회용 Supabase)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      NEXT_PUBLIC_APP_ENV: local
+      NEXT_PUBLIC_PAYMENT_MODE: test
+      NEXT_PUBLIC_SITE_URL: http://localhost:3000
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: 일회용 Supabase 시작 (Docker)
+        run: npx supabase start -x studio,imgproxy,logflare,vector,supavisor,edge-runtime,realtime,storage-api,postgres-meta
+      - name: 마이그레이션 처음부터 적용
+        run: npx supabase db reset
+      - name: DB 스키마 검사 (lint)
+        run: npx supabase db lint --level warning --fail-on warning
+      - name: "pgTAP: RLS·권한 부정 테스트"
+        run: npx supabase test db
+      - name: 테스트 환경변수 준비 (로컬 일회용 DB 값)
+        run: |
+          bash scripts/test-env.sh | sed 's/^export //' > .test-env
+          while IFS='=' read -r k v; do
+            case "$k" in *SECRET*) echo "::add-mask::$v";; esac
+            echo "$k=$v" >> "$GITHUB_ENV"
+          done < .test-env
+          rm .test-env
+      - name: 모든 테이블 RLS·테스트 존재 확인
+        run: npm run check:rls-coverage
+      - name: "API 부정 테스트 (실제 로그인 사용자로 직접 호출)"
+        run: npm run test:integration
+      - name: 앱 빌드 (로컬 DB 연결)
+        run: npm run build
+      - name: "V1: 빌드 결과물에 이번 환경의 비밀키 값이 없는지 대조"
+        run: npm run scan:bundle
+      - name: Playwright 브라우저 설치
+        run: npx playwright install --with-deps chromium
+      - name: "E2E: 가입·인증·권한·관리자 2단계 인증"
+        run: npm run test:e2e
+      - name: 실패 시 E2E 보고서 보관
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: |
+            playwright-report
+            test-results
+          retention-days: 7
 
   secrets:
     name: Secret scan
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           fetch-depth: 0
       - name: gitleaks

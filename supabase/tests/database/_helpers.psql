@@ -1,0 +1,51 @@
+-- 테스트 공통 도구 (각 테스트 파일이 \ir 로 불러옴. 트랜잭션 안에서만 존재 → ROLLBACK 시 사라짐)
+create extension if not exists pgtap with schema extensions;
+
+-- 테스트 회원 생성: auth.users에 직접 추가 → 가입 트리거가 프로필·역할·동의 생성
+create or replace function pg_temp.create_member(p_email text, p_nickname text, p_confirmed boolean default true)
+returns uuid language plpgsql as $$
+declare v_id uuid := gen_random_uuid();
+begin
+  insert into auth.users (id, instance_id, aud, role, email, encrypted_password, email_confirmed_at,
+                          raw_app_meta_data, raw_user_meta_data, created_at, updated_at)
+  values (v_id, '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', p_email,
+          extensions.crypt('Password1234', extensions.gen_salt('bf')),
+          case when p_confirmed then now() else null end,
+          '{"provider":"email","providers":["email"]}',
+          jsonb_build_object('nickname', p_nickname,
+            'consents', jsonb_build_object('terms_version','test-v0','privacy_version','test-v0','age_14_plus',true,'marketing',false)),
+          now(), now());
+  return v_id;
+end $$;
+
+-- 특정 회원으로 가장 (aal1 = 일반 로그인, aal2 = 2단계 인증 완료)
+create or replace function pg_temp.login_as(p_user uuid, p_aal text default 'aal1')
+returns void language plpgsql as $$
+begin
+  perform set_config('request.jwt.claims',
+    json_build_object('sub', p_user, 'role', 'authenticated', 'aal', p_aal)::text, true);
+  perform set_config('request.jwt.claim.sub', p_user::text, true);
+  execute 'set local role authenticated';
+end $$;
+
+create or replace function pg_temp.login_anon()
+returns void language plpgsql as $$
+begin
+  perform set_config('request.jwt.claims', json_build_object('role', 'anon')::text, true);
+  perform set_config('request.jwt.claim.sub', '', true);
+  execute 'set local role anon';
+end $$;
+
+create or replace function pg_temp.logout()
+returns void language plpgsql as $$
+begin
+  execute 'reset role';
+  perform set_config('request.jwt.claims', '', true);
+  perform set_config('request.jwt.claim.sub', '', true);
+end $$;
+
+-- 테스트 데이터 준비용: DB 소유자 권한으로 역할 직접 부여 (앱 경로 아님)
+create or replace function pg_temp.grant_role_direct(p_user uuid, p_role public.app_role)
+returns void language sql as $$
+  insert into public.user_roles (user_id, role) values (p_user, p_role) on conflict do nothing;
+$$;

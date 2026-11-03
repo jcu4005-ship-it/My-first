@@ -1,0 +1,58 @@
+name: Deploy DB to staging
+
+# 스테이징 DB 변경은 창업자 승인 후에만 반영됩니다.
+#  1) 수동 실행만 가능 (push로 자동 실행되지 않음)
+#  2) 입력란에 "staging" 을 정확히 입력해야 진행
+#  3) GitHub Environment "staging" 의 승인자(Required reviewers) 승인 후 실행
+#  4) 운영 프로젝트 ID와 같으면 중단
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: '스테이징 DB에 반영하려면 staging 을 입력하세요'
+        required: true
+
+concurrency:
+  group: deploy-db-staging
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    if: github.event.inputs.confirm == 'staging'
+    runs-on: ubuntu-latest
+    environment: staging
+    env:
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      SUPABASE_DB_PASSWORD: ${{ secrets.STAGING_DB_PASSWORD }}
+      PROJECT_REF: ${{ secrets.STAGING_PROJECT_REF }}
+      PRODUCTION_PROJECT_REF: ${{ vars.PRODUCTION_PROJECT_REF }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: 안전 확인
+        run: |
+          for v in SUPABASE_ACCESS_TOKEN SUPABASE_DB_PASSWORD PROJECT_REF; do
+            if [ -z "${!v}" ]; then echo "::error::$v 가 staging Environment secrets에 없습니다."; exit 1; fi
+          done
+          if [ -n "$PRODUCTION_PROJECT_REF" ] && [ "$PROJECT_REF" = "$PRODUCTION_PROJECT_REF" ]; then
+            echo "::error::스테이징 대상이 운영 프로젝트와 같습니다. 중단합니다."; exit 1
+          fi
+      - name: 스테이징 프로젝트 연결
+        run: npx supabase link --project-ref "$PROJECT_REF"
+      - name: 적용될 변경 미리보기 (dry-run)
+        run: npx supabase db push --dry-run
+      - name: 스테이징에 마이그레이션 적용
+        run: npx supabase db push
+      - name: "pgTAP: 스테이징에서 RLS·권한 테스트 (모두 ROLLBACK, 데이터 남지 않음)"
+        run: npx supabase test db --remote
+      - name: DB 스키마 검사 (lint)
+        run: npx supabase db lint --remote --level warning --fail-on warning
+      - name: 스테이징 Auth 설정 확인 (비밀번호 규칙·이메일 인증·2단계 인증)
+        run: node scripts/check-staging-auth-config.mjs

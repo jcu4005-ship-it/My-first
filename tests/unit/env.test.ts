@@ -82,6 +82,21 @@ describe("환경변수 검증", () => {
     ).toThrow(/환경변수 설정에 문제가 있습니다/);
   });
 
+  it("V3: 오류 메시지에는 변수 이름만 있고 값은 들어가지 않는다", () => {
+    const secretish = "sb_secret_SHOULD_NOT_APPEAR_1234";
+    const r = parseEnv({
+      NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: secretish,
+      NEXT_PUBLIC_SUPABASE_SECRET_KEY: secretish,
+      TOSS_SECRET_KEY: "live_sk_SHOULD_NOT_APPEAR",
+    });
+    expect(r.ok).toBe(false);
+    if (!r.ok) {
+      const text = r.errors.join("\n");
+      expect(text).not.toContain(secretish);
+      expect(text).not.toContain("live_sk_SHOULD_NOT_APPEAR");
+    }
+  });
+
   it("연결 상태 요약에는 설정 여부만 있고 값은 없다", () => {
     const r = parseEnv({
       NEXT_PUBLIC_SUPABASE_URL: "https://example.supabase.co",

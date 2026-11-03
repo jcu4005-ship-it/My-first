@@ -19,6 +19,10 @@ const nextConfig: NextConfig = {
   cacheComponents: true,
   partialPrefetching: true,
   poweredByHeader: false,
+  experimental: {
+    // forbidden() — 권한 없는 화면 접근 시 403 응답
+    authInterrupts: true,
+  },
   turbopack: {
     rules: {
       "*.css": {
