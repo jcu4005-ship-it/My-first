@@ -7,7 +7,7 @@ import { createServerClient } from "@supabase/ssr";
  * 2) 보호 경로에 비로그인 접근 시 로그인 화면으로 — "1차" 차단일 뿐이며,
  *    실제 권한 판단은 각 화면·서버 처리(guards.ts)와 DB(RLS)에서 다시 합니다.
  */
-const PROTECTED_PREFIXES = ["/me", "/host", "/admin", "/reset-password"];
+const PROTECTED_PREFIXES = ["/me", "/host", "/admin", "/reset-password"]; // /hosts(공개 프로필)는 제외
 
 function isProtected(pathname: string) {
   return PROTECTED_PREFIXES.some((p) => pathname === p || pathname.startsWith(`${p}/`));

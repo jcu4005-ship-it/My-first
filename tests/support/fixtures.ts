@@ -63,6 +63,15 @@ export async function grantRoleDirect(userId: string, role: "host" | "admin") {
   }
 }
 
+/** 테스트 데이터 준비: 승인된 호스트로 만들기 (로컬/CI DB 전용) */
+export async function makeApprovedHost(userId: string, displayName = "테스트 호스트") {
+  await dbQuery(
+    "insert into public.host_profiles (user_id, display_name, headline, status) values ($1, $2, '테스트용 호스트입니다', 'approved') on conflict (user_id) do update set status = 'approved'",
+    [userId, displayName],
+  );
+  await grantRoleDirect(userId, "host");
+}
+
 export async function dbQuery<T extends pg.QueryResultRow = pg.QueryResultRow>(sql: string, params: unknown[] = []) {
   const db = new pg.Client({ connectionString: testEnv.dbUrl });
   await db.connect();

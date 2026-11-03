@@ -75,3 +75,56 @@ export async function setStatusAction(_prev: FormState, formData: FormData): Pro
   revalidatePath("/admin/members");
   return { status: "success", message: "회원 상태를 변경했습니다." };
 }
+
+const hostReviewSchema = z.object({
+  userId: z.uuid(),
+  decision: z.enum(["approve", "reject"]),
+  note: z.string().trim().max(500),
+});
+
+/** 호스트 신청 승인·반려 (승인 시 host 역할 부여, 감사 기록) */
+export async function reviewHostAction(_prev: FormState, formData: FormData): Promise<FormState> {
+  if (!(await checkAdminForAction())) return FORBIDDEN;
+  const parsed = hostReviewSchema.safeParse({
+    userId: formValue(formData, "userId"),
+    decision: formValue(formData, "decision"),
+    note: formValue(formData, "note"),
+  });
+  if (!parsed.success) return { status: "error", message: "잘못된 요청입니다." };
+  const supabase = await createSupabaseServerClient();
+  const { error } = await supabase.rpc("admin_review_host", {
+    p_user_id: parsed.data.userId,
+    p_approve: parsed.data.decision === "approve",
+    p_note: parsed.data.note,
+  });
+  if (error) return { status: "error", message: dbMessage(error) };
+  revalidatePath("/admin/hosts");
+  return { status: "success", message: parsed.data.decision === "approve" ? "승인했어요." : "반려했어요." };
+}
+
+const meetupReviewSchema = z.object({
+  meetupId: z.uuid(),
+  action: z.enum(["publish", "reject", "suspend", "unsuspend"]),
+  note: z.string().trim().max(500),
+});
+
+/** 모임 공개·반려·정지 (감사 기록) */
+export async function reviewMeetupAction(_prev: FormState, formData: FormData): Promise<FormState> {
+  if (!(await checkAdminForAction())) return FORBIDDEN;
+  const parsed = meetupReviewSchema.safeParse({
+    meetupId: formValue(formData, "meetupId"),
+    action: formValue(formData, "action"),
+    note: formValue(formData, "note"),
+  });
+  if (!parsed.success) return { status: "error", message: "잘못된 요청입니다." };
+  const supabase = await createSupabaseServerClient();
+  const { error } = await supabase.rpc("admin_review_meetup", {
+    p_meetup_id: parsed.data.meetupId,
+    p_action: parsed.data.action,
+    p_note: parsed.data.note,
+  });
+  if (error) return { status: "error", message: dbMessage(error) };
+  revalidatePath("/admin/meetups");
+  const done = { publish: "공개했어요.", reject: "반려했어요.", suspend: "정지했어요.", unsuspend: "다시 공개했어요." };
+  return { status: "success", message: done[parsed.data.action] };
+}

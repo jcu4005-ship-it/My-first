@@ -145,10 +145,10 @@ export default function Home() {
               당신의 취향도 누군가에게는 기다리던 모임이 됩니다
             </h2>
             <p className="mt-4 max-w-lg text-sm leading-relaxed opacity-80">
-              기획 템플릿과 운영 가이드, 홍보까지 함께합니다. 호스트 신청은 곧 열려요. 먼저 가입해 두시면 오픈 소식을 가장 먼저 알려 드릴게요.
+              취향과 경험을 소개해 주시면 운영팀이 확인 후 승인해 드려요. 승인되면 바로 모임을 만들고 참가자를 모집할 수 있어요.
             </p>
             <Button asChild size="lg" variant="secondary" className="mt-8">
-              <Link href="/signup">먼저 가입하기</Link>
+              <Link href="/host/apply">호스트 신청하기</Link>
             </Button>
           </div>
         </section>

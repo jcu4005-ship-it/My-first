@@ -34,3 +34,8 @@ export function durationLabel(startIso: string, endIso: string): string {
   const m = minutes % 60;
   return [h ? `${h}시간` : "", m ? `${m}분` : ""].filter(Boolean).join(" ");
 }
+
+/** 아직 시작하지 않은 일정인지 (요청 시점 기준) */
+export function isFuture(iso: string): boolean {
+  return new Date(iso).getTime() > Date.now();
+}

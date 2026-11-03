@@ -32,12 +32,12 @@ test("목록: 카테고리 필터, 비공개 모임 미노출, 빈 카테고리 
   await expect(page.getByTestId("empty-state")).toContainText("운영 검토");
 });
 
-test("상세: 일정·남은 자리·마감·호스트·신청 버튼(준비 중) 표시", async ({ page }) => {
+test("상세: 일정·남은 자리·마감·호스트·샘플 신청 불가 표시", async ({ page }) => {
   await page.goto("/meetups?category=music");
   await page.getByTestId("meetup-card").first().click();
   await expect(page.getByTestId("meetup-title")).toContainText("LP 리스닝");
   // Next.js가 이전 화면을 숨겨 보관하므로 보이는 요소만 셉니다
-  const sessions = page.getByTestId("session-list").filter({ visible: true });
+  const sessions = page.getByTestId("booking-form").filter({ visible: true });
   await expect(sessions.getByTestId("session-row")).toHaveCount(2);
   await expect(sessions.getByTestId("seats-full")).toHaveCount(1); // 첫 회차 12/12 마감
   await expect(page.getByTestId("sample-badge").first()).toBeVisible();

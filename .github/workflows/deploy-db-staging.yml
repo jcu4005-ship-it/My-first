@@ -11,6 +11,10 @@ on:
       confirm:
         description: '스테이징 DB에 반영하려면 staging 을 입력하세요'
         required: true
+      seed_samples:
+        description: '샘플 모임·호스트(is_sample, 화면에 "샘플" 표시)를 함께 넣으려면 yes (스테이징 전용)'
+        required: false
+        default: 'no'
 
 concurrency:
   group: deploy-db-staging
@@ -49,7 +53,17 @@ jobs:
       - name: 적용될 변경 미리보기 (dry-run)
         run: npx supabase db push --dry-run
       - name: 스테이징에 마이그레이션 적용
+        if: github.event.inputs.seed_samples != 'yes'
         run: npx supabase db push
+      - name: 스테이징에 마이그레이션 + 샘플 데이터 적용 (운영 분리 확인 후)
+        if: github.event.inputs.seed_samples == 'yes'
+        run: |
+          if [ -z "$PRODUCTION_PROJECT_REF" ]; then
+            echo "운영 프로젝트 미생성(PRODUCTION_PROJECT_REF 없음) — 대상은 스테이징 프로젝트뿐입니다."
+          elif [ "$PROJECT_REF" = "$PRODUCTION_PROJECT_REF" ]; then
+            echo "::error::샘플 데이터 대상이 운영 프로젝트입니다. 중단합니다."; exit 1
+          fi
+          npx supabase db push --include-seed
       - name: "pgTAP: 스테이징에서 RLS·권한 테스트 (모두 ROLLBACK, 데이터 남지 않음)"
         run: npx supabase test db --remote
       - name: DB 스키마 검사 (lint)

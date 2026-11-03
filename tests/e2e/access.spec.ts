@@ -1,7 +1,7 @@
 import { expect, test, type Page } from "@playwright/test";
 
 import { requireTestEnv } from "../support/env";
-import { PASSWORD, createMember, grantRoleDirect } from "../support/fixtures";
+import { PASSWORD, createMember, grantRoleDirect, makeApprovedHost } from "../support/fixtures";
 import { totp } from "../support/totp";
 
 test.beforeAll(requireTestEnv);
@@ -21,14 +21,20 @@ test("비로그인: 보호 화면은 로그인으로 이동", async ({ page }) =
   }
 });
 
-test("참가자: 호스트·관리자 화면 접근 시 403, 메뉴도 보이지 않음", async ({ page }) => {
+test("참가자: 관리자 화면 403, 호스트 화면은 호스트 신청으로 안내", async ({ page }) => {
   const p = await createMember("e2ep");
   await login(page, p.email);
   await expect(page).toHaveURL(/\/me$/);
   await expect(page.getByRole("link", { name: "관리자" })).toHaveCount(0);
-  for (const path of ["/host", "/admin", "/admin/members", "/admin/audit", "/admin/mfa"]) {
+  await page.goto("/host");
+  await expect(page).toHaveURL(/\/host\/apply$/);
+  // 참고: 화면 틀 선전송 구조로 HTTP 상태는 200일 수 있음 — 접근 거부 화면·검색 비노출·보호 내용 미노출로 확인
+  for (const path of ["/host/meetups/new", "/admin", "/admin/members", "/admin/audit", "/admin/mfa", "/admin/meetups", "/admin/hosts"]) {
     await page.goto(path);
-    await expect(page.getByTestId("forbidden"), path).toBeVisible();
+    await expect(page.getByTestId("forbidden").filter({ visible: true }), path).toBeVisible();
+    await expect(page.locator('meta[name="robots"]'), path).toHaveAttribute("content", /noindex/);
+    await expect(page.getByTestId("admin-dashboard")).toHaveCount(0);
+    await expect(page.getByTestId("member-list")).toHaveCount(0);
   }
 });
 
@@ -40,7 +46,7 @@ test("열린 리디렉트 차단: 외부 주소 next는 /me로 대체", async ({
 
 test("호스트: 호스트 화면 가능, 관리자 화면 403", async ({ page }) => {
   const h = await createMember("e2eh");
-  await grantRoleDirect(h.id, "host");
+  await makeApprovedHost(h.id);
   await login(page, h.email);
   await page.goto("/host");
   await expect(page.getByTestId("host-home")).toBeVisible();

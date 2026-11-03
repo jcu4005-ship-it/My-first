@@ -70,7 +70,7 @@ select lives_ok(format($$ select public.admin_set_user_role(%L, 'admin', false, 
 select pg_temp.logout();
 
 select results_eq(
-  format($$ select action, actor_id::text, target_id::text from public.audit_logs where action like 'role.%%' order by id $$),
+  format($$ select action, actor_id::text, target_id::text from public.audit_logs where action like 'role.%%' and target_id in (%L, %L) order by id $$, :'p', :'adm'),
   format($$ values ('role.grant', %L, %L), ('role.revoke', %L, %L) $$, :'adm', :'p', :'adm2', :'adm'),
   '역할 부여·회수가 행위자·대상과 함께 감사 기록에 남는다'
 );

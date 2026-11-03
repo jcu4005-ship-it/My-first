@@ -1,25 +1,71 @@
 import type { Metadata } from "next";
+import Link from "next/link";
+import { redirect } from "next/navigation";
 
+import { StatusPill } from "@/components/forms/controls";
 import { SiteHeader } from "@/components/site-header";
-import { requireRole } from "@/lib/auth/guards";
+import { Button } from "@/components/ui/button";
+import { requireActiveMember } from "@/lib/auth/guards";
+import { formatShortDateTime, isFuture } from "@/lib/format";
+import { MEETUP_STATUS_LABEL, getMyHostProfile, listMyMeetups } from "@/lib/hosting/queries";
 
 export const metadata: Metadata = { title: "호스트" };
-
-// 권한 확인이 끝나기 전에는 응답을 시작하지 않음 → 권한 없으면 HTTP 403
 export const instant = false;
 
-export default async function Page() {
-  const member = await requireRole("host", "/host");
+export default async function HostDashboard() {
+  const member = await requireActiveMember("/host");
+  const host = await getMyHostProfile(member.id);
+  if (!host || host.status !== "approved" || !member.roles.includes("host")) redirect("/host/apply");
+  const meetups = await listMyMeetups(member.id);
+
   return (
     <>
       <SiteHeader />
-      <main className="mx-auto w-full max-w-3xl flex-1 px-4 py-10 sm:px-8">
-        <div data-testid="host-home">
-          <h1 className="font-display text-3xl font-bold">호스트 공간</h1>
-          <p className="mt-4 text-muted-foreground">
-            {member.nickname}님, 모임 개설과 운영 기능은 다음 단계에서 제공됩니다.
-          </p>
+      <main className="mx-auto w-full max-w-4xl flex-1 px-4 py-8 sm:px-8" data-testid="host-home">
+        <div className="flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <p className="text-xs tracking-[0.25em] text-accent">HOST</p>
+            <h1 className="mt-1 font-display text-3xl font-bold">{host.display_name}</h1>
+            <Link href={`/hosts/${member.id}`} className="mt-1 inline-block text-sm text-muted-foreground underline underline-offset-4">
+              공개 프로필 보기
+            </Link>
+          </div>
+          <Button asChild>
+            <Link href="/host/meetups/new">새 모임 만들기</Link>
+          </Button>
         </div>
+
+        <h2 className="mt-10 mb-4 text-lg font-semibold">내 모임</h2>
+        {meetups.length === 0 ? (
+          <div className="rounded-2xl border border-dashed p-10 text-center">
+            <p className="font-semibold">아직 만든 모임이 없어요</p>
+            <p className="mt-2 text-sm text-muted-foreground">모임을 만들고 일정을 추가한 뒤 검수를 요청하면, 승인 후 공개돼요.</p>
+          </div>
+        ) : (
+          <ul className="flex flex-col gap-3">
+            {meetups.map((m) => {
+              const upcoming = m.sessions.filter((s) => s.status !== "cancelled" && isFuture(s.starts_at))
+                .sort((a, b) => a.starts_at.localeCompare(b.starts_at));
+              const reserved = upcoming.reduce((n, s) => n + s.reserved_count, 0);
+              const capacity = upcoming.reduce((n, s) => n + s.capacity, 0);
+              return (
+                <li key={m.id}>
+                  <Link href={`/host/meetups/${m.id}`} className="flex flex-col gap-2 rounded-2xl border p-5 transition-colors hover:border-foreground" data-testid="host-meetup-row">
+                    <div className="flex items-center gap-2">
+                      <StatusPill tone={m.status === "published" ? "ok" : m.status === "rejected" ? "accent" : m.status === "pending_review" ? "warn" : "muted"}>
+                        {MEETUP_STATUS_LABEL[m.status]}
+                      </StatusPill>
+                    </div>
+                    <p className="font-semibold">{m.title}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {upcoming.length ? `다음 일정 ${formatShortDateTime(upcoming[0].starts_at)} · 예정 ${upcoming.length}회 · 신청 ${reserved}/${capacity}명` : "예정된 일정 없음"}
+                    </p>
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        )}
       </main>
     </>
   );

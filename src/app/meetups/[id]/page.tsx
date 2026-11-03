@@ -2,13 +2,17 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
-import { SampleBadge, SeatsBadge, seatsLeft } from "@/components/meetups/badges";
+import { SampleBadge, seatsLeft } from "@/components/meetups/badges";
 import { EditorialCover } from "@/components/meetups/editorial-cover";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { Button } from "@/components/ui/button";
-import { durationLabel, formatDate, formatPrice, formatTime } from "@/lib/format";
+import { getCurrentMember } from "@/lib/auth/session";
+import { myConfirmedSessionIds } from "@/lib/bookings/queries";
+import { formatDate, formatPrice, formatTime } from "@/lib/format";
 import { getMeetup, listCategories } from "@/lib/meetups/queries";
+
+import { BookingForm } from "./booking-form";
 
 export const instant = false;
 
@@ -29,8 +33,18 @@ function InfoBlock({ title, children }: { title: string; children: React.ReactNo
 
 export default async function MeetupDetailPage({ params }: PageProps<"/meetups/[id]">) {
   const { id } = await params;
-  const [meetup, categories] = await Promise.all([getMeetup(id), listCategories()]);
+  const [meetup, categories, member] = await Promise.all([getMeetup(id), listCategories(), getCurrentMember()]);
   if (!meetup) notFound();
+  const mine = member ? await myConfirmedSessionIds(member.id, meetup.upcomingSessions.map((s) => s.id)) : new Set<string>();
+  const viewerState = meetup.is_sample ? "sample" : !member ? "guest" : meetup.host?.user_id === member.id ? "own" : "ok";
+  const bookingSessions = meetup.upcomingSessions.map((s) => ({
+    id: s.id,
+    starts_at: s.starts_at,
+    area: s.area,
+    left: seatsLeft(s),
+    open: s.status === "open",
+    mine: mine.has(s.id),
+  }));
   const category = categories.find((c) => c.slug === meetup.category_slug);
   const next = meetup.nextSession;
   const anyOpen = meetup.upcomingSessions.some((s) => s.status === "open" && seatsLeft(s) > 0);
@@ -71,20 +85,19 @@ export default async function MeetupDetailPage({ params }: PageProps<"/meetups/[
             )}
 
             <InfoBlock title="일정 선택">
-              {meetup.upcomingSessions.length ? (
-                <ul className="flex flex-col gap-3" data-testid="session-list">
-                  {meetup.upcomingSessions.map((s) => (
-                    <li key={s.id} className="flex items-center justify-between rounded-xl border px-4 py-3" data-testid="session-row">
-                      <div>
-                        <p className="font-medium">{formatDate(s.starts_at)}</p>
-                        <p className="text-sm text-muted-foreground">
-                          {formatTime(s.starts_at)} · {durationLabel(s.starts_at, s.ends_at)} · {s.area}
-                        </p>
-                      </div>
-                      <SeatsBadge session={s} />
-                    </li>
-                  ))}
-                </ul>
+              {mine.size > 0 && (
+                <p className="mb-4 rounded-xl bg-notice px-4 py-3 text-sm text-notice-foreground" data-testid="already-booked">
+                  이 모임에 신청한 일정이 있어요. <Link href="/me/bookings" className="underline underline-offset-4">신청 내역 보기</Link>
+                </p>
+              )}
+              {bookingSessions.length ? (
+                <BookingForm
+                  meetupId={meetup.id}
+                  price={meetup.price}
+                  maxQuantity={meetup.max_quantity_per_booking}
+                  sessions={bookingSessions}
+                  state={viewerState}
+                />
               ) : (
                 <p className="text-sm text-muted-foreground">예정된 일정이 없습니다.</p>
               )}
@@ -176,10 +189,9 @@ export default async function MeetupDetailPage({ params }: PageProps<"/meetups/[
                   가장 가까운 일정 · {formatDate(next.starts_at)} {formatTime(next.starts_at)}
                 </p>
               )}
-              <Button size="lg" className="mt-6 w-full" disabled aria-disabled>
-                {anyOpen ? "참가 신청 (곧 오픈)" : "모집 마감"}
+              <Button asChild size="lg" className="mt-6 w-full">
+                <a href="#booking">{anyOpen ? "일정 선택하고 신청하기" : "모집 마감"}</a>
               </Button>
-              <p className="mt-3 text-center text-xs text-muted-foreground">참가 신청과 결제는 준비 중입니다.</p>
             </div>
           </aside>
         </div>
@@ -189,10 +201,10 @@ export default async function MeetupDetailPage({ params }: PageProps<"/meetups/[
           <div className="mx-auto flex max-w-6xl items-center justify-between gap-4">
             <div>
               <p className="text-lg font-bold">{formatPrice(meetup.price)}</p>
-              <p className="text-xs text-muted-foreground">참가 신청 준비 중</p>
+              <p className="text-xs text-muted-foreground">{anyOpen ? "1인 기준" : "모집 마감"}</p>
             </div>
-            <Button size="lg" disabled aria-disabled>
-              {anyOpen ? "곧 오픈" : "모집 마감"}
+            <Button asChild size="lg">
+              <a href="#booking">{anyOpen ? "신청하기" : "일정 보기"}</a>
             </Button>
           </div>
         </div>

@@ -4,6 +4,11 @@ import { SiteHeader } from "@/components/site-header";
 import { requireMember } from "@/lib/auth/guards";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
+import Link from "next/link";
+
+import { signOutAction } from "@/app/(auth)/actions";
+import { Button } from "@/components/ui/button";
+
 import { PrivateForm, ProfileForm } from "./forms";
 
 export const metadata: Metadata = { title: "마이페이지" };
@@ -35,6 +40,19 @@ async function MyPage({ member }: { member: Awaited<ReturnType<typeof requireMem
           </p>
         )}
       </div>
+
+      <nav className="flex flex-wrap gap-2">
+        <Button asChild variant="outline" size="sm"><Link href="/me/bookings">신청 내역</Link></Button>
+        {member.roles.includes("host") ? (
+          <Button asChild variant="outline" size="sm"><Link href="/host">호스트 공간</Link></Button>
+        ) : (
+          <Button asChild variant="outline" size="sm"><Link href="/host/apply">호스트 신청</Link></Button>
+        )}
+        {member.roles.includes("admin") && <Button asChild variant="outline" size="sm"><Link href="/admin">관리자</Link></Button>}
+        <form action={signOutAction}>
+          <Button type="submit" variant="ghost" size="sm">로그아웃</Button>
+        </form>
+      </nav>
 
       <section className="flex flex-col gap-6">
         <h2 className="text-lg font-semibold">공개 프로필</h2>
