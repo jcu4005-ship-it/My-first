@@ -65,13 +65,13 @@ jobs:
       - name: "2-1. 스테이징 DB 연결"
         run: npx supabase link --project-ref "$PROJECT_REF"
       - name: "2-2. 적용될 변경 미리보기"
-        run: npx supabase db push --dry-run
+        run: npx supabase db push --remote --dry-run
       - name: "2-3. DB 구조 반영"
         if: github.event.inputs.seed_samples != 'yes'
-        run: npx supabase db push
+        run: npx supabase db push --remote
       - name: "2-3. DB 구조 + 샘플 데이터 반영"
         if: github.event.inputs.seed_samples == 'yes'
-        run: npx supabase db push --include-seed
+        run: npx supabase db push --remote --include-seed
       - name: "2-4. DB 권한 테스트 (pgTAP, 모두 ROLLBACK)"
         run: npx supabase test db --remote
       - name: "2-5. DB 구조 검사"
