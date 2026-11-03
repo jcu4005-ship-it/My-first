@@ -15,9 +15,7 @@ A. Supabase 프로젝트 → B. Vercel 연결(첫 배포는 일부러 실패) �
    - Minimum password length **10**, Password requirements **Letters and digits**
      (항목이 보이지 않으면 **Authentication → Attack Protection** 쪽에 있습니다)
 3. **Authentication → Multi-Factor → TOTP (App authenticator)**: **Enabled**
-4. **Authentication → Emails → Templates**
-   - **Confirm signup**: 본문을 저장소 `supabase/templates/confirmation.html` 내용으로 교체
-   - **Reset password**: 본문을 `supabase/templates/recovery.html` 내용으로 교체
+4. 인증 메일 문구는 **자동 적용** — "Deploy DB to staging" 실행 시 `supabase/templates/*.html`로 바뀝니다 (직접 바꿀 필요 없음)
 5. 값 위치만 확인 (입력은 B·C에서)
    | 값 | 위치 |
    |---|---|

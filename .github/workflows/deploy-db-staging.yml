@@ -68,5 +68,7 @@ jobs:
         run: npx supabase test db --remote
       - name: DB 스키마 검사 (lint)
         run: npx supabase db lint --remote --level warning --fail-on warning
+      - name: 인증 메일 문구 적용 (가입 인증·비밀번호 재설정)
+        run: node scripts/apply-staging-email-templates.mjs
       - name: 스테이징 Auth 설정 확인 (비밀번호 규칙·이메일 인증·2단계 인증)
         run: node scripts/check-staging-auth-config.mjs
