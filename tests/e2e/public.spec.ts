@@ -1,11 +1,14 @@
-import { expect, test } from "@playwright/test";
+import { expect, newContext, test } from "./fixtures";
 
-import { requireTestEnv } from "../support/env";
-import { dbQuery } from "../support/fixtures";
+import { isStaging, requireTestEnv } from "../support/env";
+import { adminApi } from "../support/fixtures";
 
 test.beforeAll(requireTestEnv);
+// 샘플 데이터가 필요한 검사: 로컬·CI는 항상, 스테이징은 샘플을 넣은 경우(TEST_EXPECT_SAMPLES=yes)만
+const samples = !isStaging || process.env.TEST_EXPECT_SAMPLES === "yes";
 
 test("메인: 서비스 소개, 샘플 안내, 곧 열리는 모임, 호스트 소개", async ({ page }) => {
+  test.skip(!samples, "샘플 데이터 없음");
   await page.goto("/");
   await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
   await expect(page.getByTestId("sample-notice")).toBeVisible();
@@ -16,6 +19,7 @@ test("메인: 서비스 소개, 샘플 안내, 곧 열리는 모임, 호스트 �
 });
 
 test("목록: 카테고리 필터, 비공개 모임 미노출, 빈 카테고리 안내", async ({ page }) => {
+  test.skip(!samples, "샘플 데이터 없음");
   await page.goto("/meetups");
   const all = await page.getByTestId("meetup-card").count();
   expect(all).toBeGreaterThanOrEqual(8);
@@ -33,6 +37,7 @@ test("목록: 카테고리 필터, 비공개 모임 미노출, 빈 카테고리 
 });
 
 test("상세: 일정·남은 자리·마감·호스트·샘플 신청 불가 표시", async ({ page }) => {
+  test.skip(!samples, "샘플 데이터 없음");
   await page.goto("/meetups?category=music");
   await page.getByTestId("meetup-card").first().click();
   await expect(page.getByTestId("meetup-title")).toContainText("LP 리스닝");
@@ -50,7 +55,8 @@ test("상세: 일정·남은 자리·마감·호스트·샘플 신청 불가 표
 });
 
 test("모바일 상세: 하단 고정 신청 바, 가로 스크롤 없음", async ({ browser }) => {
-  const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
+  test.skip(!samples, "샘플 데이터 없음");
+  const page = await (await newContext(browser, { viewport: { width: 390, height: 844 } })).newPage();
   await page.goto("/meetups");
   await page.getByTestId("meetup-card").first().click();
   await expect(page.getByTestId("mobile-cta")).toBeVisible();
@@ -59,8 +65,10 @@ test("모바일 상세: 하단 고정 신청 바, 가로 스크롤 없음", asyn
 });
 
 test("없는 모임·검토 중 모임·없는 호스트는 HTTP 404", async ({ page }) => {
-  const [pending] = await dbQuery<{ id: string }>("select id from public.meetups where status = 'pending_review' limit 1");
-  for (const path of ["/meetups/00000000-0000-4000-8000-000000000000", `/meetups/${pending.id}`, "/meetups/not-a-uuid", "/hosts/00000000-0000-4000-8000-000000000000"]) {
+  const { data: pending } = await adminApi().from("meetups").select("id").eq("status", "pending_review").limit(1);
+  const paths = ["/meetups/00000000-0000-4000-8000-000000000000", "/meetups/not-a-uuid", "/hosts/00000000-0000-4000-8000-000000000000"];
+  if (pending?.[0]) paths.push(`/meetups/${pending[0].id}`);
+  for (const path of paths) {
     const res = await page.goto(path);
     expect(res?.status(), `${path} HTTP 상태`).toBe(404);
     await expect(page.getByTestId("not-found").filter({ visible: true }), path).toBeVisible();

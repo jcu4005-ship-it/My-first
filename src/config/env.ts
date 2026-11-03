@@ -118,10 +118,13 @@ export function parseEnv(source: Record<string, string | undefined>): EnvResult 
     );
   }
 
-  // 5) 스테이징·운영은 사이트 주소, Supabase 연결, 서버 비밀키(결제 확정·환불 기록용)가 필수
+  // 5) 스테이징·운영은 Supabase 연결과 서버 비밀키(결제 확정·환불 기록용)가 필수.
+  //    사이트 주소는 운영만 필수 (스테이징은 Vercel이 자동으로 넣는 배포 주소로 충분)
+  if (env.NEXT_PUBLIC_APP_ENV === "production" && !env.NEXT_PUBLIC_SITE_URL) {
+    errors.push("NEXT_PUBLIC_SITE_URL: production 환경에서는 필수입니다.");
+  }
   if (env.NEXT_PUBLIC_APP_ENV === "production" || env.NEXT_PUBLIC_APP_ENV === "staging") {
     for (const name of [
-      "NEXT_PUBLIC_SITE_URL",
       "NEXT_PUBLIC_SUPABASE_URL",
       "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY",
       "SUPABASE_SECRET_KEY",

@@ -383,15 +383,15 @@ begin
 end;
 $$;
 
--- 호스트용: 일정의 결제 완료 신청 (서버 환불 처리용)
+-- 호스트용: 일정의 결제 완료 신청 목록 (결제 키는 포함하지 않음 — 환불은 서버가 비밀키로 조회)
 create function public.host_session_paid_bookings(p_session_id uuid)
-returns table (booking_id uuid, amount integer, payment_key text, provider text)
+returns table (booking_id uuid, amount integer)
 language sql
 stable
 security definer
 set search_path = ''
 as $$
-  select b.id, p.amount, p.payment_key, p.provider
+  select b.id, p.amount
   from public.bookings b
   join public.payments p on p.booking_id = b.id
   join public.meetup_sessions s on s.id = b.session_id
@@ -402,14 +402,14 @@ $$;
 -- 내 결제 정보 (결제 화면·환불용)
 create function public.my_booking_payment(p_booking_id uuid)
 returns table (booking_id uuid, booking_status public.booking_status, hold_expires_at timestamptz, quantity smallint,
-               order_id text, amount integer, payment_status public.payment_status, payment_key text, provider text,
+               order_id text, amount integer, payment_status public.payment_status,
                meetup_id uuid, title text, starts_at timestamptz, area text)
 language sql
 stable
 security definer
 set search_path = ''
 as $$
-  select b.id, b.status, b.hold_expires_at, b.quantity, p.order_id, p.amount, p.status, p.payment_key, p.provider,
+  select b.id, b.status, b.hold_expires_at, b.quantity, p.order_id, p.amount, p.status,
          m.id, m.title, s.starts_at, s.area
   from public.bookings b
   join public.payments p on p.booking_id = b.id

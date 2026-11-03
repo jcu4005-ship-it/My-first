@@ -26,7 +26,9 @@ const checks = [
   ["password_min_length >= 10", typeof c.password_min_length === "number" && c.password_min_length >= 10, c.password_min_length],
   [
     "password_required_characters = 영문+숫자 이상",
-    typeof c.password_required_characters === "string" && /a-z/.test(c.password_required_characters) && /0-9/.test(c.password_required_characters),
+    typeof c.password_required_characters === "string" &&
+      (c.password_required_characters.includes("abcdefghijklmnopqrstuvwxyz") || c.password_required_characters.includes("a-z")) &&
+      (c.password_required_characters.includes("0123456789") || c.password_required_characters.includes("0-9")),
     c.password_required_characters,
   ],
   ["mailer_autoconfirm = false (이메일 인증 필수)", c.mailer_autoconfirm === false, c.mailer_autoconfirm],

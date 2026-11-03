@@ -1,14 +1,16 @@
-import { expect, test, type Browser, type Page } from "@playwright/test";
+import type { Browser, Page } from "@playwright/test";
 
-import { requireTestEnv } from "../support/env";
-import { PASSWORD, createMember, grantRoleDirect, uniqueNickname } from "../support/fixtures";
+import { expect, newContext, test } from "./fixtures";
+
+import { isStaging, requireTestEnv } from "../support/env";
+import { PASSWORD, createMember, grantRoleDirect, revokeRoleDirect, uniqueNickname } from "../support/fixtures";
 import { totp } from "../support/totp";
 
 test.beforeAll(requireTestEnv);
 test.setTimeout(180_000);
 
 async function loginPage(browser: Browser, email: string): Promise<Page> {
-  const page = await (await browser.newContext({ locale: "ko-KR" })).newPage();
+  const page = await (await newContext(browser)).newPage();
   page.on("dialog", (d) => d.accept());
   await page.goto("/login");
   await page.getByLabel("이메일").fill(email);
@@ -27,6 +29,7 @@ test("호스트 신청 → 승인 → 모임 등록·일정 → 검수 → 공�
   const hostUser = await createMember("flowh");
   const adminUser = await createMember("flowa");
   await grantRoleDirect(adminUser.id, "admin");
+  try {
   const participant = await createMember("flowp");
   const hostName = `호스트${uniqueNickname("").slice(0, 6)}`;
   const title = `흐름 테스트 독서 모임 ${Date.now() % 100000}`;
@@ -86,7 +89,7 @@ test("호스트 신청 → 승인 → 모임 등록·일정 → 검수 → 공�
   await expect(host.getByTestId("status-pill").first()).toHaveText("검수 대기");
 
   // 공개 전에는 목록·상세에 없음
-  const guest = await (await browser.newContext()).newPage();
+  const guest = await (await newContext(browser)).newPage();
   await guest.goto("/meetups");
   await expect(guest.getByText(title)).toHaveCount(0);
 
@@ -163,9 +166,14 @@ test("호스트 신청 → 승인 → 모임 등록·일정 → 검수 → 공�
   await expect(byHost.first()).toContainText("15,000원 환불 완료");
   await p.goto("/me/notifications");
   await expect(p.getByTestId("notification").filter({ hasText: "호스트가 일정을 취소" }).first()).toContainText("호스트 개인 사정");
+  } finally {
+    // 테스트용 관리자 권한은 남기지 않음
+    await revokeRoleDirect(adminUser.id, "admin");
+  }
 });
 
 test("샘플 모임과 내 모임은 신청할 수 없다", async ({ browser }) => {
+  test.skip(isStaging && process.env.TEST_EXPECT_SAMPLES !== "yes", "샘플 데이터 없음");
   const u = await createMember("flows");
   const page = await loginPage(browser, u.email);
   await page.goto("/meetups?category=music");

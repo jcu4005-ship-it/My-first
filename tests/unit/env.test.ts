@@ -67,13 +67,12 @@ describe("환경변수 검증", () => {
     expect(parseEnv({ VERCEL_ENV: "preview" }).ok).toBe(true);
   });
 
-  it("스테이징·운영 환경은 사이트 주소, Supabase 연결, 서버 비밀키가 필수다", () => {
+  it("스테이징·운영은 Supabase 연결·서버 비밀키 필수, 사이트 주소는 운영만 필수", () => {
     expect(errorsOf({ NEXT_PUBLIC_APP_ENV: "production" })).toHaveLength(4);
-    expect(errorsOf({ NEXT_PUBLIC_APP_ENV: "staging" })).toHaveLength(4);
+    expect(errorsOf({ NEXT_PUBLIC_APP_ENV: "staging" })).toHaveLength(3); // 스테이징은 사이트 주소 선택
     expect(
       parseEnv({
         NEXT_PUBLIC_APP_ENV: "staging",
-        NEXT_PUBLIC_SITE_URL: "https://staging.example.com",
         NEXT_PUBLIC_SUPABASE_URL: "https://x.supabase.co",
         NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: "sb_publishable_x",
         SUPABASE_SECRET_KEY: "sb_secret_x",

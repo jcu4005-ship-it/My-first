@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./fixtures";
 
 import { testEnv } from "../support/env";
 
@@ -19,5 +19,6 @@ test("브라우저로 전달되는 JS에 비밀키가 없다", async ({ page }) 
   for (const { url, text } of bodies) {
     for (const pattern of SECRET_PATTERNS) expect(pattern.test(text), `${pattern} in ${url}`).toBe(false);
     if (testEnv.secretKey) expect(text.includes(testEnv.secretKey), `secret value in ${url}`).toBe(false);
+    if (testEnv.vercelBypass) expect(text.includes(testEnv.vercelBypass), `bypass value in ${url}`).toBe(false);
   }
 });

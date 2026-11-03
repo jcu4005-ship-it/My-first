@@ -1,7 +1,9 @@
-import { expect, test, type Page } from "@playwright/test";
+import type { Page } from "@playwright/test";
+
+import { expect, test } from "./fixtures";
 
 import { requireTestEnv } from "../support/env";
-import { PASSWORD, createMember, grantRoleDirect, makeApprovedHost } from "../support/fixtures";
+import { PASSWORD, createMember, grantRoleDirect, makeApprovedHost, revokeRoleDirect } from "../support/fixtures";
 import { totp } from "../support/totp";
 
 test.beforeAll(requireTestEnv);
@@ -59,6 +61,7 @@ test("관리자: 2단계 인증 전에는 관리자 화면 불가 → OTP 등록
   const admin = await createMember("e2ea");
   await grantRoleDirect(admin.id, "admin");
   const target = await createMember("e2et");
+  try {
 
   await login(page, admin.email);
   await page.goto("/admin/members");
@@ -83,4 +86,7 @@ test("관리자: 2단계 인증 전에는 관리자 화면 불가 → OTP 등록
 
   await page.goto("/admin/audit");
   await expect(page.locator("[data-testid=audit-row][data-action='role.grant']").first()).toContainText("E2E 호스트 승인 테스트");
+  } finally {
+    await revokeRoleDirect(admin.id, "admin");
+  }
 });

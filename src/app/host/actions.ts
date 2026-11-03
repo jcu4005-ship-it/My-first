@@ -177,7 +177,7 @@ async function cancelOneSession(sessionId: string, actorId: string, reason: stri
   const { data: paid, error } = await supabase.rpc("host_session_paid_bookings", { p_session_id: sessionId });
   if (error) return rpcErrorMessage(error);
   for (const b of paid ?? []) {
-    const r = await refundBooking({ bookingId: b.booking_id, paymentKey: b.payment_key, amount: b.amount }, actorId, "cancelled_by_host", reason);
+    const r = await refundBooking(b.booking_id, actorId, "cancelled_by_host", reason);
     if (!r.ok) return r.message;
   }
   const { error: cancelError } = await supabase.rpc("host_cancel_session", { p_session_id: sessionId, p_reason: reason });

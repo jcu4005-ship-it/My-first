@@ -1,10 +1,12 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./fixtures";
 
-import { requireTestEnv } from "../support/env";
+import { isStaging, requireTestEnv } from "../support/env";
 import { uniqueEmail, uniqueNickname } from "../support/fixtures";
 import { latestAuthLink } from "../support/mailpit";
 
 test.beforeAll(requireTestEnv);
+// 로컬 테스트 메일함(Mailpit)이 필요 → 로컬·CI 전용. 스테이징의 실제 메일 인증은 직접 확인 항목
+test.skip(isStaging, "실제 메일 수신이 필요해 스테이징 자동 검증에서 제외");
 
 async function fillSignup(page: import("@playwright/test").Page, v: { email: string; nickname: string; password: string }) {
   await page.goto("/signup");

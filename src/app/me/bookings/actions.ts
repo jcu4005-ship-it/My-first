@@ -27,8 +27,8 @@ export async function cancelBookingAction(_prev: FormState, formData: FormData):
   // 결제 완료 신청: 본인 신청인지 사용자 권한으로 다시 확인한 뒤 환불
   const { data } = await supabase.rpc("my_booking_payment", { p_booking_id: id.data });
   const p = data?.[0];
-  if (!p || p.payment_status !== "paid" || !p.payment_key) return { status: "error", message: "환불할 결제를 찾을 수 없어요." };
-  const result = await refundBooking({ bookingId: id.data, paymentKey: p.payment_key, amount: p.amount }, member.id, "cancelled_by_user", "참가자 취소");
+  if (!p || p.payment_status !== "paid") return { status: "error", message: "환불할 결제를 찾을 수 없어요." };
+  const result = await refundBooking(id.data, member.id, "cancelled_by_user", "참가자 취소");
   if (!result.ok) return { status: "error", message: result.message };
   revalidatePath("/me/bookings");
   return { status: "success", message: "신청을 취소하고 전액 환불했어요. (테스트 결제)" };

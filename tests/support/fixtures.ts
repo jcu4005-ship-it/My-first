@@ -2,10 +2,11 @@ import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { randomUUID } from "node:crypto";
 import pg from "pg";
 
-import { testEnv } from "./env";
+import { isStaging, testEnv } from "./env";
 import { totp } from "./totp";
 
-export const PASSWORD = "Testpass1234";
+/** 로컬은 고정, 스테이징은 실행마다 무작위 (출력·저장하지 않음) */
+export const PASSWORD = isStaging ? `Stg${randomUUID().replace(/-/g, "").slice(0, 16)}9` : "Testpass1234";
 
 /** 테스트 계정 준비용 관리 연결 (로컬/CI 전용 비밀키) */
 export function adminApi(): SupabaseClient {
@@ -22,11 +23,12 @@ export function publicClient(): SupabaseClient {
 }
 
 export function uniqueEmail(tag: string) {
-  return `${tag}-${randomUUID().slice(0, 8)}@test.local`;
+  return isStaging ? `stg-${tag}-${randomUUID().slice(0, 8)}@example.com` : `${tag}-${randomUUID().slice(0, 8)}@test.local`;
 }
 
+/** 스테이징 테스트 계정 닉네임은 stg 로 시작 */
 export function uniqueNickname(tag: string) {
-  return `${tag}${randomUUID().replace(/-/g, "").slice(0, 8)}`;
+  return `${isStaging ? "stg" : ""}${tag}${randomUUID().replace(/-/g, "").slice(0, 8)}`;
 }
 
 export type TestMember = { id: string; email: string; nickname: string; client: SupabaseClient };
@@ -52,27 +54,30 @@ export async function createMember(tag: string, extraMeta: Record<string, unknow
   return { id: data.user.id, email, nickname, client };
 }
 
-/** 테스트 데이터 준비: DB 소유자 권한으로 역할 직접 부여 (앱 경로 아님 — 로컬/CI DB 전용) */
+/** 테스트 준비: 서버 비밀키로 역할 직접 부여 (앱 경로 아님 — 테스트 계정 전용) */
 export async function grantRoleDirect(userId: string, role: "host" | "admin") {
-  const db = new pg.Client({ connectionString: testEnv.dbUrl });
-  await db.connect();
-  try {
-    await db.query("insert into public.user_roles (user_id, role) values ($1, $2) on conflict do nothing", [userId, role]);
-  } finally {
-    await db.end();
-  }
+  const { error } = await adminApi().from("user_roles").upsert({ user_id: userId, role }, { onConflict: "user_id,role" });
+  if (error) throw new Error(`역할 부여 실패: ${error.message}`);
 }
 
-/** 테스트 데이터 준비: 승인된 호스트로 만들기 (로컬/CI DB 전용) */
+/** 테스트 정리: 테스트 계정의 역할 회수 (스테이징에 관리자 권한을 남기지 않음) */
+export async function revokeRoleDirect(userId: string, role: "host" | "admin") {
+  await adminApi().from("user_roles").delete().eq("user_id", userId).eq("role", role);
+}
+
+/** 테스트 준비: 승인된 호스트로 만들기 (서버 비밀키, 테스트 계정 전용) */
 export async function makeApprovedHost(userId: string, displayName = "테스트 호스트") {
-  await dbQuery(
-    "insert into public.host_profiles (user_id, display_name, headline, status) values ($1, $2, '테스트용 호스트입니다', 'approved') on conflict (user_id) do update set status = 'approved'",
-    [userId, displayName],
-  );
+  const { error } = await adminApi()
+    .from("host_profiles")
+    .upsert({ user_id: userId, display_name: displayName, headline: "테스트용 호스트입니다", status: "approved" }, { onConflict: "user_id" });
+  if (error) throw new Error(`호스트 준비 실패: ${error.message}`);
   await grantRoleDirect(userId, "host");
 }
 
+/** 로컬 전용: DB 직접 조회 (스테이징에서는 사용 불가) */
+
 export async function dbQuery<T extends pg.QueryResultRow = pg.QueryResultRow>(sql: string, params: unknown[] = []) {
+  if (isStaging) throw new Error("dbQuery는 로컬 전용입니다 (스테이징 DB 직접 접속 금지)");
   const db = new pg.Client({ connectionString: testEnv.dbUrl });
   await db.connect();
   try {

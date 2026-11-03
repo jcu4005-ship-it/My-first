@@ -29,10 +29,7 @@ export async function withdrawAction(_prev: FormState, formData: FormData): Prom
   const bookings = await listMyBookings();
   const supabase = await createSupabaseServerClient();
   for (const b of bookings.filter((x) => x.status === "confirmed" && x.payment_status === "paid" && new Date(x.starts_at).getTime() > Date.now())) {
-    const { data } = await supabase.rpc("my_booking_payment", { p_booking_id: b.booking_id });
-    const p = data?.[0];
-    if (!p?.payment_key) continue;
-    const r = await refundBooking({ bookingId: b.booking_id, paymentKey: p.payment_key, amount: p.amount }, member.id, "cancelled_by_user", "회원 탈퇴");
+    const r = await refundBooking(b.booking_id, member.id, "cancelled_by_user", "회원 탈퇴");
     if (!r.ok) return { status: "error", message: r.message };
   }
 
