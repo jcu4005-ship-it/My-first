@@ -7,6 +7,7 @@ import { z } from "zod";
 import { getCurrentMember } from "@/lib/auth/session";
 import { formValue, type FormState } from "@/lib/forms";
 import { rpcErrorMessage } from "@/lib/rpc-errors";
+import { refundBooking } from "@/lib/payments/service";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { fieldErrors } from "@/lib/validation/auth";
 import { hostApplicationSchema, meetupFormSchema, sessionFormSchema } from "@/lib/validation/meetup";
@@ -162,4 +163,64 @@ export async function updateCapacityAction(_prev: FormState, formData: FormData)
   if (!data?.length) return { status: "error", message: "변경할 수 없는 일정입니다." };
   revalidatePath(`/host/meetups/${parsed.data.meetupId}`);
   return { status: "success", message: "정원을 변경했어요." };
+}
+
+const cancelSchema = z.object({
+  meetupId: z.uuid(),
+  sessionId: z.uuid().optional(),
+  reason: z.string().trim().min(5, "참가자에게 보낼 취소 사유를 5자 이상 입력해 주세요.").max(300),
+});
+
+/** 일정 하나 취소: 결제 완료 신청은 전액 환불(테스트) → 나머지 신청 취소·알림 → 일정 취소 */
+async function cancelOneSession(sessionId: string, actorId: string, reason: string): Promise<string | null> {
+  const supabase = await createSupabaseServerClient();
+  const { data: paid, error } = await supabase.rpc("host_session_paid_bookings", { p_session_id: sessionId });
+  if (error) return rpcErrorMessage(error);
+  for (const b of paid ?? []) {
+    const r = await refundBooking({ bookingId: b.booking_id, paymentKey: b.payment_key, amount: b.amount }, actorId, "cancelled_by_host", reason);
+    if (!r.ok) return r.message;
+  }
+  const { error: cancelError } = await supabase.rpc("host_cancel_session", { p_session_id: sessionId, p_reason: reason });
+  return cancelError ? rpcErrorMessage(cancelError) : null;
+}
+
+export async function hostCancelSessionAction(_prev: FormState, formData: FormData): Promise<FormState> {
+  const member = await activeMember();
+  if (!member) return LOGIN_REQUIRED;
+  const parsed = cancelSchema.safeParse({
+    meetupId: formValue(formData, "meetupId"),
+    sessionId: formValue(formData, "sessionId"),
+    reason: formValue(formData, "reason"),
+  });
+  if (!parsed.success || !parsed.data.sessionId) return { status: "error", message: parsed.error?.issues[0]?.message ?? "잘못된 요청입니다." };
+  const err = await cancelOneSession(parsed.data.sessionId, member.id, parsed.data.reason);
+  if (err) return { status: "error", message: err };
+  revalidatePath(`/host/meetups/${parsed.data.meetupId}`);
+  return { status: "success", message: "일정을 취소했어요. 신청자에게 알림과 환불이 처리되었습니다." };
+}
+
+/** 모임 전체 취소: 앞으로의 모든 일정 취소 후 모집 종료 */
+export async function hostCancelMeetupAction(_prev: FormState, formData: FormData): Promise<FormState> {
+  const member = await activeMember();
+  if (!member) return LOGIN_REQUIRED;
+  const parsed = cancelSchema.safeParse({ meetupId: formValue(formData, "meetupId"), reason: formValue(formData, "reason") });
+  if (!parsed.success) return { status: "error", message: parsed.error.issues[0]?.message ?? "잘못된 요청입니다." };
+  const supabase = await createSupabaseServerClient();
+  const { data: sessions, error } = await supabase.rpc("host_meetup_sessions", { p_meetup_id: parsed.data.meetupId });
+  if (error) return { status: "error", message: rpcErrorMessage(error) };
+  if (!sessions?.length) return { status: "error", message: "모임을 찾을 수 없어요." };
+  for (const s of sessions) {
+    if (s.status === "cancelled" || s.status === "completed" || new Date(s.starts_at).getTime() <= Date.now()) continue;
+    const err = await cancelOneSession(s.id, member.id, parsed.data.reason);
+    if (err) return { status: "error", message: err };
+  }
+  const { data: m } = await supabase.from("meetups").select("status").eq("id", parsed.data.meetupId).maybeSingle();
+  if (m?.status === "published") {
+    await supabase.rpc("host_set_meetup_status", { p_meetup_id: parsed.data.meetupId, p_action: "close" });
+  } else if (m?.status === "pending_review") {
+    await supabase.rpc("host_set_meetup_status", { p_meetup_id: parsed.data.meetupId, p_action: "withdraw" });
+  }
+  revalidatePath(`/host/meetups/${parsed.data.meetupId}`);
+  revalidatePath("/host");
+  return { status: "success", message: "모임을 취소했어요. 신청자에게 알림과 환불이 처리되었습니다." };
 }

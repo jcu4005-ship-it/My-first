@@ -43,6 +43,7 @@ async function MyPage({ member }: { member: Awaited<ReturnType<typeof requireMem
 
       <nav className="flex flex-wrap gap-2">
         <Button asChild variant="outline" size="sm"><Link href="/me/bookings">신청 내역</Link></Button>
+        <Button asChild variant="outline" size="sm"><Link href="/me/notifications">알림</Link></Button>
         {member.roles.includes("host") ? (
           <Button asChild variant="outline" size="sm"><Link href="/host">호스트 공간</Link></Button>
         ) : (
@@ -69,9 +70,8 @@ async function MyPage({ member }: { member: Awaited<ReturnType<typeof requireMem
 
       <section className="border-t pt-10 text-sm text-muted-foreground">
         <h2 className="text-lg font-semibold text-foreground">회원 탈퇴</h2>
-        <p className="mt-2">
-          회원 탈퇴 기능은 준비 중입니다. 탈퇴를 원하시면 운영팀에 문의해 주세요.
-        </p>
+        <p className="mt-2">탈퇴하면 개인정보가 삭제되고 예정된 신청이 취소됩니다.</p>
+        <Link href="/me/withdraw" className="mt-3 inline-block underline underline-offset-4">회원 탈퇴하기</Link>
       </section>
     </div>
   );

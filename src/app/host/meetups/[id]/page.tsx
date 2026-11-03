@@ -10,7 +10,7 @@ import { requireRole } from "@/lib/auth/guards";
 import { formatDate, formatPrice, formatTime, isFuture } from "@/lib/format";
 import { MEETUP_STATUS_LABEL, getHostSessionsAndParticipants, getMyMeetup } from "@/lib/hosting/queries";
 
-import { meetupStatusAction, sessionStatusAction } from "../../actions";
+import { hostCancelMeetupAction, hostCancelSessionAction, meetupStatusAction, sessionStatusAction } from "../../actions";
 import { AddSessionForm, CapacityForm } from "./session-forms";
 
 export const metadata: Metadata = { title: "모임 관리" };
@@ -74,6 +74,11 @@ export default async function ManageMeetupPage({ params, searchParams }: PagePro
             <ActionForm action={meetupStatusAction} hidden={{ meetupId: meetup.id, action: "close" }} label="모집 종료하기"
               confirmText="모집을 종료하면 목록에서 내려가요. 계속할까요?" />
           )}
+          {["published", "pending_review"].includes(meetup.status) && sessions.some((s) => s.status !== "cancelled" && isFuture(s.starts_at)) && (
+            <ActionForm action={hostCancelMeetupAction} hidden={{ meetupId: meetup.id }} label="모임 전체 취소" variant="ghost"
+              note={{ name: "reason", placeholder: "취소 사유 (신청자에게 전달)" }}
+              confirmText="앞으로의 모든 일정을 취소할까요? 신청자에게 알림이 가고 결제는 전액 환불됩니다." testId="cancel-meetup" />
+          )}
         </section>
 
         <section className="mt-10">
@@ -113,8 +118,9 @@ export default async function ManageMeetupPage({ params, searchParams }: PagePro
                       <CapacityForm meetupId={meetup.id} sessionId={s.id} capacity={s.capacity} />
                       {s.status === "open" && <ActionForm action={sessionStatusAction} hidden={{ meetupId: meetup.id, sessionId: s.id, action: "close" }} label="모집 마감" variant="ghost" />}
                       {s.status === "closed" && <ActionForm action={sessionStatusAction} hidden={{ meetupId: meetup.id, sessionId: s.id, action: "open" }} label="모집 재개" variant="ghost" />}
-                      <ActionForm action={sessionStatusAction} hidden={{ meetupId: meetup.id, sessionId: s.id, action: "cancel" }} label="일정 취소" variant="ghost"
-                        confirmText="이 일정을 취소할까요?" />
+                      <ActionForm action={hostCancelSessionAction} hidden={{ meetupId: meetup.id, sessionId: s.id }} label="일정 취소" variant="ghost"
+                        note={{ name: "reason", placeholder: "취소 사유 (신청자에게 전달)" }}
+                        confirmText="이 일정을 취소할까요? 신청자에게 알림이 가고 결제는 전액 환불됩니다." testId="cancel-session" />
                     </div>
                   )}
                 </li>

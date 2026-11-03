@@ -54,7 +54,7 @@
    | `NEXT_PUBLIC_SUPABASE_URL` | 스테이징 Project URL |
    | `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | 스테이징 publishable(또는 anon) 키 |
    | `NEXT_PUBLIC_SITE_URL` | 브랜치 고정 주소 |
-   - `SUPABASE_SECRET_KEY`는 **넣지 않습니다** (1단계 앱은 사용하지 않음)
+   | `SUPABASE_SECRET_KEY` | 스테이징 Secret key — **Sensitive로 체크**. 테스트 결제 확정·환불 기록에만 서버에서 사용 (없으면 빌드가 실패하도록 되어 있음) |
 5. **Settings → Deployment Protection → Vercel Authentication**: Preview 보호 켜기
 
 ## D. 확인 절차 (연결 후)

@@ -58,11 +58,11 @@ test("모바일 상세: 하단 고정 신청 바, 가로 스크롤 없음", asyn
   await page.close();
 });
 
-// 참고: 주소에 ID가 있는 화면은 화면 틀을 먼저 보내므로 HTTP 상태는 200이며, 404 안내와 검색 비노출(noindex)이 표시됩니다.
-test("없는 모임·검토 중 모임은 '찾을 수 없음' 안내", async ({ page }) => {
+test("없는 모임·검토 중 모임·없는 호스트는 HTTP 404", async ({ page }) => {
   const [pending] = await dbQuery<{ id: string }>("select id from public.meetups where status = 'pending_review' limit 1");
   for (const path of ["/meetups/00000000-0000-4000-8000-000000000000", `/meetups/${pending.id}`, "/meetups/not-a-uuid", "/hosts/00000000-0000-4000-8000-000000000000"]) {
-    await page.goto(path);
+    const res = await page.goto(path);
+    expect(res?.status(), `${path} HTTP 상태`).toBe(404);
     await expect(page.getByTestId("not-found").filter({ visible: true }), path).toBeVisible();
     await expect(page.locator('meta[name="robots"]'), path).toHaveAttribute("content", /noindex/);
     await expect(page.getByText("검토 중 테스트")).toHaveCount(0);

@@ -17,7 +17,7 @@ beforeAll(async () => {
   await makeApprovedHost(host.id);
   const [m] = await dbQuery<{ id: string }>(
     `insert into public.meetups (host_id, category_slug, title, summary, description, price, max_quantity_per_booking, status, published_at)
-     values ($1, 'reading', '동시 신청 테스트 모임', '동시 신청 테스트 모임 요약입니다', '동시 신청 테스트 모임 상세 설명입니다.', 10000, 2, 'published', now())
+     values ($1, 'reading', '동시 신청 테스트 모임', '동시 신청 테스트 모임 요약입니다', '동시 신청 테스트 모임 상세 설명입니다.', 0, 2, 'published', now())
      returning id`,
     [host.id],
   );
@@ -78,6 +78,30 @@ describe("참가 신청 동시성", () => {
     expect(r.error?.hint).toBe("not_found");
     const [b] = await dbQuery<{ status: string }>("select status from public.bookings where id = $1", [bookingId]);
     expect(b.status).toBe("confirmed");
+  });
+
+  it("유료 모임: 결제 대기 신청도 정원에 포함되고, 동시에 신청해도 정원을 넘지 않는다", async () => {
+    const [m] = await dbQuery<{ id: string }>(
+      `insert into public.meetups (host_id, category_slug, title, summary, description, price, status, published_at)
+       values ($1, 'reading', '유료 동시 신청 테스트', '유료 동시 신청 테스트 요약입니다', '유료 동시 신청 테스트 상세 설명입니다.', 15000, 'published', now()) returning id`,
+      [host.id],
+    );
+    const [s] = await dbQuery<{ id: string }>(
+      `insert into public.meetup_sessions (meetup_id, starts_at, ends_at, area, venue_name, capacity)
+       values ($1, now() + interval '8 days', now() + interval '8 days 2 hours', '성수동', '테스트 장소', 2) returning id`,
+      [m.id],
+    );
+    const users = await Promise.all(Array.from({ length: 5 }, (_, i) => createMember(`bpay${i}`)));
+    const results = await Promise.all(users.map((u) => u.client.rpc("book_session", { p_session_id: s.id, p_quantity: 1 })));
+    expect(results.filter((r) => !r.error)).toHaveLength(2);
+    const rows = await dbQuery<{ status: string }>("select status::text from public.bookings where session_id = $1", [s.id]);
+    expect(rows.map((r) => r.status)).toEqual(["pending_payment", "pending_payment"]);
+    // 참가자는 결제 확정·환불 함수를 직접 부를 수 없다
+    const ok = users[results.findIndex((r) => !r.error)];
+    const bookingId = results.find((r) => !r.error)!.data as string;
+    expect((await ok.client.rpc("confirm_payment", { p_booking_id: bookingId, p_provider: "mock", p_payment_key: "x", p_amount: 15000 })).error).not.toBeNull();
+    const [after] = await dbQuery<{ status: string }>("select status::text from public.bookings where id = $1", [bookingId]);
+    expect(after.status).toBe("pending_payment");
   });
 
   it("호스트에게 보이는 참가자 정보에는 연락처가 없다", async () => {

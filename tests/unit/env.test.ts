@@ -67,9 +67,22 @@ describe("환경변수 검증", () => {
     expect(parseEnv({ VERCEL_ENV: "preview" }).ok).toBe(true);
   });
 
-  it("운영 환경은 사이트 주소와 Supabase 연결 정보가 필수다", () => {
-    const errors = errorsOf({ NEXT_PUBLIC_APP_ENV: "production" });
-    expect(errors).toHaveLength(3);
+  it("스테이징·운영 환경은 사이트 주소, Supabase 연결, 서버 비밀키가 필수다", () => {
+    expect(errorsOf({ NEXT_PUBLIC_APP_ENV: "production" })).toHaveLength(4);
+    expect(errorsOf({ NEXT_PUBLIC_APP_ENV: "staging" })).toHaveLength(4);
+    expect(
+      parseEnv({
+        NEXT_PUBLIC_APP_ENV: "staging",
+        NEXT_PUBLIC_SITE_URL: "https://staging.example.com",
+        NEXT_PUBLIC_SUPABASE_URL: "https://x.supabase.co",
+        NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: "sb_publishable_x",
+        SUPABASE_SECRET_KEY: "sb_secret_x",
+      }).ok,
+    ).toBe(true);
+  });
+
+  it("서버 비밀키 자리에 공개 키를 넣으면 거부한다", () => {
+    expect(errorsOf({ SUPABASE_SECRET_KEY: "sb_publishable_abc" }).join()).toContain("SUPABASE_SECRET_KEY");
   });
 
   it("알 수 없는 환경 이름과 잘못된 URL을 거부한다", () => {

@@ -118,15 +118,21 @@ export function parseEnv(source: Record<string, string | undefined>): EnvResult 
     );
   }
 
-  // 5) 운영 환경은 사이트 주소와 Supabase 연결이 필수
-  if (env.NEXT_PUBLIC_APP_ENV === "production") {
+  // 5) 스테이징·운영은 사이트 주소, Supabase 연결, 서버 비밀키(결제 확정·환불 기록용)가 필수
+  if (env.NEXT_PUBLIC_APP_ENV === "production" || env.NEXT_PUBLIC_APP_ENV === "staging") {
     for (const name of [
       "NEXT_PUBLIC_SITE_URL",
       "NEXT_PUBLIC_SUPABASE_URL",
       "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY",
+      "SUPABASE_SECRET_KEY",
     ] as const) {
-      if (!env[name]) errors.push(`${name}: 운영(production) 환경에서는 필수입니다.`);
+      if (!env[name]) errors.push(`${name}: ${env.NEXT_PUBLIC_APP_ENV} 환경에서는 필수입니다.`);
     }
+  }
+
+  // 6) 서버 비밀키 자리에 공개 키가 들어간 경우
+  if (env.SUPABASE_SECRET_KEY && env.SUPABASE_SECRET_KEY.startsWith("sb_publishable_")) {
+    errors.push("SUPABASE_SECRET_KEY: 공개(publishable) 키가 들어 있습니다. 비밀(secret) 키를 넣으세요.");
   }
 
   return errors.length ? { ok: false, errors } : { ok: true, env };

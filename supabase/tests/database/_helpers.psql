@@ -49,3 +49,28 @@ create or replace function pg_temp.grant_role_direct(p_user uuid, p_role public.
 returns void language sql as $$
   insert into public.user_roles (user_id, role) values (p_user, p_role) on conflict do nothing;
 $$;
+
+-- 서버 비밀키(service_role) 권한으로 실행 (결제 확정·환불 기록용)
+create or replace function pg_temp.login_service()
+returns void language plpgsql as $$
+begin
+  perform set_config('request.jwt.claims', json_build_object('role', 'service_role')::text, true);
+  execute 'set local role service_role';
+end $$;
+
+-- 공개된 테스트 모임·일정 만들기 (DB 소유자 권한)
+create or replace function pg_temp.published_session(p_host uuid, p_price int, p_capacity int, p_max int default 2)
+returns uuid language plpgsql as $$
+declare v_m uuid; v_s uuid;
+begin
+  insert into public.host_profiles (user_id, display_name, status) values (p_host, '결제 테스트 호스트', 'approved')
+    on conflict (user_id) do update set status = 'approved';
+  insert into public.user_roles (user_id, role) values (p_host, 'host') on conflict do nothing;
+  insert into public.meetups (host_id, category_slug, title, summary, description, price, max_quantity_per_booking, status, published_at)
+  values (p_host, 'reading', '결제 테스트 모임입니다', '결제 테스트 모임 요약입니다', '결제 테스트 모임의 상세 설명 문장입니다. 충분히 길게.', p_price, p_max, 'published', now())
+  returning id into v_m;
+  insert into public.meetup_sessions (meetup_id, starts_at, ends_at, area, venue_name, address_detail, capacity)
+  values (v_m, now() + interval '5 days', now() + interval '5 days 2 hours', '성수동', '테스트 장소', '비밀 주소', p_capacity)
+  returning id into v_s;
+  return v_s;
+end $$;

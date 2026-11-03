@@ -4,7 +4,7 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 export type MyBooking = {
   booking_id: string;
-  status: "confirmed" | "cancelled_by_user" | "cancelled_by_host";
+  status: "confirmed" | "pending_payment" | "cancelled_by_user" | "cancelled_by_host" | "expired";
   quantity: number;
   total_price: number;
   created_at: string;
@@ -21,6 +21,9 @@ export type MyBooking = {
   is_sample: boolean;
   host_id: string;
   host_name: string;
+  hold_expires_at: string | null;
+  payment_status: "ready" | "paid" | "cancelled" | "refunded" | "failed" | null;
+  refunded_amount: number | null;
 };
 
 export async function listMyBookings(): Promise<MyBooking[]> {

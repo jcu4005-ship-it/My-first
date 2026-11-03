@@ -23,9 +23,13 @@ function BookingCard({ b, highlight }: { b: MyBooking; highlight: boolean }) {
       <div className="flex flex-wrap items-center gap-2">
         {confirmed ? (
           <StatusPill tone={upcoming ? "ok" : "muted"}>{upcoming ? "참가 확정" : "참여 완료"}</StatusPill>
+        ) : b.status === "pending_payment" ? (
+          <StatusPill tone="warn">결제 대기</StatusPill>
         ) : (
           <StatusPill>{b.status === "cancelled_by_user" ? "취소함" : "호스트 취소"}</StatusPill>
         )}
+        {b.payment_status === "refunded" && <StatusPill tone="muted">{formatPrice(b.refunded_amount ?? 0)} 환불 완료</StatusPill>}
+        {b.payment_status === "paid" && <StatusPill tone="muted">결제 완료 (테스트)</StatusPill>}
         {b.is_sample && <SampleBadge />}
       </div>
       <Link href={`/meetups/${b.meetup_id}`} className="mt-3 block font-semibold hover:underline">{b.title}</Link>
@@ -33,6 +37,9 @@ function BookingCard({ b, highlight }: { b: MyBooking; highlight: boolean }) {
         {formatDate(b.starts_at)} {formatTime(b.starts_at)} · {b.area} · {b.venue_name}
       </p>
       <p className="mt-1 text-sm">{b.quantity}명 · {formatPrice(b.total_price)} · 호스트 {b.host_name}</p>
+      {b.status === "pending_payment" && (
+        <Button asChild size="sm" className="mt-4"><Link href={`/checkout/${b.booking_id}`}>결제하기</Link></Button>
+      )}
       {confirmed && upcoming && (
         <>
           {b.address_detail && (
@@ -40,7 +47,7 @@ function BookingCard({ b, highlight }: { b: MyBooking; highlight: boolean }) {
           )}
           <div className="mt-4">
             <ActionForm action={cancelBookingAction} hidden={{ bookingId: b.booking_id }} label="신청 취소" variant="ghost"
-              confirmText="신청을 취소할까요? 취소하면 자리가 다른 분께 돌아가요." testId="cancel-booking" />
+              confirmText={b.payment_status === "paid" ? "신청을 취소할까요? 결제 금액은 전액 환불됩니다. (테스트 결제)" : "신청을 취소할까요? 취소하면 자리가 다른 분께 돌아가요."} testId="cancel-booking" />
           </div>
         </>
       )}
@@ -52,7 +59,7 @@ export default async function MyBookingsPage({ searchParams }: PageProps<"/me/bo
   await requireMember("/me/bookings");
   const { booked } = (await searchParams) as { booked?: string };
   const bookings = await listMyBookings();
-  const upcoming = bookings.filter((b) => b.status === "confirmed" && isFuture(b.starts_at))
+  const upcoming = bookings.filter((b) => (b.status === "confirmed" || b.status === "pending_payment") && isFuture(b.starts_at))
     .sort((a, b) => a.starts_at.localeCompare(b.starts_at));
   const past = bookings.filter((b) => !upcoming.includes(b));
 

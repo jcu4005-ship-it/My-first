@@ -106,11 +106,17 @@ test("호스트 신청 → 승인 → 모임 등록·일정 → 검수 → 공�
   await p.goto(meetupUrl);
   await p.getByLabel("신청 인원").selectOption("2");
   await p.getByTestId("book-submit").click();
+  // 유료 모임 → 테스트 결제 화면 (실제 청구 없음)
+  await expect(p).toHaveURL(/\/checkout\//);
+  await expect(p.getByTestId("test-payment-notice")).toBeVisible();
+  await expect(p.getByTestId("checkout")).toContainText("30,000원");
+  await p.getByTestId("pay-test").click();
   await expect(p).toHaveURL(/\/me\/bookings\?booked=/);
   await expect(p.getByTestId("booked-notice")).toBeVisible();
   const card = p.getByTestId("booking-card").filter({ hasText: title });
   await expect(card).toContainText("참가 확정");
   await expect(card).toContainText("2명 · 30,000원");
+  await expect(card).toContainText("결제 완료 (테스트)");
   await expect(card.getByTestId("booking-address")).toContainText("연남로 1");
 
   // 같은 일정 다시 보기 → 신청 완료 표시
@@ -127,12 +133,36 @@ test("호스트 신청 → 승인 → 모임 등록·일정 → 검수 → 공�
   await expect(host.getByTestId("session-seats")).toHaveText("신청 2 / 4명");
   await expect(host.getByTestId("participant-list")).toContainText(participant.nickname);
 
-  // 7. 참가자 취소 → 자리 반환
+  // 호스트에게 새 신청 알림
+  const manageUrl = host.url();
+  await host.goto("/me/notifications");
+  await expect(host.getByTestId("notification").filter({ hasText: "새 참가 신청" }).first()).toBeVisible();
+
+  // 7. 참가자 취소 → 전액 환불(테스트) → 자리 반환
   await p.goto("/me/bookings");
   await p.getByTestId("booking-card").filter({ hasText: title }).getByTestId("cancel-booking").getByRole("button").click();
-  await expect(p.getByTestId("booking-card").filter({ hasText: title })).toContainText("취소함");
-  await host.reload();
+  const cancelled = p.getByTestId("booking-card").filter({ hasText: title });
+  await expect(cancelled).toContainText("취소함");
+  await expect(cancelled).toContainText("30,000원 환불 완료");
+  await host.goto(manageUrl);
   await expect(host.getByTestId("session-seats")).toHaveText("신청 0 / 4명");
+
+  // 8. 다시 신청·결제 후 호스트가 일정 취소 → 참가자 전액 환불·알림
+  await p.goto(meetupUrl);
+  await p.getByTestId("book-submit").click();
+  await p.getByTestId("pay-test").click();
+  await expect(p).toHaveURL(/\/me\/bookings\?booked=/);
+  await host.goto(manageUrl);
+  await expect(host.getByTestId("session-seats")).toHaveText("신청 1 / 4명");
+  const cancelForm = host.getByTestId("cancel-session");
+  await cancelForm.getByPlaceholder("취소 사유 (신청자에게 전달)").fill("호스트 개인 사정으로 취소합니다");
+  await cancelForm.getByRole("button").click();
+  await expect(host.getByTestId("host-session")).toContainText("취소됨");
+  await p.goto("/me/bookings");
+  const byHost = p.getByTestId("booking-card").filter({ hasText: "호스트 취소" });
+  await expect(byHost.first()).toContainText("15,000원 환불 완료");
+  await p.goto("/me/notifications");
+  await expect(p.getByTestId("notification").filter({ hasText: "호스트가 일정을 취소" }).first()).toContainText("호스트 개인 사정");
 });
 
 test("샘플 모임과 내 모임은 신청할 수 없다", async ({ browser }) => {

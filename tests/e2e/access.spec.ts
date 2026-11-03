@@ -28,9 +28,9 @@ test("참가자: 관리자 화면 403, 호스트 화면은 호스트 신청으�
   await expect(page.getByRole("link", { name: "관리자" })).toHaveCount(0);
   await page.goto("/host");
   await expect(page).toHaveURL(/\/host\/apply$/);
-  // 참고: 화면 틀 선전송 구조로 HTTP 상태는 200일 수 있음 — 접근 거부 화면·검색 비노출·보호 내용 미노출로 확인
   for (const path of ["/host/meetups/new", "/admin", "/admin/members", "/admin/audit", "/admin/mfa", "/admin/meetups", "/admin/hosts"]) {
-    await page.goto(path);
+    const res = await page.goto(path);
+    expect(res?.status(), `${path} HTTP 상태`).toBe(403);
     await expect(page.getByTestId("forbidden").filter({ visible: true }), path).toBeVisible();
     await expect(page.locator('meta[name="robots"]'), path).toHaveAttribute("content", /noindex/);
     await expect(page.getByTestId("admin-dashboard")).toHaveCount(0);
@@ -50,8 +50,9 @@ test("호스트: 호스트 화면 가능, 관리자 화면 403", async ({ page }
   await login(page, h.email);
   await page.goto("/host");
   await expect(page.getByTestId("host-home")).toBeVisible();
-  await page.goto("/admin");
-  await expect(page.getByTestId("forbidden")).toBeVisible();
+  const res = await page.goto("/admin");
+  expect(res?.status()).toBe(403);
+  await expect(page.getByTestId("forbidden").filter({ visible: true })).toBeVisible();
 });
 
 test("관리자: 2단계 인증 전에는 관리자 화면 불가 → OTP 등록 → 역할 부여 → 감사 기록 확인", async ({ page }) => {

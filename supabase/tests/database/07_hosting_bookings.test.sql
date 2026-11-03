@@ -1,4 +1,4 @@
--- 호스트 신청·승인 → 모임 등록·검수 → 공개 → 참가 신청·취소, 권한·정원·중복
+-- 호스트 신청·승인 → 모임 등록·검수 → 공개 → 참가 신청·취소 (무료 모임: 즉시 확정), 권한·정원·중복
 begin;
 \ir _helpers.psql
 select plan(40);
@@ -33,7 +33,7 @@ select ok(exists(select 1 from public.audit_logs where action = 'host.approve' a
 -- ---------- 모임 등록·회차·검수 요청 ----------
 select pg_temp.login_as(:'h');
 select lives_ok($$ insert into public.meetups (host_id, category_slug, title, summary, description, price, max_quantity_per_booking)
-  values (auth.uid(), 'reading', '테스트 독서 모임입니다', '테스트 독서 모임의 요약입니다', '테스트 독서 모임의 상세 설명입니다.', 20000, 2) $$,
+  values (auth.uid(), 'reading', '테스트 독서 모임입니다', '테스트 독서 모임의 요약입니다', '테스트 독서 모임의 상세 설명입니다.', 0, 2) $$,
   '승인된 호스트는 모임을 만들 수 있다');
 select pg_temp.logout();
 select set_config('t.mid', id::text, false) from public.meetups where title = '테스트 독서 모임입니다';
