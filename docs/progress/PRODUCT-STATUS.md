@@ -30,3 +30,10 @@
 1. 토스페이먼츠 테스트 결제 연동(키 필요), 기한별 환불 규정, 정산
 2. 이메일 알림 (현재 사이트 내 알림만. 실제 사용자 메일 발송은 발송 서비스·승인 필요)
 3. 모임 사진 업로드, 후기·저장·팔로우, 지역·날짜 검색
+
+## 스테이징 배포 (2026-11-03)
+- 주소: https://my-first-git-claude-community-platform-desi-34a13b-jcu4005-7409.vercel.app (Vercel 보호 켜짐 — 팀 로그인 필요)
+- 실행: `Staging deploy & verify` 워크플로 (승인 필요)
+  - run #3 https://github.com/jcu4005-ship-it/My-first/actions/runs/41647144588 — DB 구조 5개 + 샘플 반영, pgTAP·lint 통과, 배포, E2E 13 통과·1 실패(테스트의 주소 비교 오류, 앱은 정상)
+  - run #4 https://github.com/jcu4005-ship-it/My-first/actions/runs/41648991875 — 전체 성공, E2E 11 통과(샘플 화면 5개는 이 실행에서 제외 → 다음 실행부터 샘플 자동 감지로 포함)
+- 자동 검증에서 제외(직접 확인): 실제 이메일 가입·인증·비밀번호 재설정 메일, 실제 관리자 OTP 등록
