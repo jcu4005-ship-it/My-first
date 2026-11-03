@@ -8,7 +8,7 @@
 |---|---|
 | 설계 | ✅ v1.0 확정 — [docs/PLATFORM_DESIGN.md](docs/PLATFORM_DESIGN.md) |
 | 0단계 기반 준비 | ✅ 코드 완료, 외부 서비스(Supabase·Vercel) 연결은 계정 생성 후 진행 — [보고서](docs/progress/STAGE-0.md) |
-| 1단계 회원·권한 | ⏳ 대기 |
+| 1단계 회원·권한 | ✅ 코드·로컬·CI 검증 완료 / ⏳ 스테이징 연결 대기 — [보고서](docs/progress/STAGE-1.md) |
 
 - 결제: **테스트 모드만 허용**. 실결제(live) 설정은 빌드 단계에서 차단됩니다.
 - 정산: 관리자 수동 확인 방식만 설계. 자동 정산은 구현하지 않습니다.
@@ -27,6 +27,7 @@ npm run dev                  # http://localhost:3000
 | `npm run check` | 코드 검사 + 타입 검사 + 자동 테스트 |
 | `npm run build` | 배포용 빌드 (환경변수 검증 포함) |
 | `npm run db:start` | 로컬 Supabase 실행 (Docker 필요) |
+| `npm run test:db` / `test:integration` / `test:e2e` | DB 권한 / API 공격 / 브라우저 테스트 (로컬 Supabase 필요, `eval "$(npm run -s test:env)"` 먼저) |
 
 상태 확인 주소: `/api/health` — 환경, 결제 모드, 외부 연결 여부(값 제외)를 보여 줍니다.
 
