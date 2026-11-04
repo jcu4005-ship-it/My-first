@@ -67,11 +67,12 @@ jobs:
       - name: "2-2. 적용될 변경 미리보기"
         run: npx supabase db push --remote --dry-run
       - name: "2-3. DB 구조 반영"
-        if: github.event.inputs.seed_samples != 'yes'
         run: npx supabase db push --remote --yes
-      - name: "2-3. DB 구조 + 샘플 데이터 반영"
+      # db push --include-seed 는 이미 넣은 seed 파일을 다시 실행하지 않으므로 직접 실행
+      # (seed.sql은 다시 실행해도 is_sample 샘플 행만 교체하도록 작성됨)
+      - name: "2-3b. 샘플 데이터 넣기·교체 (seed_samples=yes 일 때만)"
         if: github.event.inputs.seed_samples == 'yes'
-        run: npx supabase db push --remote --include-seed --yes
+        run: npx supabase db query --remote --yes -f supabase/seed.sql
       - name: "2-4. DB 권한 테스트 (pgTAP, 모두 ROLLBACK)"
         run: npx supabase test db --remote --yes
       - name: "2-5. DB 구조 검사"
