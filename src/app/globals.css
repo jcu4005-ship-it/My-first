@@ -85,6 +85,13 @@
   .eyebrow {
     @apply text-[11px] font-medium tracking-[0.28em] uppercase;
   }
+  /* 옆으로 넘기는 줄에서 스크롤바 숨김 (스와이프는 그대로) */
+  .no-scrollbar {
+    scrollbar-width: none;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
   /* 어두운 섹션 */
   .section-dark {
     @apply bg-espresso text-sand-light;

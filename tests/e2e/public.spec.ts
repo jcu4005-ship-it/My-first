@@ -108,9 +108,13 @@ test("상세: 난이도·배우는 것·일정·남은 자리·마감·호스트
   await expect(page.getByTestId("meetup-card").filter({ visible: true })).toHaveCount(1);
 });
 
-test("모바일 상세: 하단 고정 신청 바, 가로 스크롤 없음", async ({ browser }) => {
+test("모바일: 메인 가로 밀림 없음, 상세 하단 고정 신청 바, 가로 스크롤 없음", async ({ browser }) => {
   test.skip(!samples, "샘플 데이터 없음");
   const page = await (await newContext(browser, { viewport: { width: 390, height: 844 } })).newPage();
+  // 메인: 옆으로 넘기는 줄이 있어도 페이지 자체는 가로로 밀리지 않아야 함
+  await page.goto("/");
+  await page.evaluate(() => window.scrollTo(5000, 0));
+  expect(await page.evaluate(() => window.scrollX)).toBe(0);
   await page.goto("/meetups");
   await page.getByTestId("meetup-card").first().click();
   await expect(page.getByTestId("mobile-cta")).toBeVisible();

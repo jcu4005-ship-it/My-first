@@ -61,7 +61,7 @@ function Hero() {
           {brand.englishTagline}
         </h1>
         <p className="mt-6 max-w-xl text-base leading-relaxed text-sand sm:text-lg">{brand.tagline}</p>
-        <div className="mt-10 flex flex-wrap gap-3">
+        <div className="mt-10 grid grid-cols-1 gap-3 sm:flex sm:flex-wrap">
           <Button asChild size="lg" variant="secondary">
             <Link href="/meetups">지금 경험 둘러보기</Link>
           </Button>
@@ -143,9 +143,12 @@ async function DiscoverAndTrending() {
           </p>
         )}
         {trending.length ? (
-          <div className="grid grid-cols-1 gap-x-6 gap-y-14 sm:grid-cols-2 lg:grid-cols-3" data-testid="meetup-grid">
+          // 휴대폰: 옆으로 넘기는 한 줄 (다음 카드가 살짝 보이게), 태블릿·PC: 격자
+          <div className="relative -mx-4 flex snap-x snap-mandatory scroll-px-4 gap-4 overflow-x-auto px-4 pb-2 no-scrollbar sm:mx-0 sm:grid sm:overflow-visible sm:px-0 sm:pb-0 sm:snap-none sm:grid-cols-2 sm:gap-x-6 sm:gap-y-14 lg:grid-cols-3" data-testid="meetup-grid">
             {trending.map((m) => (
-              <MeetupCard key={m.id} meetup={m} categoryName={names[m.category_slug] ?? m.category_slug} />
+              <div key={m.id} className="w-[78vw] max-w-[22rem] shrink-0 snap-start sm:w-auto sm:max-w-none">
+                <MeetupCard meetup={m} categoryName={names[m.category_slug] ?? m.category_slug} />
+              </div>
             ))}
           </div>
         ) : (
@@ -163,11 +166,11 @@ async function DiscoverAndTrending() {
                 <span className="sr-only"> 모든 전문가 보기</span>
               </Link>
             </SectionHeading>
-            <ul className="grid gap-x-6 gap-y-12 sm:grid-cols-2 lg:grid-cols-4">
+            <ul className="relative -mx-4 flex snap-x snap-mandatory scroll-px-4 gap-4 overflow-x-auto px-4 pb-2 no-scrollbar sm:mx-0 sm:grid sm:overflow-visible sm:px-0 sm:pb-0 sm:snap-none sm:grid-cols-2 sm:gap-x-6 sm:gap-y-12 lg:grid-cols-4">
               {hosts.map((h) => {
                 const cls = firstClassOf(h.user_id);
                 return (
-                  <li key={h.user_id} className="flex flex-col">
+                  <li key={h.user_id} className="flex w-[62vw] max-w-[17rem] shrink-0 snap-start flex-col sm:w-auto sm:max-w-none">
                     <Link href={`/hosts/${h.user_id}`} className="group flex flex-col" data-testid="expert-card">
                       <span className="relative flex aspect-[4/5] items-end overflow-hidden bg-espresso p-5 text-sand-light">
                         <span aria-hidden className="absolute -top-4 -right-2 font-display text-[9rem] leading-none font-bold opacity-[0.08]">

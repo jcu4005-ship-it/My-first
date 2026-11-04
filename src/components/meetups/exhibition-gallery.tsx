@@ -22,7 +22,8 @@ export type GalleryItem = {
 
 /** 화면 너비에 따른 배치 값 (작품 간격·깊이·각도) */
 function layoutFor(width: number) {
-  if (width < 640) return { gap: width * 0.5, depth: 240, angle: 46, scaleStep: 0.12, base: Math.min(width * 0.62, 260) };
+  // 휴대폰: 가운데 작품을 크게, 양옆 작품은 가장자리에 살짝 보여 "넘길 수 있다"는 걸 알려 줌
+  if (width < 640) return { gap: width * 0.56, depth: 200, angle: 44, scaleStep: 0.12, base: Math.min(width * 0.6, 250) };
   if (width < 1024) return { gap: Math.min(width * 0.32, 290), depth: 280, angle: 48, scaleStep: 0.1, base: 280 };
   return { gap: Math.min(width * 0.25, 330), depth: 320, angle: 50, scaleStep: 0.09, base: 300 };
 }
@@ -52,8 +53,9 @@ export function ExhibitionGallery({ items }: { items: GalleryItem[] }) {
   const [active, setActive] = useState(Math.floor((items.length - 1) / 2));
   const [width, setWidth] = useState(1280);
   const [dragX, setDragX] = useState(0);
+  const [touched, setTouched] = useState(false);
   const stageRef = useRef<HTMLDivElement>(null);
-  const drag = useRef<{ startX: number; moved: boolean; pointerId: number } | null>(null);
+  const drag = useRef<{ startX: number; startT: number; moved: boolean; pointerId: number } | null>(null);
   const suppressClick = useRef(false);
 
   useEffect(() => {
@@ -65,7 +67,10 @@ export function ExhibitionGallery({ items }: { items: GalleryItem[] }) {
   }, []);
 
   const go = useCallback(
-    (i: number) => setActive(Math.max(0, Math.min(items.length - 1, i))),
+    (i: number) => {
+      setTouched(true);
+      setActive(Math.max(0, Math.min(items.length - 1, i)));
+    },
     [items.length],
   );
 
@@ -77,7 +82,7 @@ export function ExhibitionGallery({ items }: { items: GalleryItem[] }) {
 
   function onPointerDown(e: React.PointerEvent) {
     if (e.pointerType === "mouse" && e.button !== 0) return;
-    drag.current = { startX: e.clientX, moved: false, pointerId: e.pointerId };
+    drag.current = { startX: e.clientX, startT: performance.now(), moved: false, pointerId: e.pointerId };
   }
   function onPointerMove(e: React.PointerEvent) {
     const d = drag.current;
@@ -96,8 +101,9 @@ export function ExhibitionGallery({ items }: { items: GalleryItem[] }) {
     if (d.moved) {
       suppressClick.current = true;
       const dx = e.clientX - d.startX;
+      const fast = performance.now() - d.startT < 300 && Math.abs(dx) > 30; // 짧고 빠르게 튕기기
       const steps = Math.round(-dx / gap);
-      go(active + (steps === 0 && Math.abs(dx) > 50 ? (dx < 0 ? 1 : -1) : steps));
+      go(active + (steps === 0 && (fast || Math.abs(dx) > 50) ? (dx < 0 ? 1 : -1) : steps));
     }
     setDragX(0);
   }
@@ -117,7 +123,7 @@ export function ExhibitionGallery({ items }: { items: GalleryItem[] }) {
       {/* 전시 벽 */}
       <div
         ref={stageRef}
-        className="relative h-[25rem] touch-pan-y overflow-hidden select-none sm:h-[32rem]"
+        className="relative h-[23rem] touch-pan-y overflow-hidden select-none sm:h-[32rem]"
         style={{ perspective: "1600px", cursor: dragX ? "grabbing" : "grab" }}
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
@@ -205,11 +211,36 @@ export function ExhibitionGallery({ items }: { items: GalleryItem[] }) {
       </div>
 
       {/* 가운데 작품 설명 (전시 명판) */}
-      <div className="mx-auto mt-2 flex max-w-xl flex-col items-center px-4 text-center" aria-live="polite" data-testid="gallery-caption">
+      {/* 진행 표시 (눌러서 이동 가능) + 휴대폰 스와이프 안내 */}
+      <div className="mx-auto flex max-w-xs items-center gap-1.5 px-4" role="tablist" aria-label="작품 위치">
+        {items.map((it, i) => (
+          <button
+            key={it.id}
+            type="button"
+            role="tab"
+            aria-selected={i === active}
+            aria-label={`${i + 1}번째 작품: ${it.categoryName}`}
+            onClick={() => go(i)}
+            className="group flex h-6 flex-1 items-center"
+          >
+            <span
+              className={cn("block h-px w-full transition-colors duration-700", i === active ? "bg-sand-light" : "bg-sand-light/25 group-hover:bg-sand-light/50")}
+            />
+          </button>
+        ))}
+      </div>
+      <p
+        aria-hidden
+        className={cn("mt-1 text-center text-[11px] tracking-[0.2em] text-muted-foreground transition-opacity duration-700 sm:hidden", touched && "opacity-0")}
+      >
+        ← 밀어서 둘러보기 →
+      </p>
+
+      <div className="mx-auto mt-4 flex max-w-xl flex-col items-center px-5 text-center sm:mt-6" aria-live="polite" data-testid="gallery-caption">
         <p className="eyebrow text-muted-foreground">
           {String(active + 1).padStart(2, "0")} / {String(items.length).padStart(2, "0")} — {current.categoryLabel}
         </p>
-        <h3 key={current.id} className="mt-4 font-display text-2xl leading-snug font-medium break-keep animate-in fade-in duration-700 sm:text-3xl">
+        <h3 key={current.id} className="mt-3 font-display text-[1.65rem] leading-snug font-medium break-keep animate-in fade-in duration-700 sm:mt-4 sm:text-3xl">
           {current.title}
         </h3>
         <p key={`${current.id}-s`} className="mt-3 line-clamp-2 text-sm leading-relaxed text-muted-foreground animate-in fade-in duration-700">
@@ -219,25 +250,25 @@ export function ExhibitionGallery({ items }: { items: GalleryItem[] }) {
           {current.categoryName} · {current.area}
           {current.isSample && " · 샘플"}
         </p>
-        <div className="mt-7 flex flex-wrap items-center justify-center gap-3">
+        <div className="mt-6 grid w-full grid-cols-1 gap-2 sm:mt-7 sm:flex sm:w-auto sm:flex-wrap sm:justify-center sm:gap-3">
           <Link
             href={`/meetups/${current.id}`}
-            className="inline-flex h-11 items-center bg-sand-light px-7 text-sm font-medium tracking-wide text-espresso transition-colors hover:bg-white"
+            className="inline-flex h-12 items-center justify-center bg-sand-light px-7 text-sm font-medium tracking-wide text-espresso transition-colors hover:bg-white"
             data-testid="gallery-detail"
           >
             상세 보기
           </Link>
           <Link
             href={`/meetups?category=${current.categorySlug}`}
-            className="inline-flex h-11 items-center border border-sand-light/40 px-6 text-sm tracking-wide transition-colors hover:border-sand-light"
+            className="inline-flex h-12 items-center justify-center border border-sand-light/40 px-6 text-sm tracking-wide transition-colors hover:border-sand-light"
           >
             {current.categoryName} 클래스 더 보기
           </Link>
         </div>
       </div>
 
-      {/* 좌우 버튼 */}
-      <div className="pointer-events-none absolute inset-x-0 top-[11.5rem] flex justify-between px-2 sm:top-[14.7rem] sm:px-6">
+      {/* 좌우 버튼: 휴대폰에서는 스와이프로 충분하므로 숨김 */}
+      <div className="pointer-events-none absolute inset-x-0 top-[14.7rem] hidden justify-between px-6 sm:flex">
         <GalleryArrow dir="prev" disabled={active === 0} onClick={() => go(active - 1)} />
         <GalleryArrow dir="next" disabled={active === items.length - 1} onClick={() => go(active + 1)} />
       </div>
