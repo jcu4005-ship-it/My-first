@@ -18,6 +18,54 @@ test("메인: 서비스 소개, 샘플 안내, 곧 열리는 클래스, 호스�
   await expect(page.getByRole("heading", { name: "클래스를 여는 사람들" })).toBeVisible();
 });
 
+test("메인 갤러리: 작품 클릭·좌우 버튼·키보드·스와이프로 이동, 상세 보기 연결", async ({ page }) => {
+  test.skip(!samples, "샘플 데이터 없음");
+  await page.goto("/");
+  const gallery = page.getByTestId("exhibition-gallery");
+  await expect(gallery).toBeVisible();
+  const items = gallery.getByTestId("gallery-item");
+  const total = await items.count();
+  expect(total).toBeGreaterThanOrEqual(3);
+  const activeIndex = async () => {
+    for (let i = 0; i < total; i++) if ((await items.nth(i).getAttribute("data-active")) === "true") return i;
+    return -1;
+  };
+  const start = await activeIndex();
+  expect(start).toBeGreaterThanOrEqual(0);
+
+  // 1) 옆 작품 클릭 → 가운데로
+  const target = start + 1;
+  await items.nth(target).click();
+  await expect(items.nth(target)).toHaveAttribute("data-active", "true");
+  const title = (await items.nth(target).getAttribute("aria-label"))!.split(" · ").slice(1).join(" · ").replace(" (선택됨)", "");
+  await expect(gallery.getByTestId("gallery-caption")).toContainText(title);
+
+  // 2) 좌우 버튼
+  await gallery.getByTestId("gallery-prev").click();
+  await expect(items.nth(start)).toHaveAttribute("data-active", "true");
+  await gallery.getByTestId("gallery-next").click();
+  await expect(items.nth(target)).toHaveAttribute("data-active", "true");
+
+  // 3) 키보드
+  await items.nth(target).focus();
+  await page.keyboard.press("ArrowLeft");
+  await expect(items.nth(start)).toHaveAttribute("data-active", "true");
+
+  // 4) 마우스 드래그 (왼쪽으로 끌면 다음 작품)
+  const box = (await gallery.boundingBox())!;
+  const y = box.y + 200;
+  await page.mouse.move(box.x + box.width / 2, y);
+  await page.mouse.down();
+  await page.mouse.move(box.x + box.width / 2 - 120, y, { steps: 8 });
+  await page.mouse.up();
+  await expect(items.nth(start + 1)).toHaveAttribute("data-active", "true");
+
+  // 5) 상세 보기 → 가운데 작품의 상세 페이지
+  await gallery.getByTestId("gallery-detail").click();
+  await expect(page).toHaveURL(/\/meetups\/[0-9a-f-]{36}$/);
+  await expect(page.getByTestId("meetup-title")).toBeVisible();
+});
+
 test("목록: 클래스 카테고리 필터, 비공개·비활성 카테고리 미노출, 빈 카테고리 안내", async ({ page }) => {
   test.skip(!samples, "샘플 데이터 없음");
   await page.goto("/meetups");

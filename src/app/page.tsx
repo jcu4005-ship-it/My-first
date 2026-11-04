@@ -5,6 +5,7 @@ import { brand } from "@/config/brand";
 import { brandImages } from "@/config/brand-images";
 import { Photo } from "@/components/media/photo";
 import { categoryStyle } from "@/components/meetups/category-style";
+import { ExhibitionGallery, type GalleryItem } from "@/components/meetups/exhibition-gallery";
 import { MeetupCard } from "@/components/meetups/meetup-card";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
@@ -83,44 +84,49 @@ async function DiscoverAndTrending() {
   const trending = [...meetups].sort(byPopularity).slice(0, 6);
   const hasSample = trending.some((m) => m.is_sample);
   const firstClassOf = (hostId: string) => meetups.find((m) => m.host?.user_id === hostId);
+  // 갤러리: 분야마다 가장 가까운 클래스 하나씩 (분야 순서대로)
+  const gallery: GalleryItem[] = categories.flatMap((c) => {
+    const m = meetups.find((x) => x.category_slug === c.slug);
+    return m
+      ? [{
+          id: m.id,
+          title: m.title,
+          summary: m.summary,
+          categorySlug: c.slug,
+          categoryLabel: categoryStyle(c.slug).label,
+          categoryName: c.name,
+          area: m.nextSession.area,
+          coverUrl: m.cover_image_url,
+          isSample: m.is_sample,
+        }]
+      : [];
+  });
 
   return (
     <>
-      {/* 2. DISCOVER NEW EXPERIENCES */}
-      <section className="mx-auto w-full max-w-7xl px-4 pt-24 sm:px-8 sm:pt-32" aria-labelledby="discover-title">
-        <SectionHeading eyebrow="Discover New Experiences" title="오늘의 취향을 따라, 새로운 경험으로" id="discover-title" />
-        <ul className="grid grid-cols-2 gap-px bg-border sm:grid-cols-4">
-          {categories.map((c) => {
-            const st = categoryStyle(c.slug);
-            const img = brandImages.categories[c.slug];
-            return (
-              <li key={c.slug} className="bg-background">
-                <Link
-                  href={`/meetups?category=${c.slug}`}
-                  className="group relative flex aspect-[3/4] flex-col justify-end overflow-hidden p-4 sm:aspect-[4/5] sm:p-6"
-                  style={img ? undefined : { backgroundColor: st.bg, color: st.fg }}
-                  data-testid="category-tile"
-                >
-                  {img && (
-                    <>
-                      <Photo src={img.src} alt={img.alt} sizes="(min-width: 640px) 25vw, 50vw" fallback={null}
-                        className="transition-transform duration-700 group-hover:scale-105" />
-                      <span className="absolute inset-0 bg-gradient-to-t from-espresso/80 to-transparent" />
-                    </>
-                  )}
-                  <span aria-hidden className="absolute top-3 right-4 font-display text-6xl leading-none font-bold opacity-10 sm:text-8xl">
-                    {st.label.slice(0, 1)}
-                  </span>
-                  <span className={`relative ${img ? "text-sand-light" : ""}`}>
-                    <span className="eyebrow block">{st.label}</span>
-                    <span className="mt-2 block font-display text-lg font-medium sm:text-2xl">{c.name}</span>
-                    <span className="mt-1 block text-xs opacity-75">{counts[c.slug] ? `${counts[c.slug]}개 클래스` : "곧 열려요"}</span>
-                  </span>
+      {/* 2. DISCOVER NEW EXPERIENCES — 전시장 갤러리 */}
+      <section className="section-dark overflow-hidden" aria-labelledby="discover-title">
+        <div className="mx-auto w-full max-w-7xl px-4 pt-20 sm:px-8 sm:pt-28">
+          <SectionHeading eyebrow="Discover New Experiences" title="오늘의 취향을 따라, 새로운 경험으로" id="discover-title" />
+        </div>
+        {gallery.length > 0 ? (
+          <ExhibitionGallery items={gallery} />
+        ) : (
+          <p className="py-16 text-center text-muted-foreground">곧 첫 클래스가 열립니다.</p>
+        )}
+        <nav aria-label="분야별 클래스" className="mx-auto mt-14 w-full max-w-7xl px-4 pb-20 sm:px-8 sm:pb-28">
+          <ul className="flex flex-wrap justify-center gap-x-6 gap-y-3 border-t pt-8">
+            {categories.map((c) => (
+              <li key={c.slug}>
+                <Link href={`/meetups?category=${c.slug}`} className="eyebrow text-muted-foreground transition-colors hover:text-sand-light" data-testid="category-tile">
+                  {categoryStyle(c.slug).label}
+                  <span className="sr-only"> {c.name}</span>
+                  {counts[c.slug] ? <span className="ml-1.5 opacity-60">{counts[c.slug]}</span> : null}
                 </Link>
               </li>
-            );
-          })}
-        </ul>
+            ))}
+          </ul>
+        </nav>
       </section>
 
       {/* 3. TRENDING EXPERIENCES */}
