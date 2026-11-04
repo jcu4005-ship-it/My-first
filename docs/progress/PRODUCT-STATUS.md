@@ -49,3 +49,5 @@
 - 샘플 데이터: 클래스 8개 + 검토 중 1개로 교체 (seed.sql은 다시 실행해도 샘플만 교체)
 - 마이그레이션: `supabase/migrations/20261107000100_class_focus.sql`
 - 검증(로컬): pgTAP 8파일 통과, 단위 40·통합 28·E2E 18 통과, 번들 비밀키 검사 통과
+- 스테이징: run #6 https://github.com/jcu4005-ship-it/My-first/actions/runs/41817641655 — DB 반영·샘플 교체·pgTAP·lint 통과, E2E 16 통과(메일 필요 2개 제외), 비밀 값 노출 없음
+  - run #5 실패 원인: `db push --include-seed`가 바뀐 seed 파일을 다시 실행하지 않음 → `db query -f seed.sql`로 직접 실행하도록 수정
