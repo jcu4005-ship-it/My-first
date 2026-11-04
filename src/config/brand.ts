@@ -12,10 +12,12 @@ export const brand = {
   isPlaceholderName: true,
   /** 코드·저장소 내부 식별자 (사용자에게 보이지 않음) */
   codeName: "gathering",
-  /** 한 줄 소개 */
-  tagline: "검증된 전문가에게, 소수 정예로 배우는 시간",
+  /** 메인 영문 카피 */
+  englishTagline: "Make time for what inspires you.",
+  /** 한 줄 소개 (한글) */
+  tagline: "취향이 맞는 사람들, 새로운 경험이 시작되는 곳.",
   description:
-    "경력을 확인한 전문가가 여는 소수 정예 오프라인 클래스 플랫폼",
+    "검증된 전문가와 크리에이터가 여는 소수 정예 오프라인 클래스와 경험",
   locale: "ko-KR",
   /** 사업자 정보 — 출시 전 확정 (설계안 9-2) */
   company: {

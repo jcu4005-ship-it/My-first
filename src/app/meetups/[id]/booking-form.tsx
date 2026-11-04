@@ -53,7 +53,7 @@ export function BookingForm({
               key={s.id}
               data-testid="session-row"
               className={cn(
-                "flex cursor-pointer items-center justify-between gap-3 rounded-xl border px-4 py-3 transition-colors",
+                "flex cursor-pointer items-center justify-between gap-3 border bg-white/60 px-4 py-4 transition-colors",
                 sessionId === s.id && !disabled ? "border-foreground ring-1 ring-foreground" : "",
                 disabled && "cursor-default opacity-70",
               )}
@@ -79,7 +79,7 @@ export function BookingForm({
                 ) : !s.open || s.left === 0 ? (
                   <span className="text-muted-foreground" data-testid="seats-full">마감</span>
                 ) : s.left <= 3 ? (
-                  <span className="font-semibold text-accent">{s.left}자리 남음</span>
+                  <span className="font-semibold text-terracotta-deep">{s.left}자리 남음</span>
                 ) : (
                   <span className="text-muted-foreground">{s.left}자리 남음</span>
                 )}
@@ -93,7 +93,7 @@ export function BookingForm({
         <label className="flex items-center justify-between text-sm">
           <span>신청 인원</span>
           <select name="quantity" value={quantity} onChange={(e) => setQuantity(Number(e.target.value))}
-            className="h-10 rounded-lg border border-border bg-background px-3" aria-label="신청 인원">
+            className="h-10 rounded-[2px] border border-border bg-white px-3" aria-label="신청 인원">
             {Array.from({ length: Math.max(1, maxForSelected) }, (_, i) => i + 1).map((n) => (
               <option key={n} value={n}>{n}명</option>
             ))}
@@ -119,7 +119,7 @@ export function BookingForm({
       ) : (
         <Button size="lg" disabled>신청 가능한 일정이 없어요</Button>
       )}
-      {viewerState === "ok" && <p className="text-center text-xs text-muted-foreground">결제 기능 준비 중으로, 지금은 신청 즉시 확정되고 참가비는 현장 안내에 따릅니다.</p>}
+      {viewerState === "ok" && <p className="text-center text-xs text-muted-foreground">무료 클래스는 바로 확정되고, 유료 클래스는 테스트 결제 화면으로 이동해요. (지금은 실제 청구가 없는 테스트 모드)</p>}
     </form>
   );
 }

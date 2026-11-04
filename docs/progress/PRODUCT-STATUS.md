@@ -51,3 +51,16 @@
 - 검증(로컬): pgTAP 8파일 통과, 단위 40·통합 28·E2E 18 통과, 번들 비밀키 검사 통과
 - 스테이징: run #6 https://github.com/jcu4005-ship-it/My-first/actions/runs/41817641655 — DB 반영·샘플 교체·pgTAP·lint 통과, E2E 16 통과(메일 필요 2개 제외), 비밀 값 노출 없음
   - run #5 실패 원인: `db push --include-seed`가 바뀐 seed 파일을 다시 실행하지 않음 → `db query -f seed.sql`로 직접 실행하도록 수정
+
+## 디자인 리뉴얼 1차: Premium Urban Lifestyle Club (2026-11-04)
+- 디자인 토큰: Deep Espresso #211D1A · Warm Sand #EAE4D9 · Burnt Terracotta #A66D50 · Olive #747A65 · White (`src/app/globals.css`)
+  - 작은 글자 대비 확보용 토큰 추가: muted-foreground #5C574F, terracotta-deep #8A563D
+  - 어두운/밝은 섹션 교차가 디자인 요소라 시스템 다크 모드 자동 전환은 끔
+  - 모서리 2px, 영문 라벨(eyebrow), 명조 제목 + Pretendard 본문, "움직임 줄이기" 설정 존중
+- 메인: HERO(영문 카피) → Discover(분야 타일) → Trending(예약률 순 6개) → Our Experts → Club → Become a Host. Originals는 운영 프로그램이 생길 때까지 숨김
+- 목록: 어두운 머리 영역 + 밑줄 탭 카테고리 + 사진 중심 카드(사진·제목·분야·동네·날짜·호스트·가격·남은 자리)
+- 상세: 대표 이미지 → 제목·요약·날짜/시간/장소/가격 → Who will teach you → What you will learn → 소개 → 커리큘럼 → 참여 안내 → 일정 선택(기존 신청 폼) → 환불. 후기는 기능이 생기면 실제 후기만 표시(지금 숨김)
+- 전문가: 새 `/experts` 목록 페이지, `/hosts/[id]` 재디자인
+- 사진: 사진 기능은 `meetups.cover_image_url`(기존 열)과 `src/config/brand-images.ts`(히어로·클럽·카테고리·호스트 자리)에 연결. 사진이 없으면 타이포그래피 표지로 표시
+- 기능·DB·라우트 변경 없음 (새 경로 `/experts` 추가만)
+- 검증(로컬): 단위 40·통합 28·E2E 18 통과, 빌드·번들 비밀키 검사 통과, 390px 가로 스크롤 없음

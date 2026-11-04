@@ -2,51 +2,52 @@ import { cn } from "@/lib/utils";
 
 import { categoryStyle } from "./category-style";
 
-/** 사진 없이도 클래스의 개성이 드러나는 잡지형 표지 */
+/**
+ * 사진이 없을 때 쓰는 타이포그래피 표지. 부모 요소를 꽉 채웁니다 (부모가 relative + 크기 지정).
+ * 단색 상자처럼 보이지 않도록 영문 라벨·가는 선·큰 이니셜로 잡지 표지처럼 구성합니다.
+ */
 export function EditorialCover({
   category,
-  categoryName,
   title,
   area,
   size = "card",
+  showTitle = true,
   className,
 }: {
   category: string;
-  categoryName: string;
   title: string;
   area?: string;
   size?: "card" | "hero";
+  /** 상세 화면처럼 제목이 바로 아래 크게 나오는 곳에서는 false */
+  showTitle?: boolean;
   className?: string;
 }) {
   const s = categoryStyle(category);
+  const hero = size === "hero";
   return (
     <div
-      className={cn(
-        "relative flex flex-col justify-between overflow-hidden",
-        size === "card" ? "aspect-[4/3] p-5" : "aspect-[4/3] p-6 sm:aspect-[16/9] sm:p-10",
-        className,
-      )}
+      className={cn("absolute inset-0 flex flex-col justify-between overflow-hidden", hero ? "p-6 sm:p-12" : "p-5", className)}
       style={{ backgroundColor: s.bg, color: s.fg }}
       aria-hidden
     >
-      <div className="flex items-start justify-between text-[11px] tracking-[0.25em]">
-        <span>{s.label}</span>
-        {area && <span className="tracking-normal opacity-80">{area}</span>}
+      <div className="flex items-center justify-between gap-4">
+        <span className="eyebrow">{s.label}</span>
+        {area && <span className="text-[11px] tracking-[0.15em] opacity-80">{area}</span>}
       </div>
-      <div
-        className="pointer-events-none absolute -right-6 -bottom-10 font-display leading-none font-bold opacity-[0.12] select-none"
-        style={{ fontSize: size === "card" ? "9rem" : "16rem" }}
+      <span
+        className="pointer-events-none absolute top-1/2 right-[-0.08em] -translate-y-1/2 font-display leading-none font-bold opacity-[0.09] select-none"
+        style={{ fontSize: hero ? "min(42vw, 26rem)" : "11rem" }}
       >
-        {categoryName.slice(0, 1)}
-      </div>
-      <p
-        className={cn(
-          "relative font-display leading-snug font-bold break-keep",
-          size === "card" ? "line-clamp-3 text-xl" : "max-w-2xl text-3xl sm:text-5xl",
+        {s.label.slice(0, 1)}
+      </span>
+      <div className="relative">
+        <span className="mb-3 block h-px w-10 bg-current opacity-60" />
+        {showTitle && (
+        <p className={cn("font-display leading-snug font-medium break-keep", hero ? "max-w-3xl text-3xl sm:text-5xl" : "line-clamp-3 text-xl")}>
+          {title}
+        </p>
         )}
-      >
-        {title}
-      </p>
+      </div>
     </div>
   );
 }

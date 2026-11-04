@@ -23,6 +23,7 @@ export type MeetupCardData = {
   summary: string;
   price: number;
   category_slug: string;
+  cover_image_url: string | null;
   is_sample: boolean;
   host: HostSummary | null;
   nextSession: Session;
@@ -61,7 +62,7 @@ export type HostDetail = {
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 const CARD_SELECT =
-  "id, title, summary, price, category_slug, is_sample, status, host:host_profiles(user_id, display_name, headline, is_sample), sessions:meetup_sessions(id, starts_at, ends_at, area, venue_name, capacity, reserved_count, status)";
+  "id, title, summary, price, category_slug, cover_image_url, is_sample, status, host:host_profiles(user_id, display_name, headline, is_sample), sessions:meetup_sessions(id, starts_at, ends_at, area, venue_name, capacity, reserved_count, status)";
 
 type Row = {
   id: string;
@@ -69,6 +70,7 @@ type Row = {
   summary: string;
   price: number;
   category_slug: string;
+  cover_image_url: string | null;
   is_sample: boolean;
   host: HostSummary | null;
   sessions: Session[] | null;
@@ -91,6 +93,7 @@ function toCard(row: Row): MeetupCardData | null {
     summary: row.summary,
     price: row.price,
     category_slug: row.category_slug,
+    cover_image_url: row.cover_image_url,
     is_sample: row.is_sample,
     host: row.host,
     nextSession: sessions[0],
@@ -130,7 +133,7 @@ export async function getMeetup(id: string): Promise<MeetupDetail | null> {
   const { data, error } = await supabase
     .from("meetups")
     .select(
-      "id, title, summary, description, price, category_slug, meetup_type, is_sample, status, max_quantity_per_booking, target_audience, requirements, what_to_bring, agenda, refund_policy_text, level, learning_outcomes, materials_note, host:host_profiles(user_id, display_name, headline, bio, expertise, instagram_handle, career, is_sample), sessions:meetup_sessions(id, starts_at, ends_at, area, venue_name, capacity, reserved_count, status)",
+      "id, title, summary, description, price, category_slug, cover_image_url, meetup_type, is_sample, status, max_quantity_per_booking, target_audience, requirements, what_to_bring, agenda, refund_policy_text, level, learning_outcomes, materials_note, host:host_profiles(user_id, display_name, headline, bio, expertise, instagram_handle, career, is_sample), sessions:meetup_sessions(id, starts_at, ends_at, area, venue_name, capacity, reserved_count, status)",
     )
     .eq("id", id)
     .eq("status", "published")

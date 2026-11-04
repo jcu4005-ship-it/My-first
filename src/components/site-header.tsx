@@ -62,20 +62,51 @@ async function UnreadBadge({ userId }: { userId: string }) {
   );
 }
 
-export function SiteHeader() {
+const NAV = [
+  { href: "/meetups", label: "Experiences", ko: "클래스" },
+  { href: "/experts", label: "Experts", ko: "전문가" },
+  { href: "/host/apply", label: "Become a Host", ko: "호스트 지원" },
+];
+
+/**
+ * 사이트 머리글. overlay=true면 메인 히어로 사진 위에 투명하게 겹칩니다.
+ * 메뉴 이름은 영문 라벨 + 화면 읽기용 한글 이름을 함께 둡니다.
+ */
+export function SiteHeader({ overlay = false }: { overlay?: boolean }) {
   return (
-    <header className="mx-auto flex w-full max-w-6xl items-center justify-between gap-3 px-4 py-4 sm:px-8 sm:py-5">
-      <div className="flex items-center gap-4 whitespace-nowrap">
-        <Link href="/" className="font-display text-xl font-bold tracking-tight">
-          {displayName()}
-        </Link>
-        <Link href="/meetups" className="text-sm text-muted-foreground hover:text-foreground">
-          클래스
-        </Link>
+    <header
+      className={
+        overlay
+          ? "absolute inset-x-0 top-0 z-20 text-sand-light [--muted-foreground:#d6cec1] [--foreground:#f5f1ea] [--primary:#f5f1ea] [--primary-foreground:#211d1a]"
+          : "border-b border-border/70"
+      }
+    >
+      <div className="mx-auto flex w-full max-w-7xl items-center justify-between gap-3 px-4 py-4 sm:px-8">
+        <div className="flex items-center gap-8 whitespace-nowrap">
+          <Link href="/" className="font-display text-xl font-bold tracking-[0.12em] uppercase">
+            {displayName()}
+          </Link>
+          <nav aria-label="주요 메뉴" className="hidden items-center gap-6 md:flex">
+            {NAV.map((n) => (
+              <Link key={n.href} href={n.href} className="eyebrow text-muted-foreground transition-colors hover:text-foreground">
+                {n.label}
+                <span className="sr-only"> ({n.ko})</span>
+              </Link>
+            ))}
+          </nav>
+        </div>
+        <Suspense fallback={<div className="h-9" />}>
+          <AccountNav />
+        </Suspense>
       </div>
-      <Suspense fallback={<div className="h-9" />}>
-        <AccountNav />
-      </Suspense>
+      <nav aria-label="주요 메뉴 (모바일)" className="mx-auto flex w-full max-w-7xl gap-5 px-4 pb-3 md:hidden">
+        {NAV.map((n) => (
+          <Link key={n.href} href={n.href} className="eyebrow py-1 text-muted-foreground hover:text-foreground">
+            {n.label}
+            <span className="sr-only"> ({n.ko})</span>
+          </Link>
+        ))}
+      </nav>
     </header>
   );
 }

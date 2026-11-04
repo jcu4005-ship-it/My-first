@@ -1,21 +1,18 @@
-/** 카테고리별 표지 색 (화면 표현용). 사진이 없는 클래스도 잡지 표지처럼 보이게 합니다. */
+/**
+ * 카테고리별 표지 색과 영문 라벨 (화면 표현용, DB 카테고리 slug 기준).
+ * 색은 브랜드 팔레트(espresso·sand·terracotta·olive)와 그 명암 변형만 사용합니다.
+ */
 const STYLES: Record<string, { bg: string; fg: string; label: string }> = {
-  reading: { bg: "#E9E1D3", fg: "#3B2F25", label: "READING" },
-  music: { bg: "#2E2A44", fg: "#F2C7A8", label: "MUSIC CLASS" },
-  photo: { bg: "#D9CBB4", fg: "#2B2420", label: "FILM & PHOTO" },
-  art: { bg: "#C9D8C5", fg: "#22362A", label: "DRAWING & CRAFT" },
-  philosophy: { bg: "#1F2D3A", fg: "#E8DCC8", label: "SALON" },
-  networking: { bg: "#F1D9C4", fg: "#5A2E1B", label: "PEOPLE" },
-  travel: { bg: "#BFD6DE", fg: "#173342", label: "TRAVEL" },
-  outdoor: { bg: "#C5502E", fg: "#FBEFE3", label: "OUTDOOR" },
-  wine: { bg: "#5B1F2B", fg: "#F3D9C9", label: "WINE" },
-  coffee: { bg: "#3A2A20", fg: "#EAD7BF", label: "COFFEE & TEA" },
-  cooking: { bg: "#E8C9A0", fg: "#3D2414", label: "COOKING" },
-  writing: { bg: "#F0EBE1", fg: "#22201C", label: "WRITING" },
-  career: { bg: "#1E3A4C", fg: "#E3EEF2", label: "CAREER SKILLS" },
-  wellness: { bg: "#B9CDB8", fg: "#1D3121", label: "BODY & POSTURE" },
+  photo: { bg: "#211D1A", fg: "#EAE4D9", label: "PHOTOGRAPHY" },
+  art: { bg: "#747A65", fg: "#F5F1EA", label: "CRAFT & DESIGN" },
+  music: { bg: "#2D2824", fg: "#D9B39E", label: "MUSIC" },
+  coffee: { bg: "#A66D50", fg: "#FFFFFF", label: "COFFEE & TEA" },
+  cooking: { bg: "#EAE4D9", fg: "#211D1A", label: "FOOD & DINING" },
+  writing: { bg: "#D8D0C2", fg: "#211D1A", label: "WRITING" },
+  career: { bg: "#4E5244", fg: "#EAE4D9", label: "BUSINESS & SKILLS" },
+  wellness: { bg: "#C4B8A4", fg: "#211D1A", label: "WELLNESS" },
 };
 
 export function categoryStyle(slug: string) {
-  return STYLES[slug] ?? { bg: "#E4E0D8", fg: "#2A2522", label: slug.toUpperCase() };
+  return STYLES[slug] ?? { bg: "#2D2824", fg: "#EAE4D9", label: slug.toUpperCase() };
 }

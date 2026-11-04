@@ -3,44 +3,39 @@
 
 /*
  * 디자인 토큰 — 색·글꼴·모서리 값은 여기서만 정의합니다.
- * 브랜드 확정 시 이 블록만 바꾸면 전체 화면에 반영됩니다.
- * 방향: Modern · Editorial · Minimal — 따뜻한 오프화이트 바탕, 잉크색 글자, 절제된 포인트 색.
+ * 방향: Premium Urban Lifestyle Club — 에디토리얼, 절제된 타이포그래피, 어두운/밝은 섹션 교차.
+ * 팔레트: Deep Espresso #211D1A · Warm Sand #EAE4D9 · Burnt Terracotta #A66D50 · Olive #747A65 · White
+ * 대비: 작은 본문 글자는 espresso 또는 muted-foreground(#5C574F)만 사용 (모래색 바탕에서 4.5:1 이상).
+ *       terracotta·olive는 큰 글자·라벨·장식에만 사용.
+ * 섹션 교차를 브랜드 디자인으로 쓰기 때문에 시스템 다크 모드에 따라 색을 뒤집지 않습니다.
  */
 :root {
-  --background: oklch(0.985 0.004 85);   /* 종이 느낌의 오프화이트 */
-  --foreground: oklch(0.2 0.01 60);      /* 잉크 */
-  --muted: oklch(0.95 0.006 85);
-  --muted-foreground: oklch(0.5 0.01 60);
-  --border: oklch(0.9 0.008 85);
-  --primary: oklch(0.2 0.01 60);
-  --primary-foreground: oklch(0.985 0.004 85);
-  --secondary: oklch(0.93 0.01 85);
-  --secondary-foreground: oklch(0.2 0.01 60);
-  --accent: oklch(0.62 0.13 45);         /* 테라코타 포인트 */
-  --accent-foreground: oklch(0.985 0.004 85);
-  --destructive: oklch(0.55 0.2 27);
-  --notice: oklch(0.93 0.06 85);         /* 테스트 모드 등 안내 띠 */
-  --notice-foreground: oklch(0.35 0.06 70);
-  --ring: oklch(0.2 0.01 60);
-  --radius: 0.75rem;
-}
+  --espresso: #211d1a;
+  --espresso-soft: #2d2824;
+  --sand: #eae4d9;
+  --sand-light: #f5f1ea;
+  --terracotta: #a66d50;
+  --terracotta-deep: #8a563d;      /* 작은 글자용 (대비 4.5:1 이상) */
+  --olive: #747a65;
+  --white: #ffffff;
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: oklch(0.17 0.008 60);
-    --foreground: oklch(0.95 0.006 85);
-    --muted: oklch(0.23 0.008 60);
-    --muted-foreground: oklch(0.7 0.01 70);
-    --border: oklch(0.3 0.008 60);
-    --primary: oklch(0.95 0.006 85);
-    --primary-foreground: oklch(0.17 0.008 60);
-    --secondary: oklch(0.26 0.008 60);
-    --secondary-foreground: oklch(0.95 0.006 85);
-    --accent: oklch(0.7 0.13 45);
-    --notice: oklch(0.3 0.05 80);
-    --notice-foreground: oklch(0.92 0.05 85);
-    --ring: oklch(0.95 0.006 85);
-  }
+  --background: var(--sand-light);
+  --foreground: var(--espresso);
+  --muted: var(--sand);
+  --muted-foreground: #5c574f;
+  --border: #d8d0c2;
+  --primary: var(--espresso);
+  --primary-foreground: var(--sand-light);
+  --secondary: var(--sand);
+  --secondary-foreground: var(--espresso);
+  --accent: var(--terracotta);
+  --accent-foreground: var(--white);
+  --destructive: #a33a2a;
+  --notice: #e4dccb;               /* 테스트 모드·샘플 안내 띠 */
+  --notice-foreground: #4a3f30;
+  --ring: var(--espresso);
+  --radius: 0.25rem;
+  color-scheme: light;
 }
 
 @theme inline {
@@ -59,6 +54,13 @@
   --color-notice: var(--notice);
   --color-notice-foreground: var(--notice-foreground);
   --color-ring: var(--ring);
+  --color-espresso: var(--espresso);
+  --color-espresso-soft: var(--espresso-soft);
+  --color-sand: var(--sand);
+  --color-sand-light: var(--sand-light);
+  --color-terracotta: var(--terracotta);
+  --color-terracotta-deep: var(--terracotta-deep);
+  --color-olive: var(--olive);
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
@@ -75,5 +77,26 @@
     @apply bg-background text-foreground;
     font-family: var(--font-sans);
     word-break: keep-all; /* 한글 단어 단위 줄바꿈 */
+  }
+}
+
+@layer components {
+  /* 영문 소제목 라벨 (예: DISCOVER NEW EXPERIENCES) */
+  .eyebrow {
+    @apply text-[11px] font-medium tracking-[0.28em] uppercase;
+  }
+  /* 어두운 섹션 */
+  .section-dark {
+    @apply bg-espresso text-sand-light;
+    --muted-foreground: #b9b0a2;
+    --border: #3a342f;
+    --ring: var(--sand-light);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
   }
 }

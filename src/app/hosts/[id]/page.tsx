@@ -24,71 +24,90 @@ export default async function HostPage({ params }: PageProps<"/hosts/[id]">) {
   return (
     <>
       <SiteHeader />
-      <main className="mx-auto w-full max-w-6xl flex-1 px-4 pt-8 sm:px-8 sm:pt-14">
-        <section className="flex flex-col gap-6 sm:flex-row sm:items-start sm:gap-10">
-          <span className="flex size-20 shrink-0 items-center justify-center rounded-full bg-secondary font-display text-3xl font-bold sm:size-28 sm:text-4xl">
-            {host.display_name.slice(0, 1)}
-          </span>
-          <div className="max-w-2xl">
-            <p className="text-xs tracking-[0.25em] text-accent">HOST{host.is_sample ? " · 샘플" : ""}</p>
-            <h1 className="mt-2 font-display text-3xl font-bold sm:text-4xl" data-testid="host-name">
-              {host.display_name}
-            </h1>
-            <p className="mt-3 text-lg leading-relaxed">{host.headline}</p>
-            <p className="mt-4 leading-relaxed whitespace-pre-line text-muted-foreground">{host.bio}</p>
+      <main className="flex-1">
+        <section className="section-dark">
+          <div className="mx-auto grid w-full max-w-7xl gap-10 px-4 py-14 sm:px-8 sm:py-20 lg:grid-cols-[320px_1fr] lg:gap-16">
+            <div className="relative flex aspect-[4/5] items-end overflow-hidden bg-espresso-soft p-6">
+              <span aria-hidden className="absolute -top-6 -right-2 font-display text-[12rem] leading-none font-bold text-sand-light/[0.07]">
+                {host.display_name.slice(0, 1)}
+              </span>
+              <span className="relative eyebrow text-muted-foreground">{host.expertise.slice(0, 3).join(" · ") || "Expert"}</span>
+            </div>
+            <div className="flex flex-col justify-end">
+              <p className="eyebrow text-muted-foreground">Expert{host.is_sample ? " · 샘플" : ""}</p>
+              <h1 className="mt-4 font-display text-4xl font-medium sm:text-6xl" data-testid="host-name">
+                {host.display_name}
+              </h1>
+              <p className="mt-4 max-w-2xl text-lg leading-relaxed text-sand">{host.headline}</p>
+              {host.instagram_handle && (
+                <a
+                  href={`https://www.instagram.com/${host.instagram_handle}/`}
+                  target="_blank"
+                  rel="noopener noreferrer nofollow"
+                  className="eyebrow mt-6 self-start border-b border-current pb-1"
+                >
+                  Instagram @{host.instagram_handle}
+                </a>
+              )}
+            </div>
+          </div>
+        </section>
+
+        <div className="mx-auto grid w-full max-w-7xl gap-12 px-4 pt-14 sm:px-8 lg:grid-cols-[1fr_1fr] lg:gap-20">
+          <section>
+            <p className="eyebrow text-muted-foreground">About</p>
+            <p className="mt-4 leading-relaxed whitespace-pre-line">{host.bio}</p>
             {host.expertise.length > 0 && (
-              <ul className="mt-5 flex flex-wrap gap-2">
+              <ul className="mt-6 flex flex-wrap gap-2">
                 {host.expertise.map((e) => (
-                  <li key={e} className="rounded-full bg-secondary px-3 py-1 text-xs">
+                  <li key={e} className="border border-current/30 px-3 py-1 text-xs">
                     {e}
                   </li>
                 ))}
               </ul>
             )}
-            {(host.career || host.credentials || host.teaching_experience || host.portfolio_url) && (
-              <dl className="mt-6 grid gap-4 rounded-2xl border p-5 text-sm" data-testid="host-credentials">
-                {host.career && (
-                  <div>
-                    <dt className="text-muted-foreground">경력</dt>
-                    <dd className="mt-1 leading-relaxed whitespace-pre-line">{host.career}</dd>
-                  </div>
-                )}
-                {host.credentials && (
-                  <div>
-                    <dt className="text-muted-foreground">자격·수상</dt>
-                    <dd className="mt-1 leading-relaxed">{host.credentials}</dd>
-                  </div>
-                )}
-                {host.teaching_experience && (
-                  <div>
-                    <dt className="text-muted-foreground">가르친 경험</dt>
-                    <dd className="mt-1 leading-relaxed">{host.teaching_experience}</dd>
-                  </div>
-                )}
-                {host.portfolio_url && (
-                  <div>
-                    <dt className="text-muted-foreground">포트폴리오</dt>
-                    <dd className="mt-1 break-all">
-                      <a href={host.portfolio_url} target="_blank" rel="noopener noreferrer nofollow" className="underline underline-offset-4">
-                        {host.portfolio_url}
-                      </a>
-                    </dd>
-                  </div>
-                )}
-              </dl>
-            )}
-            {host.instagram_handle && (
-              <p className="mt-4 text-sm text-muted-foreground">Instagram @{host.instagram_handle}</p>
-            )}
-          </div>
-        </section>
+          </section>
+          {(host.career || host.credentials || host.teaching_experience || host.portfolio_url) && (
+            <dl className="flex flex-col text-sm" data-testid="host-credentials">
+              {host.career && (
+                <div className="border-t py-4">
+                  <dt className="eyebrow text-muted-foreground">Career · 경력</dt>
+                  <dd className="mt-2 leading-relaxed whitespace-pre-line">{host.career}</dd>
+                </div>
+              )}
+              {host.credentials && (
+                <div className="border-t py-4">
+                  <dt className="eyebrow text-muted-foreground">Credentials · 자격·수상</dt>
+                  <dd className="mt-2 leading-relaxed">{host.credentials}</dd>
+                </div>
+              )}
+              {host.teaching_experience && (
+                <div className="border-t py-4">
+                  <dt className="eyebrow text-muted-foreground">Teaching · 가르친 경험</dt>
+                  <dd className="mt-2 leading-relaxed">{host.teaching_experience}</dd>
+                </div>
+              )}
+              {host.portfolio_url && (
+                <div className="border-t py-4">
+                  <dt className="eyebrow text-muted-foreground">Portfolio · 포트폴리오</dt>
+                  <dd className="mt-2 break-all">
+                    <a href={host.portfolio_url} target="_blank" rel="noopener noreferrer nofollow" className="underline underline-offset-4">
+                      {host.portfolio_url}
+                    </a>
+                  </dd>
+                </div>
+              )}
+            </dl>
+          )}
+        </div>
 
-        <section className="mt-16">
-          <h2 className="mb-8 font-display text-2xl font-bold">열리는 클래스</h2>
+        <section className="mx-auto w-full max-w-7xl px-4 pt-20 sm:px-8">
+          <p className="eyebrow text-muted-foreground">Classes</p>
+          <h2 className="mt-3 mb-10 font-display text-3xl font-medium">열리는 클래스</h2>
           {meetups.length ? (
             <MeetupGrid meetups={meetups} categoryNames={names} />
           ) : (
-            <p className="py-10 text-muted-foreground">지금 모집 중인 클래스가 없어요.</p>
+            <p className="border-y py-12 text-muted-foreground">지금 모집 중인 클래스가 없어요.</p>
           )}
         </section>
       </main>
