@@ -85,3 +85,4 @@
 - 메인 카피를 배움·성장 중심으로 조정 (영문 라벨 "Learn from people worth learning from", 한글 소개 문구)
 - 기능 명세 `docs/FEATURE_SPEC.md` 추가
 - 검증(로컬): 단위 40, E2E 20 통과(호스트 안내 테스트 추가), 번들 비밀키 검사 통과, 휴대폰 가로 밀림 없음
+- 스테이징 run #9 https://github.com/jcu4005-ship-it/My-first/actions/runs/42225202517 — E2E 17 통과·1 실패: 샘플 일정 날짜가 지나 목록이 8→7개가 됨(기능 문제 아님). 목록 테스트를 고정 숫자 대신 DB 기준 기대값으로 수정. 샘플 일정은 넣은 날 기준 2~19일 뒤라 시간이 지나면 사라짐 → 필요 시 seed_samples=yes로 새로 고침

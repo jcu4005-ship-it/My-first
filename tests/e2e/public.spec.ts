@@ -83,9 +83,23 @@ test("호스트 안내: 정책·과정·약속·로드맵, 지원하기 연결, 
 
 test("목록: 클래스 카테고리 필터, 비공개·비활성 카테고리 미노출, 빈 카테고리 안내", async ({ page }) => {
   test.skip(!samples, "샘플 데이터 없음");
+  // 기대값은 DB에서 직접 계산: 공개 상태 + 활성 카테고리 + 앞으로 열리는(취소되지 않은) 일정이 있는 클래스 수.
+  // (샘플 일정은 시간이 지나면 지나가므로 고정 숫자 대신 DB 기준으로 비교)
+  const db = adminApi();
+  const { data: active } = await db.from("categories").select("slug").eq("is_active", true);
+  const { data: rows } = await db
+    .from("meetups")
+    .select("id, sessions:meetup_sessions(starts_at, status)")
+    .eq("status", "published")
+    .in("category_slug", (active ?? []).map((c) => c.slug));
+  const now = Date.now();
+  const expected = (rows ?? []).filter((m) =>
+    (m.sessions as { starts_at: string; status: string }[]).some((s) => s.status !== "cancelled" && new Date(s.starts_at).getTime() > now),
+  ).length;
+  expect(expected, "목록에 보일 클래스가 1개 이상 있어야 검사 가능").toBeGreaterThan(0);
   await page.goto("/meetups");
-  const all = await page.getByTestId("meetup-card").count();
-  expect(all).toBeGreaterThanOrEqual(8);
+  await expect(page.getByTestId("result-count")).toHaveText(`${expected}개의 클래스`);
+  await expect(page.getByTestId("meetup-card")).toHaveCount(expected);
   await expect(page.getByText("(검토 중)")).toHaveCount(0);
 
   // 친목형 카테고리는 더 이상 보이지 않음
