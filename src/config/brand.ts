@@ -15,7 +15,7 @@ export const brand = {
   /** 메인 영문 카피 */
   englishTagline: "Make time for what inspires you.",
   /** 한 줄 소개 (한글) */
-  tagline: "취향이 맞는 사람들, 새로운 경험이 시작되는 곳.",
+  tagline: "검증된 전문가에게 소수 정예로 배우고, 어제보다 나은 나를 만나는 시간.",
   description:
     "검증된 전문가와 크리에이터가 여는 소수 정예 오프라인 클래스와 경험",
   locale: "ko-KR",

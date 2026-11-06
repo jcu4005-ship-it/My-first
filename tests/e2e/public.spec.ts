@@ -66,6 +66,21 @@ test("메인 갤러리: 작품 클릭·좌우 버튼·키보드·스와이프로
   await expect(page.getByTestId("meetup-title")).toBeVisible();
 });
 
+test("호스트 안내: 정책·과정·약속·로드맵, 지원하기 연결, 메뉴에서 진입", async ({ page }) => {
+  await page.goto("/");
+  await page.getByRole("navigation", { name: "주요 메뉴" }).or(page.getByRole("navigation", { name: "주요 메뉴 (모바일)" }))
+    .getByRole("link", { name: /Become a Host/ }).filter({ visible: true }).first().click();
+  await expect(page).toHaveURL(/\/for-hosts$/);
+  const main = page.getByTestId("for-hosts");
+  await expect(main.getByRole("heading", { level: 1 })).toBeVisible();
+  await expect(main.getByRole("heading", { name: "입장료는 없습니다" })).toBeVisible();
+  await expect(main.getByRole("heading", { name: "클래스가 판매될 때만" })).toBeVisible();
+  await expect(main.getByTestId("commission-note")).toContainText("정식 오픈 전");
+  await expect(main.getByTestId("roadmap")).toContainText("앞으로의 계획");
+  await main.getByRole("link", { name: "호스트 지원하기" }).first().click();
+  await expect(page).toHaveURL(/\/login\?next=%2Fhost%2Fapply/); // 비로그인은 로그인으로
+});
+
 test("목록: 클래스 카테고리 필터, 비공개·비활성 카테고리 미노출, 빈 카테고리 안내", async ({ page }) => {
   test.skip(!samples, "샘플 데이터 없음");
   await page.goto("/meetups");

@@ -51,7 +51,10 @@ export default async function HostApplyPage() {
             </>
           )}
         </div>
-        <p className="mt-10 text-sm">
+        <p className="mt-8 text-sm">
+          <Link href="/for-hosts" className="underline underline-offset-4">호스트 정책(수수료·심사·정산) 먼저 보기</Link>
+        </p>
+        <p className="mt-4 text-sm">
           <Link href="/me" className="text-muted-foreground underline underline-offset-4">마이페이지로</Link>
         </p>
       </main>

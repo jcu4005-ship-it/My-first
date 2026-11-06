@@ -18,7 +18,7 @@ export function SiteFooter() {
         </nav>
         <nav className="flex flex-col gap-3 text-sm" aria-label="함께하기">
           <span className="eyebrow text-muted-foreground">Join</span>
-          <Link href="/host/apply" className="hover:underline hover:underline-offset-4">호스트 지원하기</Link>
+          <Link href="/for-hosts" className="hover:underline hover:underline-offset-4">호스트 안내·정책</Link>
           <Link href="/signup" className="hover:underline hover:underline-offset-4">회원가입</Link>
         </nav>
       </div>

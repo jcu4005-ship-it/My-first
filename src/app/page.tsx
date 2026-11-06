@@ -56,7 +56,7 @@ function Hero() {
         </div>
       )}
       <div className="mx-auto w-full max-w-7xl px-4 pt-40 pb-16 sm:px-8 sm:pb-24">
-        <p className="eyebrow text-muted-foreground">Urban Lifestyle &amp; Culture Club</p>
+        <p className="eyebrow text-muted-foreground">Learn from people worth learning from</p>
         <h1 id="hero-title" className="mt-5 max-w-4xl font-display text-[2.75rem] leading-[1.08] font-medium sm:text-8xl">
           {brand.englishTagline}
         </h1>
@@ -279,11 +279,16 @@ function BecomeHost() {
             당신의 전문성을 새로운 경험으로.
           </h2>
           <p className="mt-6 max-w-lg leading-relaxed text-muted-foreground">
-            경력과 포트폴리오를 보내 주시면 운영팀이 확인 후 승인해 드려요. 승인되면 바로 클래스를 만들고 참가자를 모집할 수 있어요.
+            입장료 없이, 클래스가 판매될 때만 함께 나눠요. 경력과 포트폴리오를 보내 주시면 운영팀이 확인 후 승인해 드려요.
           </p>
-          <Button asChild size="lg" className="mt-10">
-            <Link href="/host/apply">호스트 지원하기</Link>
-          </Button>
+          <div className="mt-10 grid grid-cols-1 gap-3 sm:flex">
+            <Button asChild size="lg">
+              <Link href="/host/apply">호스트 지원하기</Link>
+            </Button>
+            <Button asChild size="lg" variant="outline">
+              <Link href="/for-hosts">호스트 정책 보기</Link>
+            </Button>
+          </div>
         </div>
         <div className="flex flex-col">
           {img && (
