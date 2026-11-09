@@ -65,6 +65,7 @@ async function UnreadBadge({ userId }: { userId: string }) {
 const NAV = [
   { href: "/meetups", label: "Experiences", ko: "프로그램" },
   { href: "/hosts", label: "Hosts", ko: "호스트" },
+  { href: "/journal", label: "Journal", ko: "저널" },
   { href: "/become-a-host", label: "Become a Host", ko: "호스트 안내" },
 ];
 
@@ -99,9 +100,9 @@ export function SiteHeader({ overlay = false }: { overlay?: boolean }) {
           <AccountNav />
         </Suspense>
       </div>
-      <nav aria-label="주요 메뉴 (모바일)" className="mx-auto flex w-full max-w-7xl gap-5 px-4 pb-3 md:hidden">
+      <nav aria-label="주요 메뉴 (모바일)" className="no-scrollbar relative mx-auto flex w-full max-w-7xl gap-4 overflow-x-auto px-4 pb-3 whitespace-nowrap md:hidden">
         {NAV.map((n) => (
-          <Link key={n.href} href={n.href} className="eyebrow py-1 text-muted-foreground hover:text-foreground">
+          <Link key={n.href} href={n.href} className="eyebrow relative shrink-0 py-1 text-muted-foreground hover:text-foreground">
             {n.label}
             <span className="sr-only"> ({n.ko})</span>
           </Link>

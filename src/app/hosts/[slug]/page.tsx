@@ -3,12 +3,14 @@ import Link from "next/link";
 import { notFound, permanentRedirect } from "next/navigation";
 
 import { Photo } from "@/components/media/photo";
+import { ContentGrid } from "@/components/contents/content-card";
 import { FollowButton } from "@/components/hosts/follow-button";
 import { MeetupGrid } from "@/components/meetups/meetup-card";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { pillarInfo } from "@/config/pillars";
 import { getCurrentMember } from "@/lib/auth/session";
+import { listPublishedContents } from "@/lib/contents/queries";
 import { hostAvatarUrl } from "@/lib/hosting/avatar";
 import { getFollowState } from "@/lib/hosting/follows";
 import { getHost, listCategories, listUpcomingMeetups } from "@/lib/meetups/queries";
@@ -51,11 +53,14 @@ export default async function HostPage({ params }: PageProps<"/hosts/[slug]">) {
   if (UUID.test(slug) && host.slug) permanentRedirect(`/hosts/${host.slug}`);
 
   const member = await getCurrentMember();
-  const [meetups, categories, follow] = await Promise.all([
+  const [meetups, categories, follow, contents] = await Promise.all([
     listUpcomingMeetups({ hostId: host.user_id }),
     listCategories(),
     getFollowState(host.user_id, member?.id ?? null),
+    listPublishedContents({ hostId: host.user_id }),
   ]);
+  const portfolio = contents.filter((c) => c.type === "portfolio");
+  const stories = contents.filter((c) => c.type !== "portfolio");
   const names = Object.fromEntries(categories.map((c) => [c.slug, c.name]));
   const { soon, later } = splitBySoon(meetups);
   const pillar = pillarInfo(host.primary_pillar);
@@ -167,8 +172,8 @@ export default async function HostPage({ params }: PageProps<"/hosts/[slug]">) {
             </Section>
           )}
 
-          {/* 6. 포트폴리오 (작품 콘텐츠는 콘텐츠 기능과 함께 추가 예정) */}
-          {host.portfolio_url && (
+          {/* 6. 포트폴리오 링크 */}
+          {host.portfolio_url && portfolio.length === 0 && (
             <Section eyebrow="Portfolio" title="포트폴리오">
               <a href={host.portfolio_url} target="_blank" rel="noopener noreferrer nofollow" className="break-all underline underline-offset-4">
                 {host.portfolio_url}
@@ -176,6 +181,27 @@ export default async function HostPage({ params }: PageProps<"/hosts/[slug]">) {
             </Section>
           )}
         </div>
+
+        {/* 6~7. 포트폴리오 · 발행 콘텐츠 (운영팀 검토를 거쳐 공개된 글만) */}
+        {portfolio.length > 0 && (
+          <section className="mx-auto w-full max-w-7xl border-t px-4 py-10 sm:px-8 sm:py-12" data-testid="host-portfolio">
+            <p className="eyebrow text-muted-foreground">Portfolio</p>
+            <h2 className="mt-2 mb-8 font-display text-2xl font-medium">포트폴리오</h2>
+            <ContentGrid contents={portfolio} />
+            {host.portfolio_url && (
+              <a href={host.portfolio_url} target="_blank" rel="noopener noreferrer nofollow" className="eyebrow mt-8 inline-block border-b border-current pb-1">
+                외부 포트폴리오 보기
+              </a>
+            )}
+          </section>
+        )}
+        {stories.length > 0 && (
+          <section className="mx-auto w-full max-w-7xl border-t px-4 py-10 sm:px-8 sm:py-12" data-testid="host-journal">
+            <p className="eyebrow text-muted-foreground">Journal</p>
+            <h2 className="mt-2 mb-8 font-display text-2xl font-medium">호스트의 글</h2>
+            <ContentGrid contents={stories} />
+          </section>
+        )}
 
         {/* 8~9. 곧 열리는 / 예정된 프로그램 */}
         <section className="mx-auto w-full max-w-7xl px-4 pt-10 sm:px-8" data-testid="host-programs">

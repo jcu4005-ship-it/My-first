@@ -250,4 +250,20 @@ begin
   insert into public.meetups (host_id, category_slug, title, summary, description, price, status, is_sample)
   values (h3, 'music', '핑거스타일 기타 중급반 (검토 중)', '공개 전 검토 중인 샘플 클래스입니다. 목록에 나오면 안 됩니다.',
     '검토 중인 샘플 클래스입니다. 공개 목록과 상세 화면에 노출되지 않아야 합니다.', 25000, 'pending_review', true);
+
+  -- 샘플 저널 글 (다시 실행하면 지우고 새로 넣음)
+  delete from public.contents where is_sample;
+  insert into public.contents (slug, type, status, title, summary, body, author_id, host_id, related_meetup_id, is_sample, published_at) values
+  ('sample-filmlog-light', 'article', 'published', '사진은 빛을 읽는 일에서 시작됩니다',
+   '필름 현상소를 운영하며 매일 보는 실패한 사진들. 대부분은 장비가 아니라 빛 때문이었어요.',
+   E'현상소에서 매일 수백 장의 필름을 봅니다. 초점이 나간 사진보다 훨씬 많은 건, 빛을 보지 않고 찍은 사진이에요.\n\n셔터를 누르기 전에 딱 세 가지만 확인해 보세요. 빛이 어디서 오는지, 그림자가 어느 쪽으로 지는지, 얼굴에 빛이 닿는지. 이 습관 하나로 같은 카메라가 전혀 다른 결과를 냅니다.\n\n다음 프로그램에서는 을지로 골목의 오후 빛으로 이 연습을 직접 해 봅니다. (샘플 글)',
+   h1, h1, (select id from public.meetups where host_id = h1 and is_sample and status = 'published' limit 1), true, now() - interval '2 days'),
+  ('sample-filmlog-portfolio', 'portfolio', 'published', '을지로, 오후 네 시의 필름',
+   '현상소 근처 골목에서 1년 동안 같은 시간에 찍은 필름 사진 기록입니다.',
+   E'매일 오후 네 시, 현상소 문을 잠시 닫고 같은 골목을 찍었습니다. 계절이 바뀌면 빛의 각도도 바뀌고, 같은 벽이 전혀 다른 색이 됩니다.\n\n이 기록은 장비가 아니라 시간을 들여 보는 일에 대한 작업이에요. 프로그램에서 실제 필름과 인화본을 함께 볼 수 있어요. (샘플 글)',
+   h1, h1, null, true, now() - interval '5 days'),
+  ('sample-think-lab-interview', 'interview', 'published', '“답보다 질문을 가져가는 시간” — 생각 연구소 윤재',
+   '철학을 외우는 대신 질문 도구를 빌려 쓰는 워크숍. 왜 이런 프로그램을 열었는지 물었습니다.',
+   E'Q. 철학 프로그램이라고 하면 어렵게 느끼는 분이 많아요.\n철학자의 이름을 외울 필요는 전혀 없어요. 그분들이 쓰던 질문 방법만 빌려 오면 됩니다.\n\nQ. 참가자들은 무엇을 가져가나요?\n각자 고민 하나를 질문 세 개로 나눈 한 장짜리 생각 지도요. 답을 드리진 않지만, 답을 찾는 방법은 가져가실 수 있어요. (샘플 인터뷰)',
+   h5, h5, (select id from public.meetups where host_id = h5 and is_sample and status = 'published' limit 1), true, now() - interval '1 day');
 end $$;

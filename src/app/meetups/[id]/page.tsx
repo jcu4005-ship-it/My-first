@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 
 import { SampleBadge, seatsLeft } from "@/components/meetups/badges";
 import { Photo } from "@/components/media/photo";
+import { RecordRecentlyViewed } from "@/components/recently-viewed";
 import { categoryStyle } from "@/components/meetups/category-style";
 import { EditorialCover } from "@/components/meetups/editorial-cover";
 import { SiteFooter } from "@/components/site-footer";
@@ -60,6 +61,7 @@ export default async function MeetupDetailPage({ params }: PageProps<"/meetups/[
   return (
     <>
       <SiteHeader />
+      <RecordRecentlyViewed item={{ kind: "program", href: `/meetups/${meetup.id}`, title: meetup.title }} />
       <main className="flex-1 pb-28 lg:pb-0">
         {/* 1. 대표 이미지 */}
         <div className={`relative w-full overflow-hidden bg-espresso ${meetup.cover_image_url ? "aspect-[4/5] sm:aspect-[21/9]" : "aspect-[16/9] sm:aspect-[3/1]"}`}>

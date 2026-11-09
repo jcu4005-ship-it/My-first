@@ -30,6 +30,7 @@ export default async function HostDashboard() {
             <span className="mt-1 flex gap-4 text-sm">
               <Link href={hostHref(host)} className="text-muted-foreground underline underline-offset-4">공개 프로필 보기</Link>
               <Link href="/host/profile" className="underline underline-offset-4" data-testid="edit-profile-link">프로필 관리</Link>
+              <Link href="/host/contents" className="underline underline-offset-4" data-testid="host-contents-link">내 콘텐츠</Link>
             </span>
           </div>
           <Button asChild>

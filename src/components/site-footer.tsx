@@ -15,6 +15,7 @@ export function SiteFooter() {
           <span className="eyebrow text-muted-foreground">Explore</span>
           <Link href="/meetups" className="hover:underline hover:underline-offset-4">프로그램 둘러보기</Link>
           <Link href="/hosts" className="hover:underline hover:underline-offset-4">호스트</Link>
+          <Link href="/journal" className="hover:underline hover:underline-offset-4">저널</Link>
         </nav>
         <nav className="flex flex-col gap-3 text-sm" aria-label="함께하기">
           <span className="eyebrow text-muted-foreground">Join</span>

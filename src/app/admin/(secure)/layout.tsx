@@ -12,6 +12,7 @@ export default function AdminLayout({ children }: LayoutProps<"/">) {
           <Link href="/admin" className="px-3 py-3 text-muted-foreground hover:text-foreground">대시보드</Link>
           <Link href="/admin/meetups" className="px-3 py-3 text-muted-foreground hover:text-foreground">프로그램 심사</Link>
           <Link href="/admin/hosts" className="px-3 py-3 text-muted-foreground hover:text-foreground">호스트 심사</Link>
+          <Link href="/admin/contents" className="px-3 py-3 text-muted-foreground hover:text-foreground">콘텐츠</Link>
           <Link href="/admin/members" className="px-3 py-3 text-muted-foreground hover:text-foreground">회원</Link>
           <Link href="/admin/audit" className="px-3 py-3 text-muted-foreground hover:text-foreground">감사 기록</Link>
         </nav>

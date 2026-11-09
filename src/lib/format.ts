@@ -39,3 +39,8 @@ export function durationLabel(startIso: string, endIso: string): string {
 export function isFuture(iso: string): boolean {
   return new Date(iso).getTime() > Date.now();
 }
+
+/** 2026. 11. 9. */
+export function formatYmd(iso: string): string {
+  return new Intl.DateTimeFormat("ko-KR", { timeZone: TZ, year: "numeric", month: "numeric", day: "numeric" }).format(new Date(iso));
+}

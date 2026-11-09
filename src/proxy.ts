@@ -69,6 +69,12 @@ export async function proxy(request: NextRequest) {
     return h ? response : missing();
   }
 
+  if (seg[0] === "journal" && seg.length === 2) {
+    if (!/^[a-z0-9][a-z0-9-]{1,40}[a-z0-9]$/.test(seg[1])) return missing();
+    const { data: c } = await supabase.from("contents").select("id").eq("slug", seg[1]).eq("status", "published").maybeSingle();
+    return c ? response : missing();
+  }
+
   if (!PROTECTED_PREFIXES.some((p) => under(pathname, p))) return response;
 
   // ---- 로그인 필요 ----
@@ -79,7 +85,7 @@ export async function proxy(request: NextRequest) {
     return carry(NextResponse.redirect(loginUrl));
   }
 
-  const needsRole = under(pathname, "/admin") || under(pathname, "/host/meetups");
+  const needsRole = under(pathname, "/admin") || under(pathname, "/host/meetups") || under(pathname, "/host/contents");
   if (!needsRole && !(seg[0] === "checkout" && seg.length === 2)) return response;
 
   const [{ data: profile }, { data: roleRows }] = await Promise.all([
@@ -108,6 +114,17 @@ export async function proxy(request: NextRequest) {
       if (!UUID.test(seg[2])) return missing();
       const { data: m } = await supabase.from("meetups").select("id").eq("id", seg[2]).eq("host_id", claims.sub).maybeSingle();
       if (!m) return missing();
+    }
+    return response;
+  }
+
+  // ---- 호스트 콘텐츠 관리: 호스트 역할 + 본인 글 ----
+  if (under(pathname, "/host/contents")) {
+    if (!active || !roles.has("host")) return deny();
+    if (seg.length >= 3 && seg[2] !== "new") {
+      if (!UUID.test(seg[2])) return missing();
+      const { data: c } = await supabase.from("contents").select("id").eq("id", seg[2]).eq("author_id", claims.sub).maybeSingle();
+      if (!c) return missing();
     }
     return response;
   }

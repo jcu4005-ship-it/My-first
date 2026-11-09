@@ -10,6 +10,7 @@ import { signOutAction } from "@/app/(auth)/actions";
 import { Button } from "@/components/ui/button";
 
 import { Photo } from "@/components/media/photo";
+import { RecentlyViewedList } from "@/components/recently-viewed";
 import { pillarInfo } from "@/config/pillars";
 import { APPLICATION_STATUS_LABEL, getMyApplication } from "@/lib/hosting/applications";
 import { hostAvatarUrl, hostHref } from "@/lib/hosting/avatar";
@@ -123,6 +124,8 @@ async function MyPage({ member }: { member: Awaited<ReturnType<typeof requireMem
           </ul>
         )}
       </section>
+
+      <RecentlyViewedList />
 
       <section className="flex flex-col gap-4" data-testid="me-activity">
         <div className="flex items-baseline justify-between">
