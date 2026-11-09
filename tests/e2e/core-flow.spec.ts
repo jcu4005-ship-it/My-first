@@ -25,14 +25,14 @@ function kstDate(daysAhead: number) {
   return d.toISOString().slice(0, 10);
 }
 
-test("호스트 신청(경력) → 승인 → 클래스 등록·일정 → 검수 → 공개 → 참가 신청 → 호스트 확인 → 취소", async ({ browser }) => {
+test("호스트 신청(경력) → 승인 → 프로그램 등록·일정 → 검수 → 공개 → 참가 신청 → 호스트 확인 → 취소", async ({ browser }) => {
   const hostUser = await createMember("flowh");
   const adminUser = await createMember("flowa");
   await grantRoleDirect(adminUser.id, "admin");
   try {
   const participant = await createMember("flowp");
   const hostName = `호스트${uniqueNickname("").slice(0, 6)}`;
-  const title = `흐름 테스트 글쓰기 클래스 ${Date.now() % 100000}`;
+  const title = `흐름 테스트 글쓰기 프로그램 ${Date.now() % 100000}`;
 
   // 1. 호스트 신청
   const host = await loginPage(browser, hostUser.email);
@@ -42,11 +42,11 @@ test("호스트 신청(경력) → 승인 → 클래스 등록·일정 → 검�
   await host.getByLabel("한 줄 소개").fill("출판사 편집자 출신 글쓰기 코치");
   await host.getByLabel("가르칠 분야의 경력").fill("짧음");
   await host.getByLabel("포트폴리오 링크 (선택)").fill("http://not-secure.example");
-  await host.getByLabel("어떤 클래스를 열고 싶나요?").fill("에세이 한 편을 처음부터 끝까지 완성하는 소수 정예 글쓰기 클래스를 열고 싶어요.");
+  await host.getByLabel("어떤 프로그램을 열고 싶나요?").fill("에세이 한 편을 처음부터 끝까지 완성하는 소수 정예 글쓰기 프로그램을 열고 싶어요.");
   await host.getByRole("button", { name: "호스트 신청하기" }).click();
   await expect(host.getByText("가르칠 분야의 경력을 20자 이상")).toBeVisible();
   await expect(host.getByText("https:// 로 시작하는 링크")).toBeVisible();
-  await host.getByLabel("가르칠 분야의 경력").fill("출판사 에세이 편집자 10년, 글쓰기 원데이 클래스 3년 진행");
+  await host.getByLabel("가르칠 분야의 경력").fill("출판사 에세이 편집자 10년, 글쓰기 원데이 프로그램 3년 진행");
   await host.getByLabel("포트폴리오 링크 (선택)").fill("https://example.com/portfolio");
   await host.getByRole("button", { name: "호스트 신청하기" }).click();
   await expect(host.getByTestId("host-apply-status")).toContainText("검토 중");
@@ -66,15 +66,15 @@ test("호스트 신청(경력) → 승인 → 클래스 등록·일정 → 검�
   await expect(app).toHaveCount(0); // 승인되면 심사 대기 목록에서 빠짐
   await expect(admin.getByText(hostName)).toBeVisible(); // 처리 완료 목록에 표시
 
-  // 3. 호스트: 클래스 만들기 → 일정 추가 → 검수 요청
+  // 3. 호스트: 프로그램 만들기 → 일정 추가 → 검수 요청
   await host.goto("/host");
   await expect(host.getByTestId("host-home")).toBeVisible();
-  await host.getByRole("link", { name: "새 클래스 만들기" }).click();
-  await host.getByLabel("클래스 제목").fill(title);
+  await host.getByRole("link", { name: "새 프로그램 만들기" }).click();
+  await host.getByLabel("프로그램 제목").fill(title);
   await host.getByLabel("카테고리").selectOption("writing");
   await host.getByLabel("난이도").selectOption("beginner");
   await host.getByLabel("한 줄 요약").fill("에세이 한 편을 구조부터 퇴고까지 완성해요");
-  await host.getByLabel("클래스 소개").fill("좋은 에세이의 구조를 배우고, 각자 한 편을 써서 현장에서 첨삭받습니다.");
+  await host.getByLabel("프로그램 소개").fill("좋은 에세이의 구조를 배우고, 각자 한 편을 써서 현장에서 첨삭받습니다.");
   await host.getByLabel("수업이 끝나면 할 수 있는 것").fill("에세이 한 편을 도입-전개-마무리 구조로 쓸 수 있어요.\n내 문장을 스스로 퇴고할 수 있어요.");
   await host.getByLabel("재료·도구 제공 안내 (선택)").fill("첨삭 양식 제공, 노트북 필요");
   await host.getByLabel("참가비 (원)").fill("15,000");
@@ -188,11 +188,11 @@ test("호스트 신청(경력) → 승인 → 클래스 등록·일정 → 검�
   }
 });
 
-test("샘플 클래스와 내 클래스는 신청할 수 없다", async ({ browser }) => {
+test("샘플 프로그램과 내 프로그램은 신청할 수 없다", async ({ browser }) => {
   test.skip(isStaging && process.env.TEST_EXPECT_SAMPLES !== "yes", "샘플 데이터 없음");
   const u = await createMember("flows");
   const page = await loginPage(browser, u.email);
   await page.goto("/meetups?category=music");
   await page.getByTestId("meetup-card").filter({ visible: true }).first().click();
-  await expect(page.getByRole("button", { name: "샘플 클래스는 신청할 수 없어요" })).toBeDisabled();
+  await expect(page.getByRole("button", { name: "샘플 프로그램은 신청할 수 없어요" })).toBeDisabled();
 });

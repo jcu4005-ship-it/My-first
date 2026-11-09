@@ -22,7 +22,7 @@ export const instant = false;
 export async function generateMetadata({ params }: PageProps<"/meetups/[id]">): Promise<Metadata> {
   const { id } = await params;
   const meetup = await getMeetup(id);
-  return meetup ? { title: meetup.title, description: meetup.summary } : { title: "클래스를 찾을 수 없습니다" };
+  return meetup ? { title: meetup.title, description: meetup.summary } : { title: "프로그램을 찾을 수 없습니다" };
 }
 
 function InfoBlock({ eyebrow, title, children, id }: { eyebrow: string; title: string; children: React.ReactNode; id?: string }) {
@@ -105,7 +105,7 @@ export default async function MeetupDetailPage({ params }: PageProps<"/meetups/[
 
             {meetup.is_sample && (
               <p className="mt-8 bg-notice px-4 py-3 text-sm text-notice-foreground">
-                서비스 준비 중 보여 드리는 <strong>샘플 클래스</strong>입니다. 실제로 열리지 않으며 신청할 수 없어요.
+                서비스 준비 중 보여 드리는 <strong>샘플 프로그램</strong>입니다. 실제로 열리지 않으며 신청할 수 없어요.
               </p>
             )}
 
@@ -157,7 +157,7 @@ export default async function MeetupDetailPage({ params }: PageProps<"/meetups/[
               </InfoBlock>
             )}
 
-            <InfoBlock eyebrow="About this class" title="클래스 소개">
+            <InfoBlock eyebrow="About this class" title="프로그램 소개">
               <p className="leading-relaxed whitespace-pre-line">{meetup.description}</p>
             </InfoBlock>
 
@@ -213,7 +213,7 @@ export default async function MeetupDetailPage({ params }: PageProps<"/meetups/[
             <InfoBlock eyebrow="Schedule" title="일정 선택" id="booking-section">
               {mine.size > 0 && (
                 <p className="mb-4 bg-notice px-4 py-3 text-sm text-notice-foreground" data-testid="already-booked">
-                  이 클래스에 신청한 일정이 있어요. <Link href="/me/bookings" className="underline underline-offset-4">신청 내역 보기</Link>
+                  이 프로그램에 신청한 일정이 있어요. <Link href="/me/bookings" className="underline underline-offset-4">신청 내역 보기</Link>
                 </p>
               )}
               {bookingSessions.length ? (

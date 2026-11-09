@@ -9,7 +9,7 @@ import { SampleBadge, SeatsBadge } from "./badges";
 import { categoryStyle } from "./category-style";
 import { EditorialCover } from "./editorial-cover";
 
-/** 사진이 먼저 보이는 클래스 카드 */
+/** 사진이 먼저 보이는 프로그램 카드 */
 export function MeetupCard({
   meetup,
   categoryName,

@@ -87,3 +87,16 @@
 - 검증(로컬): 단위 40, E2E 20 통과(호스트 안내 테스트 추가), 번들 비밀키 검사 통과, 휴대폰 가로 밀림 없음
 - 스테이징 run #9 https://github.com/jcu4005-ship-it/My-first/actions/runs/42225202517 — E2E 17 통과·1 실패: 샘플 일정 날짜가 지나 목록이 8→7개가 됨(기능 문제 아님). 목록 테스트를 고정 숫자 대신 DB 기준 기대값으로 수정. 샘플 일정은 넣은 날 기준 2~19일 뒤라 시간이 지나면 사라짐 → 필요 시 seed_samples=yes로 새로 고침
 - 스테이징 run #10 https://github.com/jcu4005-ship-it/My-first/actions/runs/42226733654 — 샘플 날짜 새로 고침 + 전체 성공, E2E 18 통과(메일 필요 2개 제외, 호스트 안내 페이지 포함), 비밀 값 노출 없음
+
+## 호스트 생태계 1단계: 3대 분류 + 호스트 목록 (2026-11-09)
+- 화면 용어 "클래스" → **"프로그램"** (DB 이름 meetups 유지)
+- 마이그레이션 `20261109000100_pillars_and_host_listing.sql`
+  - `categories.pillar` (knowledge/creators/experts), 분야 매핑: 사진·드로잉·악기·글쓰기·커피·요리 → Creators / 커리어·자세운동 → Experts / 철학·인문·독서·문학(다시 열림) + 심리·경제사회·사고법(신규) → Knowledge / 와인 잠금 유지
+  - `host_profiles.primary_pillar`, `is_featured`, `featured_order` (수정 권한 없음 → 관리자 함수 `admin_update_host_listing`만, 감사 기록)
+- `/hosts`: 3대 분류 탭, 검색(이름·한 줄 소개·전문 분야·경력), 운영팀 추천(필터·검색 중에는 숨김), 빈 결과 안내. 정렬은 다가오는 프로그램 유무 → 이름 (팔로워 수 미사용)
+- `/experts` → `/hosts` 영구 연결, 메뉴 "Hosts"
+- `/meetups`: 3대 분류 탭 + 해당 분류의 세부 분야만 표시
+- 홈 호스트 섹션: 운영팀 추천 먼저, 공통 호스트 카드로 통일
+- 관리자 `/admin/hosts`: 승인된 호스트의 대표 분류·추천·추천 순서 지정
+- 샘플: Knowledge 샘플 호스트·프로그램 1개 추가, 샘플 호스트 3명 추천 지정
+- 검증(로컬): pgTAP 9파일 통과(신규 14개 검사), 단위 40·통합 28·E2E 22 통과, 번들 비밀키 검사 통과, 휴대폰 가로 밀림 없음

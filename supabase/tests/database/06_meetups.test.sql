@@ -16,7 +16,7 @@ values ('b0000000-0000-4000-8000-000000000001', now() + interval '3 days', now()
 -- 비로그인
 select pg_temp.login_anon();
 select ok(exists(select 1 from public.categories where slug = 'writing'), '비로그인도 카테고리를 볼 수 있다');
-select ok(not exists(select 1 from public.categories where slug in ('reading', 'outdoor', 'networking', 'wine')), '운영을 멈춘 친목형 카테고리는 보이지 않는다');
+select ok(not exists(select 1 from public.categories where slug in ('travel', 'outdoor', 'networking', 'wine')), '운영을 멈춘 친목형 카테고리는 보이지 않는다');
 select ok(exists(select 1 from public.meetups where id = 'b0000000-0000-4000-8000-000000000001'), '공개 모임은 누구나 볼 수 있다');
 select ok(not exists(select 1 from public.meetups where id = 'b0000000-0000-4000-8000-000000000002'), '검토 중 모임은 공개되지 않는다');
 select is((select count(*)::int from public.meetup_sessions where meetup_id = 'b0000000-0000-4000-8000-000000000002'), 0, '검토 중 모임의 회차도 보이지 않는다');
@@ -43,7 +43,7 @@ select throws_ok(format($$ insert into public.meetups (host_id, category_slug, m
   '23514', null, '주류 모임은 공개(published)할 수 없다');
 
 -- 비활성 카테고리로는 새로 만들거나 옮길 수 없다
-select throws_ok(format($$ insert into public.meetups (host_id, category_slug, title, summary, description, price) values (%L, 'reading', '비활성 카테고리 시도', '비활성 카테고리 시도 요약입니다', '비활성 카테고리 시도 상세 설명입니다.', 0) $$, :'h'),
+select throws_ok(format($$ insert into public.meetups (host_id, category_slug, title, summary, description, price) values (%L, 'travel', '비활성 카테고리 시도', '비활성 카테고리 시도 요약입니다', '비활성 카테고리 시도 상세 설명입니다.', 0) $$, :'h'),
   '22023', null, '비활성 카테고리로 클래스를 만들 수 없다');
 select throws_ok($$ update public.meetups set category_slug = 'outdoor' where id = 'b0000000-0000-4000-8000-000000000001' $$,
   '22023', null, '비활성 카테고리로 옮길 수 없다');

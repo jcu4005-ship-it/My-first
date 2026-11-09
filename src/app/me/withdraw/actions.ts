@@ -11,7 +11,7 @@ import { rpcErrorMessage } from "@/lib/rpc-errors";
 import { getSupabasePublicConfig } from "@/lib/supabase/config";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
-/** 회원 탈퇴: 비밀번호 재확인 → 결제한 예정 클래스 환불(테스트) → DB 탈퇴 처리(익명화·로그인 차단) → 로그아웃 */
+/** 회원 탈퇴: 비밀번호 재확인 → 결제한 예정 프로그램 환불(테스트) → DB 탈퇴 처리(익명화·로그인 차단) → 로그아웃 */
 export async function withdrawAction(_prev: FormState, formData: FormData): Promise<FormState> {
   const member = await getCurrentMember();
   if (!member || !member.email) return { status: "error", message: "로그인이 필요합니다." };
@@ -25,7 +25,7 @@ export async function withdrawAction(_prev: FormState, formData: FormData): Prom
   if (pwError) return { status: "error", fieldErrors: { password: "비밀번호가 올바르지 않습니다." } };
   await verifier.auth.signOut().catch(() => undefined);
 
-  // 결제한 예정 클래스는 전액 환불 후 취소
+  // 결제한 예정 프로그램은 전액 환불 후 취소
   const bookings = await listMyBookings();
   const supabase = await createSupabaseServerClient();
   for (const b of bookings.filter((x) => x.status === "confirmed" && x.payment_status === "paid" && new Date(x.starts_at).getTime() > Date.now())) {

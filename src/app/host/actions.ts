@@ -44,7 +44,7 @@ export async function applyHostAction(_prev: FormState, formData: FormData): Pro
   return { status: "success", message: "호스트 신청을 받았어요. 운영팀이 경력과 포트폴리오를 확인한 뒤 알려 드릴게요." };
 }
 
-/** 클래스 만들기 / 수정 — 저장 후 관리 화면으로 */
+/** 프로그램 만들기 / 수정 — 저장 후 관리 화면으로 */
 export async function saveMeetupAction(_prev: FormState, formData: FormData): Promise<FormState> {
   const member = await activeMember();
   if (!member) return LOGIN_REQUIRED;
@@ -81,7 +81,7 @@ export async function saveMeetupAction(_prev: FormState, formData: FormData): Pr
   if (meetupId) {
     const { data, error } = await supabase.from("meetups").update(row).eq("id", meetupId).eq("host_id", member.id).select("id");
     if (error) return { status: "error", message: rpcErrorMessage(error), values };
-    if (!data?.length) return { status: "error", message: "수정할 수 없는 클래스입니다.", values };
+    if (!data?.length) return { status: "error", message: "수정할 수 없는 프로그램입니다.", values };
   } else {
     const { data, error } = await supabase.from("meetups").insert({ ...row, host_id: member.id }).select("id").single();
     if (error || !data) return { status: "error", message: rpcErrorMessage(error), values };
@@ -125,7 +125,7 @@ export async function addSessionAction(_prev: FormState, formData: FormData): Pr
     capacity: v.capacity,
   });
   if (error) {
-    return { status: "error", message: error.code === "42501" ? "일정을 추가할 수 없는 클래스입니다." : rpcErrorMessage(error), values };
+    return { status: "error", message: error.code === "42501" ? "일정을 추가할 수 없는 프로그램입니다." : rpcErrorMessage(error), values };
   }
   revalidatePath(`/host/meetups/${meetupId}`);
   return { status: "success", message: "일정을 추가했어요." };
@@ -206,7 +206,7 @@ export async function hostCancelSessionAction(_prev: FormState, formData: FormDa
   return { status: "success", message: "일정을 취소했어요. 신청자에게 알림과 환불이 처리되었습니다." };
 }
 
-/** 클래스 전체 취소: 앞으로의 모든 일정 취소 후 모집 종료 */
+/** 프로그램 전체 취소: 앞으로의 모든 일정 취소 후 모집 종료 */
 export async function hostCancelMeetupAction(_prev: FormState, formData: FormData): Promise<FormState> {
   const member = await activeMember();
   if (!member) return LOGIN_REQUIRED;
@@ -215,7 +215,7 @@ export async function hostCancelMeetupAction(_prev: FormState, formData: FormDat
   const supabase = await createSupabaseServerClient();
   const { data: sessions, error } = await supabase.rpc("host_meetup_sessions", { p_meetup_id: parsed.data.meetupId });
   if (error) return { status: "error", message: rpcErrorMessage(error) };
-  if (!sessions?.length) return { status: "error", message: "클래스를 찾을 수 없어요." };
+  if (!sessions?.length) return { status: "error", message: "프로그램을 찾을 수 없어요." };
   for (const s of sessions) {
     if (s.status === "cancelled" || s.status === "completed" || new Date(s.starts_at).getTime() <= Date.now()) continue;
     const err = await cancelOneSession(s.id, member.id, parsed.data.reason);
@@ -229,5 +229,5 @@ export async function hostCancelMeetupAction(_prev: FormState, formData: FormDat
   }
   revalidatePath(`/host/meetups/${parsed.data.meetupId}`);
   revalidatePath("/host");
-  return { status: "success", message: "클래스를 취소했어요. 신청자에게 알림과 환불이 처리되었습니다." };
+  return { status: "success", message: "프로그램을 취소했어요. 신청자에게 알림과 환불이 처리되었습니다." };
 }

@@ -9,7 +9,7 @@ import { agendaToText } from "@/lib/validation/meetup";
 
 import { MeetupForm } from "../../meetup-form";
 
-export const metadata: Metadata = { title: "클래스 수정" };
+export const metadata: Metadata = { title: "프로그램 수정" };
 export const instant = false;
 
 export default async function EditMeetupPage({ params }: PageProps<"/host/meetups/[id]/edit">) {
@@ -21,10 +21,10 @@ export default async function EditMeetupPage({ params }: PageProps<"/host/meetup
     <>
       <SiteHeader />
       <main className="mx-auto w-full max-w-2xl flex-1 px-4 py-8">
-        <h1 className="font-display text-3xl font-bold">클래스 수정</h1>
+        <h1 className="font-display text-3xl font-bold">프로그램 수정</h1>
         {meetup.status === "published" && (
           <p className="mt-3 rounded-xl bg-notice px-4 py-3 text-sm text-notice-foreground">
-            공개 중인 클래스예요. 저장하면 바로 반영됩니다. 신청자가 있으면 참가비는 바꿀 수 없어요.
+            공개 중인 프로그램이에요. 저장하면 바로 반영됩니다. 신청자가 있으면 참가비는 바꿀 수 없어요.
           </p>
         )}
         <div className="mt-8">

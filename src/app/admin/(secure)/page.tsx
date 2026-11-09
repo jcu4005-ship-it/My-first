@@ -18,9 +18,9 @@ export default async function Page() {
     supabase.from("meetups").select("id", { count: "exact", head: true }).eq("status", "published").eq("is_sample", false),
   ]);
   const cards = [
-    { href: "/admin/meetups", label: "검수 대기 클래스", value: meetups.count ?? 0 },
+    { href: "/admin/meetups", label: "검수 대기 프로그램", value: meetups.count ?? 0 },
     { href: "/admin/hosts", label: "심사 대기 호스트", value: hosts.count ?? 0 },
-    { href: "/admin/meetups?status=published", label: "공개 중인 실제 클래스", value: published.count ?? 0 },
+    { href: "/admin/meetups?status=published", label: "공개 중인 실제 프로그램", value: published.count ?? 0 },
   ];
   return (
     <div data-testid="admin-dashboard">

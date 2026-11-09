@@ -7,7 +7,7 @@ test.beforeAll(requireTestEnv);
 // 샘플 데이터가 필요한 검사: 로컬·CI는 항상, 스테이징은 샘플을 넣은 경우(TEST_EXPECT_SAMPLES=yes)만
 const samples = !isStaging || process.env.TEST_EXPECT_SAMPLES === "yes";
 
-test("메인: 서비스 소개, 샘플 안내, 곧 열리는 클래스, 호스트 소개", async ({ page }) => {
+test("메인: 서비스 소개, 샘플 안내, 곧 열리는 프로그램, 호스트 소개", async ({ page }) => {
   test.skip(!samples, "샘플 데이터 없음");
   await page.goto("/");
   await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
@@ -15,7 +15,7 @@ test("메인: 서비스 소개, 샘플 안내, 곧 열리는 클래스, 호스�
   const cards = page.getByTestId("meetup-card");
   await expect(cards.first()).toBeVisible();
   expect(await cards.count()).toBeLessThanOrEqual(6);
-  await expect(page.getByRole("heading", { name: "클래스를 여는 사람들" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "프로그램을 여는 사람들" })).toBeVisible();
 });
 
 test("메인 갤러리: 작품 클릭·좌우 버튼·키보드·스와이프로 이동, 상세 보기 연결", async ({ page }) => {
@@ -74,16 +74,55 @@ test("호스트 안내: 정책·과정·약속·로드맵, 지원하기 연결, 
   const main = page.getByTestId("for-hosts");
   await expect(main.getByRole("heading", { level: 1 })).toBeVisible();
   await expect(main.getByRole("heading", { name: "입장료는 없습니다" })).toBeVisible();
-  await expect(main.getByRole("heading", { name: "클래스가 판매될 때만" })).toBeVisible();
+  await expect(main.getByRole("heading", { name: "프로그램이 판매될 때만" })).toBeVisible();
   await expect(main.getByTestId("commission-note")).toContainText("정식 오픈 전");
   await expect(main.getByTestId("roadmap")).toContainText("앞으로의 계획");
   await main.getByRole("link", { name: "호스트 지원하기" }).first().click();
   await expect(page).toHaveURL(/\/login\?next=%2Fhost%2Fapply/); // 비로그인은 로그인으로
 });
 
-test("목록: 클래스 카테고리 필터, 비공개·비활성 카테고리 미노출, 빈 카테고리 안내", async ({ page }) => {
+test("호스트 목록: 옛 주소 연결, 운영팀 추천, 3대 분류 필터, 검색, 빈 결과", async ({ page }) => {
   test.skip(!samples, "샘플 데이터 없음");
-  // 기대값은 DB에서 직접 계산: 공개 상태 + 활성 카테고리 + 앞으로 열리는(취소되지 않은) 일정이 있는 클래스 수.
+  await page.goto("/experts");
+  await expect(page).toHaveURL(/\/hosts$/);
+  const featured = page.getByTestId("featured-hosts");
+  await expect(featured).toBeVisible();
+  await expect(featured.getByTestId("host-card").first()).toBeVisible();
+
+  await page.getByTestId("pillar-tab").filter({ hasText: "Knowledge" }).click();
+  await expect(page).toHaveURL(/pillar=knowledge/);
+  await expect(page.getByTestId("featured-hosts")).toHaveCount(0); // 필터 중에는 추천 영역 숨김
+  const cards = page.getByTestId("host-card").filter({ visible: true });
+  await expect(cards.filter({ hasText: "생각 연구소 윤재" })).toHaveCount(1);
+  await expect(cards.filter({ hasText: "기타 선생 민재" })).toHaveCount(0);
+
+  await page.goto("/hosts");
+  await page.getByTestId("host-search").getByRole("textbox", { name: "호스트 검색" }).fill("기타");
+  await page.getByTestId("host-search").getByRole("button", { name: "검색" }).click();
+  await expect(page).toHaveURL(/q=/);
+  await expect(page.getByTestId("host-card").filter({ visible: true })).toHaveCount(1);
+  await expect(page.getByTestId("host-card").filter({ visible: true })).toContainText("기타 선생 민재");
+
+  await page.goto("/hosts?q=" + encodeURIComponent("없는호스트이름xyz"));
+  await expect(page.getByTestId("empty-state")).toContainText("찾는 호스트가 없어요");
+});
+
+test("프로그램 목록: 3대 분류 탭과 세부 분야", async ({ page }) => {
+  test.skip(!samples, "샘플 데이터 없음");
+  await page.goto("/meetups");
+  await page.getByTestId("pillar-tab").filter({ hasText: "Knowledge" }).click();
+  await expect(page).toHaveURL(/pillar=knowledge/);
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("지식·관점");
+  await expect(page.getByTestId("meetup-card").filter({ hasText: "철학자의 질문" })).toHaveCount(1);
+  await expect(page.getByRole("link", { name: "사진·영상", exact: true })).toHaveCount(0); // 다른 분류의 세부 분야는 숨김
+  await page.getByRole("link", { name: "철학·인문", exact: true }).click();
+  await expect(page).toHaveURL(/category=philosophy/);
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("철학·인문");
+});
+
+test("목록: 프로그램 카테고리 필터, 비공개·비활성 카테고리 미노출, 빈 카테고리 안내", async ({ page }) => {
+  test.skip(!samples, "샘플 데이터 없음");
+  // 기대값은 DB에서 직접 계산: 공개 상태 + 활성 카테고리 + 앞으로 열리는(취소되지 않은) 일정이 있는 프로그램 수.
   // (샘플 일정은 시간이 지나면 지나가므로 고정 숫자 대신 DB 기준으로 비교)
   const db = adminApi();
   const { data: active } = await db.from("categories").select("slug").eq("is_active", true);
@@ -96,9 +135,9 @@ test("목록: 클래스 카테고리 필터, 비공개·비활성 카테고리 �
   const expected = (rows ?? []).filter((m) =>
     (m.sessions as { starts_at: string; status: string }[]).some((s) => s.status !== "cancelled" && new Date(s.starts_at).getTime() > now),
   ).length;
-  expect(expected, "목록에 보일 클래스가 1개 이상 있어야 검사 가능").toBeGreaterThan(0);
+  expect(expected, "목록에 보일 프로그램이 1개 이상 있어야 검사 가능").toBeGreaterThan(0);
   await page.goto("/meetups");
-  await expect(page.getByTestId("result-count")).toHaveText(`${expected}개의 클래스`);
+  await expect(page.getByTestId("result-count")).toHaveText(`${expected}개의 프로그램`);
   await expect(page.getByTestId("meetup-card")).toHaveCount(expected);
   await expect(page.getByText("(검토 중)")).toHaveCount(0);
 
@@ -151,7 +190,7 @@ test("모바일: 메인 가로 밀림 없음, 상세 하단 고정 신청 바, �
   await page.close();
 });
 
-test("없는 클래스·검토 중 클래스·없는 호스트는 HTTP 404", async ({ page }) => {
+test("없는 프로그램·검토 중 프로그램·없는 호스트는 HTTP 404", async ({ page }) => {
   const { data: pending } = await adminApi().from("meetups").select("id").eq("status", "pending_review").limit(1);
   const paths = ["/meetups/00000000-0000-4000-8000-000000000000", "/meetups/not-a-uuid", "/hosts/00000000-0000-4000-8000-000000000000"];
   if (pending?.[0]) paths.push(`/meetups/${pending[0].id}`);

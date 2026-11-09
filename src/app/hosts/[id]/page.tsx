@@ -103,11 +103,11 @@ export default async function HostPage({ params }: PageProps<"/hosts/[id]">) {
 
         <section className="mx-auto w-full max-w-7xl px-4 pt-20 sm:px-8">
           <p className="eyebrow text-muted-foreground">Classes</p>
-          <h2 className="mt-3 mb-10 font-display text-3xl font-medium">열리는 클래스</h2>
+          <h2 className="mt-3 mb-10 font-display text-3xl font-medium">열리는 프로그램</h2>
           {meetups.length ? (
             <MeetupGrid meetups={meetups} categoryNames={names} />
           ) : (
-            <p className="border-y py-12 text-muted-foreground">지금 모집 중인 클래스가 없어요.</p>
+            <p className="border-y py-12 text-muted-foreground">지금 모집 중인 프로그램이 없어요.</p>
           )}
         </section>
       </main>

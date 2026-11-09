@@ -2,7 +2,7 @@ import "server-only";
 
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
-export type Category = { slug: string; name: string; description: string };
+export type Category = { slug: string; name: string; description: string; pillar: "knowledge" | "creators" | "experts" };
 
 export type Session = {
   id: string;
@@ -56,6 +56,9 @@ export type HostDetail = {
   credentials: string;
   portfolio_url: string | null;
   teaching_experience: string;
+  primary_pillar: "knowledge" | "creators" | "experts" | null;
+  is_featured: boolean;
+  featured_order: number | null;
   is_sample: boolean;
 };
 
@@ -105,21 +108,22 @@ export async function listCategories(): Promise<Category[]> {
   const supabase = await createSupabaseServerClient();
   const { data, error } = await supabase
     .from("categories")
-    .select("slug, name, description")
+    .select("slug, name, description, pillar")
     .order("sort_order");
   if (error) throw new Error(`카테고리 조회 실패: ${error.message}`);
   return data ?? [];
 }
 
-/** 공개된 클래스 중 앞으로 열리는 회차가 있는 것, 가장 가까운 회차 순 */
-export async function listUpcomingMeetups(opts: { category?: string; hostId?: string; limit?: number } = {}) {
+/** 공개된 프로그램 중 앞으로 열리는 회차가 있는 것, 가장 가까운 회차 순 */
+export async function listUpcomingMeetups(opts: { category?: string; categories?: string[]; hostId?: string; limit?: number } = {}) {
   const supabase = await createSupabaseServerClient();
-  // 운영을 멈춘(비활성) 카테고리의 클래스는 목록에서 제외 — 비활성 카테고리는 RLS로 보이지 않아 inner join에서 빠짐
+  // 운영을 멈춘(비활성) 카테고리의 프로그램은 목록에서 제외 — 비활성 카테고리는 RLS로 보이지 않아 inner join에서 빠짐
   let query = supabase.from("meetups").select(`${CARD_SELECT}, category:categories!inner(slug)`).eq("status", "published");
   if (opts.category) query = query.eq("category_slug", opts.category);
+  if (opts.categories) query = query.in("category_slug", opts.categories);
   if (opts.hostId) query = query.eq("host_id", opts.hostId);
   const { data, error } = await query.returns<Row[]>();
-  if (error) throw new Error(`클래스 목록 조회 실패: ${error.message}`);
+  if (error) throw new Error(`프로그램 목록 조회 실패: ${error.message}`);
   const cards = (data ?? [])
     .map(toCard)
     .filter((c): c is MeetupCardData => c !== null)
@@ -138,7 +142,7 @@ export async function getMeetup(id: string): Promise<MeetupDetail | null> {
     .eq("id", id)
     .eq("status", "published")
     .maybeSingle();
-  if (error) throw new Error(`클래스 조회 실패: ${error.message}`);
+  if (error) throw new Error(`프로그램 조회 실패: ${error.message}`);
   if (!data) return null;
   const row = data as unknown as Row & Omit<MeetupDetail, keyof MeetupCardData> & { host: MeetupDetail["host"] };
   const sessions = upcoming(row.sessions);
@@ -155,7 +159,7 @@ export async function getHost(userId: string): Promise<HostDetail | null> {
   const supabase = await createSupabaseServerClient();
   const { data, error } = await supabase
     .from("host_profiles")
-    .select("user_id, display_name, headline, bio, expertise, instagram_handle, career, credentials, portfolio_url, teaching_experience, is_sample")
+    .select("user_id, display_name, headline, bio, expertise, instagram_handle, career, credentials, portfolio_url, teaching_experience, primary_pillar, is_featured, featured_order, is_sample")
     .eq("user_id", userId)
     .eq("status", "approved")
     .maybeSingle();
@@ -167,9 +171,40 @@ export async function listFeaturedHosts(limit = 4): Promise<HostDetail[]> {
   const supabase = await createSupabaseServerClient();
   const { data, error } = await supabase
     .from("host_profiles")
-    .select("user_id, display_name, headline, bio, expertise, instagram_handle, career, credentials, portfolio_url, teaching_experience, is_sample")
+    .select("user_id, display_name, headline, bio, expertise, instagram_handle, career, credentials, portfolio_url, teaching_experience, primary_pillar, is_featured, featured_order, is_sample")
     .eq("status", "approved")
+    // 운영팀 추천(featured) 먼저 — 팔로워 수 등 인기 지표는 순서에 쓰지 않음
+    .order("is_featured", { ascending: false })
+    .order("featured_order", { ascending: true, nullsFirst: false })
+    .order("display_name", { ascending: true })
     .limit(limit);
   if (error) throw new Error(`호스트 목록 조회 실패: ${error.message}`);
   return data ?? [];
+}
+
+export type HostListItem = HostDetail & {
+  pillars: ("knowledge" | "creators" | "experts")[];
+  representative: MeetupCardData | null;
+  upcomingCount: number;
+};
+
+/**
+ * 호스트 목록: 승인된 호스트만 (RLS + status 조건).
+ * - 분류: 대표 분류(primary_pillar) 또는 공개 중인 프로그램의 분류에 해당하면 포함
+ * - 검색: 이름·한 줄 소개·전문 분야·경력 (대소문자 무시)
+ * - 정렬: 다가오는 프로그램이 있는 호스트 먼저, 그다음 이름순 (팔로워 수는 쓰지 않음)
+ */
+export async function listHosts(opts: { pillar?: "knowledge" | "creators" | "experts"; q?: string } = {}): Promise<HostListItem[]> {
+  const [hosts, meetups, categories] = await Promise.all([listFeaturedHosts(200), listUpcomingMeetups(), listCategories()]);
+  const pillarOf = Object.fromEntries(categories.map((c) => [c.slug, c.pillar]));
+  const q = opts.q?.trim().toLowerCase() ?? "";
+  const items: HostListItem[] = hosts.map((h) => {
+    const mine = meetups.filter((m) => m.host?.user_id === h.user_id);
+    const pillars = Array.from(new Set([h.primary_pillar, ...mine.map((m) => pillarOf[m.category_slug])].filter(Boolean))) as HostListItem["pillars"];
+    return { ...h, pillars, representative: mine[0] ?? null, upcomingCount: mine.length };
+  });
+  return items
+    .filter((h) => !opts.pillar || h.pillars.includes(opts.pillar))
+    .filter((h) => !q || [h.display_name, h.headline, h.career, ...h.expertise].some((t) => t?.toLowerCase().includes(q)))
+    .sort((a, b) => Number(b.upcomingCount > 0) - Number(a.upcomingCount > 0) || a.display_name.localeCompare(b.display_name, "ko"));
 }

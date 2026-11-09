@@ -31,15 +31,15 @@ export default async function HostDashboard() {
             </Link>
           </div>
           <Button asChild>
-            <Link href="/host/meetups/new">새 클래스 만들기</Link>
+            <Link href="/host/meetups/new">새 프로그램 만들기</Link>
           </Button>
         </div>
 
-        <h2 className="mt-10 mb-4 text-lg font-semibold">내 클래스</h2>
+        <h2 className="mt-10 mb-4 text-lg font-semibold">내 프로그램</h2>
         {meetups.length === 0 ? (
           <div className="rounded-2xl border border-dashed p-10 text-center">
-            <p className="font-semibold">아직 만든 클래스가 없어요</p>
-            <p className="mt-2 text-sm text-muted-foreground">클래스를 만들고 일정을 추가한 뒤 검수를 요청하면, 승인 후 공개돼요.</p>
+            <p className="font-semibold">아직 만든 프로그램이 없어요</p>
+            <p className="mt-2 text-sm text-muted-foreground">프로그램을 만들고 일정을 추가한 뒤 검수를 요청하면, 승인 후 공개돼요.</p>
           </div>
         ) : (
           <ul className="flex flex-col gap-3">

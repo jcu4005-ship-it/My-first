@@ -29,7 +29,7 @@ export function MeetupForm({
       {meetupId && <input type="hidden" name="meetupId" value={meetupId} />}
       <FormMessage message={state.message} />
 
-      <Field name="title" label="클래스 제목" defaultValue={v.title} error={e.title} hint="5~60자. 무엇을 배우는 클래스인지 한눈에 보이게" />
+      <Field name="title" label="프로그램 제목" defaultValue={v.title} error={e.title} hint="5~60자. 무엇을 배우는 프로그램인지 한눈에 보이게" />
       <div className="grid gap-5 sm:grid-cols-2">
         <SelectField
           name="categorySlug"
@@ -44,7 +44,7 @@ export function MeetupForm({
           options={CLASS_LEVELS.map((l) => ({ value: l.value, label: l.label }))} error={e.level} />
       </div>
       <Field name="summary" label="한 줄 요약" defaultValue={v.summary} error={e.summary} hint="목록 카드에 보이는 문장 (10~120자)" />
-      <TextareaField name="description" label="클래스 소개" rows={8} defaultValue={v.description} error={e.description}
+      <TextareaField name="description" label="프로그램 소개" rows={8} defaultValue={v.description} error={e.description}
         hint="무엇을 어떤 순서로 배우는지, 호스트가 어떻게 도와주는지 구체적으로 적어 주세요." />
       <TextareaField name="learningOutcomes" label="수업이 끝나면 할 수 있는 것" rows={3} defaultValue={v.learningOutcomes} error={e.learningOutcomes}
         placeholder={"조리개·셔터·감도를 이해하고 스스로 노출을 맞출 수 있어요.\n필름 한 롤을 끝까지 찍어 볼 수 있어요."}

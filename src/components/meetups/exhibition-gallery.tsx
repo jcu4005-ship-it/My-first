@@ -45,7 +45,7 @@ const EASE = "cubic-bezier(0.22, 0.61, 0.36, 1)";
 const DURATION = 900; // ms — 천천히, 과장 없이
 
 /**
- * 미술관 벽에 사선으로 걸린 작품처럼 클래스를 보여 주는 갤러리.
+ * 미술관 벽에 사선으로 걸린 작품처럼 프로그램을 보여 주는 갤러리.
  * - 작품 클릭 / 좌우 버튼 / 키보드 ←→ / 마우스 드래그 / 터치 스와이프로 이동
  * - 가운데 작품은 정면·확대·선명, 나머지는 각도를 두고 뒤로 물러남
  */
@@ -113,7 +113,7 @@ export function ExhibitionGallery({ items }: { items: GalleryItem[] }) {
       className="relative"
       role="region"
       aria-roledescription="carousel"
-      aria-label="클래스 갤러리"
+      aria-label="프로그램 갤러리"
       data-testid="exhibition-gallery"
       onKeyDown={(e) => {
         if (e.key === "ArrowRight") { e.preventDefault(); go(active + 1); }
@@ -262,7 +262,7 @@ export function ExhibitionGallery({ items }: { items: GalleryItem[] }) {
             href={`/meetups?category=${current.categorySlug}`}
             className="inline-flex h-12 items-center justify-center border border-sand-light/40 px-6 text-sm tracking-wide transition-colors hover:border-sand-light"
           >
-            {current.categoryName} 클래스 더 보기
+            {current.categoryName} 프로그램 더 보기
           </Link>
         </div>
       </div>

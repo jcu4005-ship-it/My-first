@@ -74,13 +74,13 @@ export default async function MyBookingsPage({ searchParams }: PageProps<"/me/bo
           </p>
         )}
         <section className="mt-8">
-          <h2 className="mb-4 text-lg font-semibold">다가오는 클래스</h2>
+          <h2 className="mb-4 text-lg font-semibold">다가오는 프로그램</h2>
           {upcoming.length ? (
             <ul className="flex flex-col gap-3">{upcoming.map((b) => <BookingCard key={b.booking_id} b={b} highlight={b.booking_id === booked} />)}</ul>
           ) : (
             <div className="rounded-2xl border border-dashed p-8 text-center">
-              <p className="text-muted-foreground">예정된 클래스가 없어요.</p>
-              <Button asChild className="mt-4"><Link href="/meetups">클래스 둘러보기</Link></Button>
+              <p className="text-muted-foreground">예정된 프로그램이 없어요.</p>
+              <Button asChild className="mt-4"><Link href="/meetups">프로그램 둘러보기</Link></Button>
             </div>
           )}
         </section>

@@ -31,7 +31,7 @@ export function BookingForm({
   price: number;
   maxQuantity: number;
   sessions: BookingSession[];
-  /** guest: 비로그인, sample: 샘플, own: 내 클래스, ok: 신청 가능 */
+  /** guest: 비로그인, sample: 샘플, own: 내 프로그램, ok: 신청 가능 */
   state: "guest" | "sample" | "own" | "ok";
 }) {
   const [result, action, pending] = useActionState(bookAction, initialFormState);
@@ -109,9 +109,9 @@ export function BookingForm({
           <Link href={`/login?next=/meetups/${meetupId}`}>로그인하고 신청하기</Link>
         </Button>
       ) : viewerState === "sample" ? (
-        <Button size="lg" disabled>샘플 클래스는 신청할 수 없어요</Button>
+        <Button size="lg" disabled>샘플 프로그램은 신청할 수 없어요</Button>
       ) : viewerState === "own" ? (
-        <Button size="lg" disabled>내가 연 클래스예요</Button>
+        <Button size="lg" disabled>내가 연 프로그램이에요</Button>
       ) : firstAvailable ? (
         <Button type="submit" size="lg" disabled={pending || !sessionId} data-testid="book-submit">
           {pending ? "신청 중…" : `${formatPrice(price * quantity)} · 참가 신청`}
@@ -119,7 +119,7 @@ export function BookingForm({
       ) : (
         <Button size="lg" disabled>신청 가능한 일정이 없어요</Button>
       )}
-      {viewerState === "ok" && <p className="text-center text-xs text-muted-foreground">무료 클래스는 바로 확정되고, 유료 클래스는 테스트 결제 화면으로 이동해요. (지금은 실제 청구가 없는 테스트 모드)</p>}
+      {viewerState === "ok" && <p className="text-center text-xs text-muted-foreground">무료 프로그램은 바로 확정되고, 유료 프로그램은 테스트 결제 화면으로 이동해요. (지금은 실제 청구가 없는 테스트 모드)</p>}
     </form>
   );
 }

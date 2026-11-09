@@ -5,7 +5,7 @@ export function SampleBadge({ className = "" }: { className?: string }) {
     <span
       className={`inline-flex items-center bg-sand-light/95 px-2 py-0.5 text-[11px] font-medium tracking-wider text-espresso ${className}`}
       data-testid="sample-badge"
-      title="서비스 준비 중 보여 드리는 샘플 클래스입니다"
+      title="서비스 준비 중 보여 드리는 샘플 프로그램입니다"
     >
       샘플
     </span>

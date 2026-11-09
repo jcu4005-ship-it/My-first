@@ -8,6 +8,8 @@ import { listHostApplications } from "@/lib/hosting/queries";
 
 import { reviewHostAction } from "../actions";
 
+import { HostListingForm } from "./listing-form";
+
 export const metadata: Metadata = { title: "호스트 심사" };
 export const instant = false;
 
@@ -52,12 +54,18 @@ export default async function AdminHostsPage() {
           </li>
         ))}
       </ul>
-      <h2 className="mb-3 font-semibold">처리 완료</h2>
+      <h2 className="mb-1 font-semibold">처리 완료</h2>
+      <p className="mb-3 text-xs text-muted-foreground">승인된 호스트는 대표 분류와 추천 여부를 정할 수 있어요. 추천은 팔로워 수와 관계없이 운영팀이 직접 고릅니다.</p>
       <ul className="flex flex-col gap-2 text-sm">
         {done.map((a) => (
-          <li key={a.user_id} className="flex items-center justify-between rounded-lg border px-4 py-3">
-            <Link href={`/hosts/${a.user_id}`} className="hover:underline">{a.display_name}</Link>
-            <StatusPill tone={a.status === "approved" ? "ok" : "muted"}>{LABEL[a.status]}</StatusPill>
+          <li key={a.user_id} className="flex flex-col gap-3 rounded-lg border px-4 py-3" data-testid="host-row" data-name={a.display_name}>
+            <div className="flex items-center justify-between">
+              <Link href={`/hosts/${a.user_id}`} className="hover:underline">{a.display_name}</Link>
+              <StatusPill tone={a.status === "approved" ? "ok" : "muted"}>{LABEL[a.status]}</StatusPill>
+            </div>
+            {a.status === "approved" && (
+              <HostListingForm userId={a.user_id} pillar={a.primary_pillar} featured={a.is_featured} order={a.featured_order} />
+            )}
           </li>
         ))}
       </ul>

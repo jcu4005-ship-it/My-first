@@ -57,7 +57,7 @@ export async function listMyMeetups(userId: string): Promise<HostMeetupRow[]> {
     .select("id, title, category_slug, status, price, review_note, updated_at, sessions:meetup_sessions(id, starts_at, capacity, reserved_count, status)")
     .eq("host_id", userId)
     .order("updated_at", { ascending: false });
-  if (error) throw new Error(`내 클래스 조회 실패: ${error.message}`);
+  if (error) throw new Error(`내 프로그램 조회 실패: ${error.message}`);
   return (data ?? []) as HostMeetupRow[];
 }
 
@@ -129,13 +129,19 @@ export async function getHostSessionsAndParticipants(meetupId: string) {
 
 /* ---------- 관리자 ---------- */
 
-export type HostApplication = MyHostProfile & { applied_at: string; reviewed_at: string | null };
+export type HostApplication = MyHostProfile & {
+  applied_at: string;
+  reviewed_at: string | null;
+  primary_pillar: "knowledge" | "creators" | "experts" | null;
+  is_featured: boolean;
+  featured_order: number | null;
+};
 
 export async function listHostApplications(): Promise<HostApplication[]> {
   const supabase = await createSupabaseServerClient();
   const { data, error } = await supabase
     .from("host_profiles")
-    .select("user_id, display_name, headline, bio, expertise, instagram_handle, career, credentials, portfolio_url, teaching_experience, status, review_note, applied_at, reviewed_at")
+    .select("user_id, display_name, headline, bio, expertise, instagram_handle, career, credentials, portfolio_url, teaching_experience, status, review_note, applied_at, reviewed_at, primary_pillar, is_featured, featured_order")
     .eq("is_sample", false)
     .order("applied_at", { ascending: false })
     .limit(100);
@@ -157,6 +163,6 @@ export async function listMeetupsByStatus(status: MeetupStatus): Promise<ReviewM
     .eq("status", status)
     .order("updated_at", { ascending: true })
     .limit(100);
-  if (error) throw new Error(`클래스 조회 실패: ${error.message}`);
+  if (error) throw new Error(`프로그램 조회 실패: ${error.message}`);
   return (data ?? []) as unknown as ReviewMeetup[];
 }

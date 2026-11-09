@@ -108,7 +108,7 @@ const meetupReviewSchema = z.object({
   note: z.string().trim().max(500),
 });
 
-/** 클래스 공개·반려·정지 (감사 기록) */
+/** 프로그램 공개·반려·정지 (감사 기록) */
 export async function reviewMeetupAction(_prev: FormState, formData: FormData): Promise<FormState> {
   if (!(await checkAdminForAction())) return FORBIDDEN;
   const parsed = meetupReviewSchema.safeParse({
@@ -127,4 +127,38 @@ export async function reviewMeetupAction(_prev: FormState, formData: FormData): 
   revalidatePath("/admin/meetups");
   const done = { publish: "공개했어요.", reject: "반려했어요.", suspend: "정지했어요.", unsuspend: "다시 공개했어요." };
   return { status: "success", message: done[parsed.data.action] };
+}
+
+const listingSchema = z.object({
+  userId: z.uuid(),
+  pillar: z.enum(["knowledge", "creators", "experts"], "대표 분류를 선택해 주세요."),
+  featured: z.enum(["on", "off"]).default("off"),
+  order: z
+    .string()
+    .trim()
+    .transform((v) => (v === "" ? null : Number(v)))
+    .refine((v) => v === null || (Number.isInteger(v) && v >= 1 && v <= 99), "추천 순서는 1~99 사이 숫자예요."),
+});
+
+/** 호스트 목록 정보: 대표 분류·운영팀 추천 (DB 관리자 함수, 감사 기록) */
+export async function updateHostListingAction(_prev: FormState, formData: FormData): Promise<FormState> {
+  if (!(await checkAdminForAction())) return FORBIDDEN;
+  const parsed = listingSchema.safeParse({
+    userId: formValue(formData, "userId"),
+    pillar: formValue(formData, "pillar"),
+    featured: formData.get("featured") === "on" ? "on" : "off",
+    order: formValue(formData, "order"),
+  });
+  if (!parsed.success) return { status: "error", message: parsed.error.issues[0]?.message ?? "입력을 확인해 주세요." };
+  const supabase = await createSupabaseServerClient();
+  const { error } = await supabase.rpc("admin_update_host_listing", {
+    p_user_id: parsed.data.userId,
+    p_primary_pillar: parsed.data.pillar,
+    p_is_featured: parsed.data.featured === "on",
+    p_featured_order: parsed.data.featured === "on" ? parsed.data.order : null,
+  });
+  if (error) return { status: "error", message: dbMessage(error) };
+  revalidatePath("/admin/hosts");
+  revalidatePath("/hosts");
+  return { status: "success", message: "저장했어요." };
 }

@@ -7,7 +7,7 @@ import { createServerClient } from "@supabase/ssr";
  * 2) 화면을 그리기 전에 접근 권한·대상 존재 여부를 확인해 정확한 HTTP 상태를 돌려줍니다.
  *    - 비로그인 보호 경로 → 로그인 화면(307)
  *    - 권한 없음 → 403 (/denied 화면)
- *    - 없거나 비공개인 클래스·호스트, 내 것이 아닌 관리 화면 → 404
+ *    - 없거나 비공개인 프로그램·호스트, 내 것이 아닌 관리 화면 → 404
  *    화면(guards.ts)과 DB(RLS·함수)의 권한 검사는 그대로 유지됩니다(다중 방어).
  */
 const PROTECTED_PREFIXES = ["/me", "/host", "/admin", "/reset-password", "/checkout"]; // /hosts(공개 프로필)는 제외
@@ -94,7 +94,7 @@ export async function proxy(request: NextRequest) {
     return response;
   }
 
-  // ---- 호스트 클래스 관리: 호스트 역할 + 본인 클래스 ----
+  // ---- 호스트 프로그램 관리: 호스트 역할 + 본인 프로그램 ----
   if (under(pathname, "/host/meetups")) {
     if (!active || !roles.has("host")) return deny();
     if (seg.length >= 3 && seg[2] !== "new") {

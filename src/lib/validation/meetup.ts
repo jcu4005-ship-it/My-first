@@ -4,8 +4,8 @@ const text = (max: number, label: string) =>
   z.string().trim().max(max, `${label}은(는) ${max}자 이내로 입력해 주세요.`);
 
 export const MEETUP_TYPES = [
-  { value: "class", label: "실습 클래스 (실내)" },
-  { value: "outdoor", label: "현장 클래스 (출사·야외 수업)" },
+  { value: "class", label: "실습형 (실내)" },
+  { value: "outdoor", label: "현장형 (출사·야외 수업)" },
   { value: "general", label: "강의·토크형" },
 ] as const;
 
@@ -23,7 +23,7 @@ export const CLASS_LEVEL_LABEL: Record<ClassLevel, string> = Object.fromEntries(
 export const hostApplicationSchema = z.object({
   displayName: z.string().trim().min(2, "호스트 이름은 2자 이상이에요.").max(30, "호스트 이름은 30자 이내로 입력해 주세요."),
   headline: text(60, "한 줄 소개").min(5, "한 줄 소개를 5자 이상 입력해 주세요."),
-  bio: text(2000, "소개").min(20, "어떤 클래스를 열고 싶은지 20자 이상 소개해 주세요."),
+  bio: text(2000, "소개").min(20, "어떤 프로그램을 열고 싶은지 20자 이상 소개해 주세요."),
   career: text(1000, "경력").min(20, "가르칠 분야의 경력을 20자 이상 적어 주세요."),
   credentials: text(500, "자격·수상"),
   portfolioUrl: z

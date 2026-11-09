@@ -12,6 +12,7 @@ declare
   h2 uuid := 'a0000000-0000-4000-8000-000000000002';
   h3 uuid := 'a0000000-0000-4000-8000-000000000003';
   h4 uuid := 'a0000000-0000-4000-8000-000000000004';
+  h5 uuid := 'a0000000-0000-4000-8000-000000000005';
   base timestamptz := date_trunc('day', now() at time zone 'Asia/Seoul') at time zone 'Asia/Seoul';
   m uuid;
 begin
@@ -27,41 +28,49 @@ begin
     (h1, 'host-reading@sample.invalid', '필름로그 도현'),
     (h2, 'host-photo@sample.invalid',   '드로잉 스튜디오 오후'),
     (h3, 'host-music@sample.invalid',   '기타 선생 민재'),
-    (h4, 'host-salon@sample.invalid',   '실무 코치 지훈')
+    (h4, 'host-salon@sample.invalid',   '실무 코치 지훈'),
+    (h5, 'host-think@sample.invalid',   '생각 연구소 윤재')
   ) as t(id, email, nick)
   on conflict (id) do nothing;
 
-  insert into public.user_roles (user_id, role) values (h1,'host'),(h2,'host'),(h3,'host'),(h4,'host')
+  insert into public.user_roles (user_id, role) values (h1,'host'),(h2,'host'),(h3,'host'),(h4,'host'),(h5,'host')
     on conflict (user_id, role) do nothing;
 
   insert into public.host_profiles (user_id, display_name, headline, bio, expertise, instagram_handle,
-                                    career, credentials, portfolio_url, teaching_experience, status, is_sample)
+                                    career, credentials, portfolio_url, teaching_experience, status, is_sample,
+                                    primary_pillar, is_featured, featured_order)
   values
   (h1, '필름로그 도현', '필름 현상소를 운영하는 10년 차 사진가',
    '상업 사진 스튜디오에서 7년간 일했고, 지금은 을지로에서 필름 현상소를 운영합니다. 비싼 장비보다 천천히 바라보는 눈이 중요하다고 믿어요.',
    array['필름 사진','노출','현상'], 'filmlog.dh',
    '상업 사진 스튜디오 포토그래퍼 7년, 필름 현상소 운영 3년. 브랜드 룩북·매거진 촬영 다수.',
-   '서울 사진 공모전 입선(샘플)', 'https://example.com/filmlog', '필름 입문 클래스 누적 120회 진행', 'approved', true),
+   '서울 사진 공모전 입선(샘플)', 'https://example.com/filmlog', '필름 입문 클래스 누적 120회 진행', 'approved', true, 'creators', true, 1),
   (h2, '드로잉 스튜디오 오후', '그림 초보도 완성작을 들고 가는 드로잉·공예 공방',
    '시각디자인을 전공하고 일러스트레이터로 일하다 익선동에 작은 공방을 열었습니다. "못 그린다"는 분들이 한 장을 완성하는 순간을 가장 좋아해요.',
    array['어반 스케치','수채화','가죽 공예'], null,
    '일러스트레이터 8년, 공방 운영 4년. 출판·광고 일러스트 작업.',
-   '가죽공예 지도사 자격(샘플)', 'https://example.com/ohu-studio', '원데이 클래스 누적 300회, 기업 출강 20회', 'approved', true),
+   '가죽공예 지도사 자격(샘플)', 'https://example.com/ohu-studio', '원데이 클래스 누적 300회, 기업 출강 20회', 'approved', true, 'creators', false, null),
   (h3, '기타 선생 민재', '첫 코드부터 한 곡 완주까지, 통기타 입문 전문',
    '실용음악과를 졸업하고 세션 기타리스트로 활동했습니다. 손가락이 아프지 않게 시작하는 법부터 차근차근 알려 드려요.',
    array['통기타','코드 반주','핑거스타일'], null,
    '세션 기타리스트 9년, 실용음악 학원 강사 5년.',
-   '실용음악과 졸업(샘플)', null, '성인 입문반 강의 5년', 'approved', true),
+   '실용음악과 졸업(샘플)', null, '성인 입문반 강의 5년', 'approved', true, 'creators', false, null),
   (h4, '실무 코치 지훈', '내일 회사에서 바로 쓰는 엑셀·보고서·발표',
    '대기업 전략기획팀에서 12년간 보고서와 데이터를 다뤘습니다. 이론보다 실제 회사 파일로 연습합니다.',
    array['엑셀','보고서 작성','프레젠테이션'], null,
    '대기업 전략기획팀 12년, 사내 엑셀·보고서 강사 6년.',
-   'MOS Excel Expert(샘플)', 'https://example.com/jihoon', '기업 교육 150회, 직장인 소규모 클래스 80회', 'approved', true)
+   'MOS Excel Expert(샘플)', 'https://example.com/jihoon', '기업 교육 150회, 직장인 소규모 클래스 80회', 'approved', true, 'experts', true, 2),
+  (h5, '생각 연구소 윤재', '철학으로 생각을 정리하는 법을 가르칩니다',
+   '대학에서 철학을 가르치다 직장인을 위한 사고법 워크숍을 열고 있습니다. 어려운 철학자 이름보다 내 생각을 또렷하게 만드는 질문을 함께 다룹니다.',
+   array['철학','사고법','글로 생각 정리'], null,
+   '대학 철학과 강사 8년, 기업 사고력 워크숍 진행 4년.',
+   '철학 박사(샘플)', 'https://example.com/think-lab', '성인 대상 인문 강좌 200회', 'approved', true, 'knowledge', true, 3)
   on conflict (user_id) do update set
     display_name = excluded.display_name, headline = excluded.headline, bio = excluded.bio,
     expertise = excluded.expertise, instagram_handle = excluded.instagram_handle, career = excluded.career,
     credentials = excluded.credentials, portfolio_url = excluded.portfolio_url,
-    teaching_experience = excluded.teaching_experience, status = 'approved', is_sample = true;
+    teaching_experience = excluded.teaching_experience, status = 'approved', is_sample = true,
+    primary_pillar = excluded.primary_pillar, is_featured = excluded.is_featured, featured_order = excluded.featured_order;
 
   -- 이전 샘플 클래스·일정 정리 (샘플만)
   delete from public.meetup_sessions where meetup_id in (select id from public.meetups where is_sample);
@@ -211,6 +220,24 @@ begin
   returning id into m;
   insert into public.meetup_sessions (meetup_id, starts_at, ends_at, area, venue_name, address_detail, capacity, reserved_count) values
     (m, base + interval '2 days 11 hours', base + interval '2 days 13 hours', '익선동', '드로잉 스튜디오 오후', '서울 종로구 (샘플 주소)', 8, 4);
+
+  -- 9. Knowledge: 철학·인문
+  insert into public.meetups (host_id, category_slug, meetup_type, title, summary, description, price, max_quantity_per_booking,
+    level, learning_outcomes, materials_note,
+    target_audience, requirements, what_to_bring, agenda, refund_policy_text, status, is_sample, published_at)
+  values (h5, 'philosophy', 'general', '철학자의 질문으로 내 생각 정리하기',
+    '소크라테스의 질문법으로 요즘 가장 큰 고민 하나를 끝까지 따라가 봐요.',
+    E'철학 지식을 외우는 시간이 아닙니다. 철학자들이 쓰던 질문 도구를 빌려 내 고민을 정리하는 워크숍이에요.\n\n짧은 발췌문을 함께 읽고, 각자 고민 하나를 질문 사다리로 쪼개 봅니다. 마지막에는 한 장짜리 "생각 지도"를 완성해 가져갑니다.',
+    35000, 1, 'all',
+    E'막연한 고민을 질문 세 개로 나눠 정리할 수 있어요.\n내 생각의 근거와 전제를 스스로 점검할 수 있어요.',
+    '읽을거리·생각 지도 양식 제공',
+    '생각이 많지만 정리가 안 되는 분, 인문학을 처음 접하는 분',
+    '', '필기구',
+    '[{"time":"19:30","title":"발췌문 함께 읽기"},{"time":"20:00","title":"질문 사다리 실습"},{"time":"20:50","title":"생각 지도 완성"}]',
+    '프로그램 2일 전까지 전액 환불. (샘플 문구)', 'published', true, now())
+  returning id into m;
+  insert into public.meetup_sessions (meetup_id, starts_at, ends_at, area, venue_name, address_detail, capacity, reserved_count) values
+    (m, base + interval '7 days 19 hours 30 minutes', base + interval '7 days 21 hours 30 minutes', '서촌', '생각 연구소', '서울 종로구 (샘플 주소)', 10, 4);
 
   -- 검토 중(비공개) 클래스 — 목록에 보이지 않아야 함
   insert into public.meetups (host_id, category_slug, title, summary, description, price, status, is_sample)

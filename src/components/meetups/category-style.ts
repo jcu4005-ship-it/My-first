@@ -3,6 +3,11 @@
  * 색은 브랜드 팔레트(espresso·sand·terracotta·olive)와 그 명암 변형만 사용합니다.
  */
 const STYLES: Record<string, { bg: string; fg: string; label: string }> = {
+  philosophy: { bg: "#2D2824", fg: "#EAE4D9", label: "PHILOSOPHY" },
+  reading: { bg: "#EAE4D9", fg: "#211D1A", label: "LITERATURE" },
+  psychology: { bg: "#747A65", fg: "#F5F1EA", label: "PSYCHOLOGY" },
+  society: { bg: "#4E5244", fg: "#EAE4D9", label: "ECONOMY & SOCIETY" },
+  thinking: { bg: "#A66D50", fg: "#FFFFFF", label: "THINKING" },
   photo: { bg: "#211D1A", fg: "#EAE4D9", label: "PHOTOGRAPHY" },
   art: { bg: "#747A65", fg: "#F5F1EA", label: "CRAFT & DESIGN" },
   music: { bg: "#2D2824", fg: "#D9B39E", label: "MUSIC" },

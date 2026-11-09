@@ -6,6 +6,7 @@ import { brandImages } from "@/config/brand-images";
 import { Photo } from "@/components/media/photo";
 import { categoryStyle } from "@/components/meetups/category-style";
 import { ExhibitionGallery, type GalleryItem } from "@/components/meetups/exhibition-gallery";
+import { HostCard } from "@/components/hosts/host-card";
 import { MeetupCard } from "@/components/meetups/meetup-card";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
@@ -84,7 +85,7 @@ async function DiscoverAndTrending() {
   const trending = [...meetups].sort(byPopularity).slice(0, 6);
   const hasSample = trending.some((m) => m.is_sample);
   const firstClassOf = (hostId: string) => meetups.find((m) => m.host?.user_id === hostId);
-  // 갤러리: 분야마다 가장 가까운 클래스 하나씩 (분야 순서대로)
+  // 갤러리: 분야마다 가장 가까운 프로그램 하나씩 (분야 순서대로)
   const gallery: GalleryItem[] = categories.flatMap((c) => {
     const m = meetups.find((x) => x.category_slug === c.slug);
     return m
@@ -112,9 +113,9 @@ async function DiscoverAndTrending() {
         {gallery.length > 0 ? (
           <ExhibitionGallery items={gallery} />
         ) : (
-          <p className="py-16 text-center text-muted-foreground">곧 첫 클래스가 열립니다.</p>
+          <p className="py-16 text-center text-muted-foreground">곧 첫 프로그램이 열립니다.</p>
         )}
-        <nav aria-label="분야별 클래스" className="mx-auto mt-14 w-full max-w-7xl px-4 pb-20 sm:px-8 sm:pb-28">
+        <nav aria-label="분야별 프로그램" className="mx-auto mt-14 w-full max-w-7xl px-4 pb-20 sm:px-8 sm:pb-28">
           <ul className="flex flex-wrap justify-center gap-x-6 gap-y-3 border-t pt-8">
             {categories.map((c) => (
               <li key={c.slug}>
@@ -131,15 +132,15 @@ async function DiscoverAndTrending() {
 
       {/* 3. TRENDING EXPERIENCES */}
       <section className="mx-auto w-full max-w-7xl px-4 pt-24 sm:px-8 sm:pt-32" aria-labelledby="trending-title">
-        <SectionHeading eyebrow="Trending Experiences" title="지금 많이 찾는 클래스" id="trending-title">
+        <SectionHeading eyebrow="Trending Experiences" title="지금 많이 찾는 프로그램" id="trending-title">
           <Link href="/meetups" className="eyebrow self-start border-b border-current pb-1 sm:self-auto">
             View all
-            <span className="sr-only"> 모든 클래스 보기</span>
+            <span className="sr-only"> 모든 프로그램 보기</span>
           </Link>
         </SectionHeading>
         {hasSample && (
           <p className="mb-10 bg-notice px-4 py-3 text-sm text-notice-foreground" data-testid="sample-notice">
-            지금 보이는 클래스는 서비스 준비 중 보여 드리는 <strong>샘플</strong>입니다. 실제로 신청할 수 없어요.
+            지금 보이는 프로그램은 서비스 준비 중 보여 드리는 <strong>샘플</strong>입니다. 실제로 신청할 수 없어요.
           </p>
         )}
         {trending.length ? (
@@ -152,47 +153,26 @@ async function DiscoverAndTrending() {
             ))}
           </div>
         ) : (
-          <p className="py-16 text-center text-muted-foreground">곧 첫 클래스가 열립니다.</p>
+          <p className="py-16 text-center text-muted-foreground">곧 첫 프로그램이 열립니다.</p>
         )}
       </section>
 
-      {/* 4. OUR EXPERTS */}
+      {/* 4. FEATURED HOSTS (운영팀 추천 먼저) */}
       {hosts.length > 0 && (
         <section className="mt-24 bg-sand sm:mt-32" aria-labelledby="hosts-title">
           <div className="mx-auto w-full max-w-7xl px-4 py-20 sm:px-8 sm:py-28">
-            <SectionHeading eyebrow="Our Experts" title="클래스를 여는 사람들" id="hosts-title">
-              <Link href="/experts" className="eyebrow self-start border-b border-current pb-1 sm:self-auto">
-                All experts
-                <span className="sr-only"> 모든 전문가 보기</span>
+            <SectionHeading eyebrow="Featured Hosts" title="프로그램을 여는 사람들" id="hosts-title">
+              <Link href="/hosts" className="eyebrow self-start border-b border-current pb-1 sm:self-auto">
+                All hosts
+                <span className="sr-only"> 모든 호스트 보기</span>
               </Link>
             </SectionHeading>
             <ul className="relative -mx-4 flex snap-x snap-mandatory scroll-px-4 gap-4 overflow-x-auto px-4 pb-2 no-scrollbar sm:mx-0 sm:grid sm:overflow-visible sm:px-0 sm:pb-0 sm:snap-none sm:grid-cols-2 sm:gap-x-6 sm:gap-y-12 lg:grid-cols-4">
-              {hosts.map((h) => {
-                const cls = firstClassOf(h.user_id);
-                return (
-                  <li key={h.user_id} className="flex w-[62vw] max-w-[17rem] shrink-0 snap-start flex-col sm:w-auto sm:max-w-none">
-                    <Link href={`/hosts/${h.user_id}`} className="group flex flex-col" data-testid="expert-card">
-                      <span className="relative flex aspect-[4/5] items-end overflow-hidden bg-espresso p-5 text-sand-light">
-                        <span aria-hidden className="absolute -top-4 -right-2 font-display text-[9rem] leading-none font-bold opacity-[0.08]">
-                          {h.display_name.slice(0, 1)}
-                        </span>
-                        <span className="relative eyebrow text-sand">{h.expertise.slice(0, 2).join(" · ") || "Expert"}</span>
-                      </span>
-                      <span className="mt-4 font-display text-xl font-medium group-hover:underline group-hover:underline-offset-4">
-                        {h.display_name}
-                      </span>
-                      <span className="mt-1 text-sm leading-relaxed text-muted-foreground">{h.headline}</span>
-                      {h.is_sample && <span className="mt-1 text-[11px] text-muted-foreground">샘플 호스트</span>}
-                    </Link>
-                    {cls && (
-                      <Link href={`/meetups/${cls.id}`} className="mt-3 border-t border-espresso/20 pt-3 text-sm hover:underline hover:underline-offset-4">
-                        <span className="eyebrow mr-2 text-muted-foreground">Class</span>
-                        {cls.title}
-                      </Link>
-                    )}
-                  </li>
-                );
-              })}
+              {hosts.map((h) => (
+                <li key={h.user_id} className="flex w-[62vw] max-w-[17rem] shrink-0 snap-start flex-col sm:w-auto sm:max-w-none">
+                  <HostCard host={h} representative={firstClassOf(h.user_id)} />
+                </li>
+              ))}
             </ul>
           </div>
         </section>
@@ -215,7 +195,7 @@ function SectionsSkeleton() {
 
 const CLUB_POINTS = [
   { no: "01", title: "적은 인원, 깊은 대화", body: "한 사람 한 사람에게 눈을 맞출 수 있는 인원으로 열어요." },
-  { no: "02", title: "검증된 호스트", body: "운영팀이 경력과 포트폴리오를 확인한 전문가와 크리에이터만 클래스를 열어요." },
+  { no: "02", title: "검증된 호스트", body: "운영팀이 경력과 포트폴리오를 확인한 전문가와 크리에이터만 프로그램을 열어요." },
   { no: "03", title: "수업 그 다음", body: "같은 것에 마음이 움직인 사람들과 자연스럽게 이야기가 이어져요." },
 ];
 
@@ -279,7 +259,7 @@ function BecomeHost() {
             당신의 전문성을 새로운 경험으로.
           </h2>
           <p className="mt-6 max-w-lg leading-relaxed text-muted-foreground">
-            입장료 없이, 클래스가 판매될 때만 함께 나눠요. 경력과 포트폴리오를 보내 주시면 운영팀이 확인 후 승인해 드려요.
+            입장료 없이, 프로그램이 판매될 때만 함께 나눠요. 경력과 포트폴리오를 보내 주시면 운영팀이 확인 후 승인해 드려요.
           </p>
           <div className="mt-10 grid grid-cols-1 gap-3 sm:flex">
             <Button asChild size="lg">
@@ -299,7 +279,7 @@ function BecomeHost() {
           <ul className="flex flex-col">
             {[
               "자신의 전문성을 사람들과 나누고 싶은 분",
-              "나만의 클래스를 만들어 보고 싶은 크리에이터",
+              "나만의 프로그램을 만들어 보고 싶은 크리에이터",
               `${brand.name}과 함께 새로운 경험을 기획하고 싶은 분`,
             ].map((t) => (
               <li key={t} className="border-b py-5 font-display text-lg">
