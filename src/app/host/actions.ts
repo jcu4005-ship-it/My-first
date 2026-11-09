@@ -10,7 +10,8 @@ import { rpcErrorMessage } from "@/lib/rpc-errors";
 import { refundBooking } from "@/lib/payments/service";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { fieldErrors } from "@/lib/validation/auth";
-import { hostApplicationSchema, meetupFormSchema, sessionFormSchema } from "@/lib/validation/meetup";
+import { HOST_AVATAR_BUCKET } from "@/lib/hosting/avatar";
+import { hostApplicationSchema, hostProfileSchema, meetupFormSchema, sessionFormSchema } from "@/lib/validation/meetup";
 
 const LOGIN_REQUIRED: FormState = { status: "error", message: "로그인이 필요합니다." };
 const NOT_HOST: FormState = { status: "error", message: "승인된 호스트만 할 수 있어요." };
@@ -230,4 +231,51 @@ export async function hostCancelMeetupAction(_prev: FormState, formData: FormDat
   revalidatePath(`/host/meetups/${parsed.data.meetupId}`);
   revalidatePath("/host");
   return { status: "success", message: "프로그램을 취소했어요. 신청자에게 알림과 환불이 처리되었습니다." };
+}
+
+const PROFILE_KEYS = ["displayName", "occupation", "headline", "bio", "philosophy", "expertise", "career", "credentials",
+  "portfolioUrl", "teachingExperience", "instagram", "avatarPath"] as const;
+
+/** 승인된 호스트: 공개 프로필 수정 (RLS: 본인 행만, 상태·추천·주소는 수정 권한 없음) */
+export async function updateHostProfileAction(_prev: FormState, formData: FormData): Promise<FormState> {
+  const member = await activeMember();
+  if (!member) return LOGIN_REQUIRED;
+  if (!member.roles.includes("host")) return NOT_HOST;
+  const values = Object.fromEntries(PROFILE_KEYS.map((k) => [k, formValue(formData, k)]));
+  const parsed = hostProfileSchema.safeParse(values);
+  if (!parsed.success) return { status: "error", message: "입력 내용을 확인해 주세요.", fieldErrors: fieldErrors(parsed.error), values };
+  const v = parsed.data;
+  if (v.avatarPath && !v.avatarPath.startsWith(`${member.id}/`)) {
+    return { status: "error", message: "본인이 올린 사진만 사용할 수 있어요.", values };
+  }
+  const supabase = await createSupabaseServerClient();
+  const { data: before } = await supabase.from("host_profiles").select("avatar_path").eq("user_id", member.id).maybeSingle();
+  const { data, error } = await supabase
+    .from("host_profiles")
+    .update({
+      display_name: v.displayName,
+      occupation: v.occupation,
+      headline: v.headline,
+      bio: v.bio,
+      philosophy: v.philosophy,
+      expertise: v.expertise,
+      career: v.career,
+      credentials: v.credentials,
+      portfolio_url: v.portfolioUrl || null,
+      teaching_experience: v.teachingExperience,
+      instagram_handle: v.instagram || null,
+      avatar_path: v.avatarPath || null,
+    })
+    .eq("user_id", member.id)
+    .select("slug");
+  if (error) return { status: "error", message: rpcErrorMessage(error), values };
+  if (!data?.length) return { status: "error", message: "수정할 수 없는 프로필이에요.", values };
+  // 사진을 바꿨거나 지웠으면 예전 파일 정리 (본인 폴더만 지울 수 있음)
+  const old = before?.avatar_path;
+  if (old && old !== (v.avatarPath || null)) {
+    await supabase.storage.from(HOST_AVATAR_BUCKET).remove([old]);
+  }
+  revalidatePath("/host/profile");
+  revalidatePath("/hosts");
+  return { status: "success", message: "프로필을 저장했어요.", values };
 }

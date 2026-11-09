@@ -9,6 +9,7 @@ import { listHostApplications } from "@/lib/hosting/queries";
 import { reviewHostAction } from "../actions";
 
 import { HostListingForm } from "./listing-form";
+import { hostHref } from "@/lib/hosting/avatar";
 
 export const metadata: Metadata = { title: "호스트 심사" };
 export const instant = false;
@@ -60,7 +61,7 @@ export default async function AdminHostsPage() {
         {done.map((a) => (
           <li key={a.user_id} className="flex flex-col gap-3 rounded-lg border px-4 py-3" data-testid="host-row" data-name={a.display_name}>
             <div className="flex items-center justify-between">
-              <Link href={`/hosts/${a.user_id}`} className="hover:underline">{a.display_name}</Link>
+              <Link href={hostHref(a)} className="hover:underline">{a.display_name}</Link>
               <StatusPill tone={a.status === "approved" ? "ok" : "muted"}>{LABEL[a.status]}</StatusPill>
             </div>
             {a.status === "approved" && (

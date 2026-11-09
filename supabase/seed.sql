@@ -38,39 +38,46 @@ begin
 
   insert into public.host_profiles (user_id, display_name, headline, bio, expertise, instagram_handle,
                                     career, credentials, portfolio_url, teaching_experience, status, is_sample,
-                                    primary_pillar, is_featured, featured_order)
+                                    primary_pillar, is_featured, featured_order,
+                                    slug, occupation, philosophy)
   values
   (h1, '필름로그 도현', '필름 현상소를 운영하는 10년 차 사진가',
    '상업 사진 스튜디오에서 7년간 일했고, 지금은 을지로에서 필름 현상소를 운영합니다. 비싼 장비보다 천천히 바라보는 눈이 중요하다고 믿어요.',
    array['필름 사진','노출','현상'], 'filmlog.dh',
    '상업 사진 스튜디오 포토그래퍼 7년, 필름 현상소 운영 3년. 브랜드 룩북·매거진 촬영 다수.',
-   '서울 사진 공모전 입선(샘플)', 'https://example.com/filmlog', '필름 입문 클래스 누적 120회 진행', 'approved', true, 'creators', true, 1),
+   '서울 사진 공모전 입선(샘플)', 'https://example.com/filmlog', '필름 입문 클래스 누적 120회 진행', 'approved', true, 'creators', true, 1,
+   'filmlog-dohyun', '사진가 · 필름 현상소 운영', '셔터를 누르기 전에 한 번 더 보는 습관이 사진을 바꾼다고 믿습니다. 장비보다 눈을 먼저 가르칩니다.'),
   (h2, '드로잉 스튜디오 오후', '그림 초보도 완성작을 들고 가는 드로잉·공예 공방',
    '시각디자인을 전공하고 일러스트레이터로 일하다 익선동에 작은 공방을 열었습니다. "못 그린다"는 분들이 한 장을 완성하는 순간을 가장 좋아해요.',
    array['어반 스케치','수채화','가죽 공예'], null,
    '일러스트레이터 8년, 공방 운영 4년. 출판·광고 일러스트 작업.',
-   '가죽공예 지도사 자격(샘플)', 'https://example.com/ohu-studio', '원데이 클래스 누적 300회, 기업 출강 20회', 'approved', true, 'creators', false, null),
+   '가죽공예 지도사 자격(샘플)', 'https://example.com/ohu-studio', '원데이 클래스 누적 300회, 기업 출강 20회', 'approved', true, 'creators', false, null,
+   'ohu-studio', '일러스트레이터 · 공방 운영', '잘 그리는 것보다 끝까지 그려 보는 경험이 먼저입니다. 모두가 한 장을 완성해 돌아가게 합니다.'),
   (h3, '기타 선생 민재', '첫 코드부터 한 곡 완주까지, 통기타 입문 전문',
    '실용음악과를 졸업하고 세션 기타리스트로 활동했습니다. 손가락이 아프지 않게 시작하는 법부터 차근차근 알려 드려요.',
    array['통기타','코드 반주','핑거스타일'], null,
    '세션 기타리스트 9년, 실용음악 학원 강사 5년.',
-   '실용음악과 졸업(샘플)', null, '성인 입문반 강의 5년', 'approved', true, 'creators', false, null),
+   '실용음악과 졸업(샘플)', null, '성인 입문반 강의 5년', 'approved', true, 'creators', false, null,
+   'minjae-guitar', '세션 기타리스트 · 입문 강사', '손가락이 아프지 않게 시작하는 것, 그리고 첫 곡을 끝까지 쳐 보는 것. 그 두 가지면 충분합니다.'),
   (h4, '실무 코치 지훈', '내일 회사에서 바로 쓰는 엑셀·보고서·발표',
    '대기업 전략기획팀에서 12년간 보고서와 데이터를 다뤘습니다. 이론보다 실제 회사 파일로 연습합니다.',
    array['엑셀','보고서 작성','프레젠테이션'], null,
    '대기업 전략기획팀 12년, 사내 엑셀·보고서 강사 6년.',
-   'MOS Excel Expert(샘플)', 'https://example.com/jihoon', '기업 교육 150회, 직장인 소규모 클래스 80회', 'approved', true, 'experts', true, 2),
+   'MOS Excel Expert(샘플)', 'https://example.com/jihoon', '기업 교육 150회, 직장인 소규모 클래스 80회', 'approved', true, 'experts', true, 2,
+   'jihoon-coach', '전략기획 12년 · 실무 교육 강사', '이론보다 내일 회사에서 바로 쓰는 한 가지를 가져가게 하는 것이 좋은 수업이라고 생각합니다.'),
   (h5, '생각 연구소 윤재', '철학으로 생각을 정리하는 법을 가르칩니다',
    '대학에서 철학을 가르치다 직장인을 위한 사고법 워크숍을 열고 있습니다. 어려운 철학자 이름보다 내 생각을 또렷하게 만드는 질문을 함께 다룹니다.',
    array['철학','사고법','글로 생각 정리'], null,
    '대학 철학과 강사 8년, 기업 사고력 워크숍 진행 4년.',
-   '철학 박사(샘플)', 'https://example.com/think-lab', '성인 대상 인문 강좌 200회', 'approved', true, 'knowledge', true, 3)
+   '철학 박사(샘플)', 'https://example.com/think-lab', '성인 대상 인문 강좌 200회', 'approved', true, 'knowledge', true, 3,
+   'think-lab-yunjae', '철학 강사 · 사고법 워크숍', '철학은 정답을 외우는 학문이 아니라 좋은 질문을 만드는 연습입니다.')
   on conflict (user_id) do update set
     display_name = excluded.display_name, headline = excluded.headline, bio = excluded.bio,
     expertise = excluded.expertise, instagram_handle = excluded.instagram_handle, career = excluded.career,
     credentials = excluded.credentials, portfolio_url = excluded.portfolio_url,
     teaching_experience = excluded.teaching_experience, status = 'approved', is_sample = true,
-    primary_pillar = excluded.primary_pillar, is_featured = excluded.is_featured, featured_order = excluded.featured_order;
+    primary_pillar = excluded.primary_pillar, is_featured = excluded.is_featured, featured_order = excluded.featured_order,
+    slug = excluded.slug, occupation = excluded.occupation, philosophy = excluded.philosophy;
 
   -- 이전 샘플 클래스·일정 정리 (샘플만)
   delete from public.meetup_sessions where meetup_id in (select id from public.meetups where is_sample);

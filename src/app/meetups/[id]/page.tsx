@@ -16,6 +16,7 @@ import { getMeetup, listCategories } from "@/lib/meetups/queries";
 import { CLASS_LEVEL_LABEL } from "@/lib/validation/meetup";
 
 import { BookingForm } from "./booking-form";
+import { hostHref } from "@/lib/hosting/avatar";
 
 export const instant = false;
 
@@ -113,7 +114,7 @@ export default async function MeetupDetailPage({ params }: PageProps<"/meetups/[
             {meetup.host && (
               <InfoBlock eyebrow="Who will teach you" title="호스트">
                 <Link
-                  href={`/hosts/${meetup.host.user_id}`}
+                  href={hostHref(meetup.host)}
                   className="group grid grid-cols-[4.5rem_1fr] gap-5 sm:grid-cols-[6rem_1fr]"
                   data-testid="host-link"
                 >

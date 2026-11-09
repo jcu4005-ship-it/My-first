@@ -15,7 +15,7 @@ export type Session = {
   status: "open" | "closed" | "cancelled" | "completed";
 };
 
-export type HostSummary = { user_id: string; display_name: string; headline: string; is_sample: boolean };
+export type HostSummary = { user_id: string; slug: string | null; display_name: string; headline: string; is_sample: boolean };
 
 export type MeetupCardData = {
   id: string;
@@ -42,7 +42,7 @@ export type MeetupDetail = MeetupCardData & {
   level: "all" | "beginner" | "intermediate" | "advanced";
   learning_outcomes: string;
   materials_note: string;
-  host: (HostSummary & { bio: string; expertise: string[]; instagram_handle: string | null; career: string }) | null;
+  host: (HostSummary & { bio: string; expertise: string[]; instagram_handle: string | null; career: string; occupation: string; avatar_path: string | null }) | null;
 };
 
 export type HostDetail = {
@@ -57,15 +57,22 @@ export type HostDetail = {
   portfolio_url: string | null;
   teaching_experience: string;
   primary_pillar: "knowledge" | "creators" | "experts" | null;
+  slug: string | null;
+  occupation: string;
+  philosophy: string;
+  avatar_path: string | null;
   is_featured: boolean;
   featured_order: number | null;
   is_sample: boolean;
 };
 
+const HOST_DETAIL_SELECT =
+  "user_id, slug, display_name, headline, bio, expertise, instagram_handle, career, credentials, portfolio_url, teaching_experience, occupation, philosophy, avatar_path, primary_pillar, is_featured, featured_order, is_sample";
+
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 const CARD_SELECT =
-  "id, title, summary, price, category_slug, cover_image_url, is_sample, status, host:host_profiles(user_id, display_name, headline, is_sample), sessions:meetup_sessions(id, starts_at, ends_at, area, venue_name, capacity, reserved_count, status)";
+  "id, title, summary, price, category_slug, cover_image_url, is_sample, status, host:host_profiles(user_id, slug, display_name, headline, is_sample), sessions:meetup_sessions(id, starts_at, ends_at, area, venue_name, capacity, reserved_count, status)";
 
 type Row = {
   id: string;
@@ -137,7 +144,7 @@ export async function getMeetup(id: string): Promise<MeetupDetail | null> {
   const { data, error } = await supabase
     .from("meetups")
     .select(
-      "id, title, summary, description, price, category_slug, cover_image_url, meetup_type, is_sample, status, max_quantity_per_booking, target_audience, requirements, what_to_bring, agenda, refund_policy_text, level, learning_outcomes, materials_note, host:host_profiles(user_id, display_name, headline, bio, expertise, instagram_handle, career, is_sample), sessions:meetup_sessions(id, starts_at, ends_at, area, venue_name, capacity, reserved_count, status)",
+      "id, title, summary, description, price, category_slug, cover_image_url, meetup_type, is_sample, status, max_quantity_per_booking, target_audience, requirements, what_to_bring, agenda, refund_policy_text, level, learning_outcomes, materials_note, host:host_profiles(user_id, slug, display_name, headline, bio, expertise, instagram_handle, career, occupation, avatar_path, is_sample), sessions:meetup_sessions(id, starts_at, ends_at, area, venue_name, capacity, reserved_count, status)",
     )
     .eq("id", id)
     .eq("status", "published")
@@ -154,13 +161,15 @@ export async function getMeetup(id: string): Promise<MeetupDetail | null> {
   } as MeetupDetail;
 }
 
-export async function getHost(userId: string): Promise<HostDetail | null> {
-  if (!UUID.test(userId)) return null;
+/** 호스트 조회: slug 또는 (예전 주소의) 사용자 id */
+export async function getHost(idOrSlug: string): Promise<HostDetail | null> {
+  const isId = UUID.test(idOrSlug);
+  if (!isId && !/^[a-z0-9][a-z0-9-]{1,40}[a-z0-9]$/.test(idOrSlug)) return null;
   const supabase = await createSupabaseServerClient();
   const { data, error } = await supabase
     .from("host_profiles")
-    .select("user_id, display_name, headline, bio, expertise, instagram_handle, career, credentials, portfolio_url, teaching_experience, primary_pillar, is_featured, featured_order, is_sample")
-    .eq("user_id", userId)
+    .select(HOST_DETAIL_SELECT)
+    .eq(isId ? "user_id" : "slug", idOrSlug)
     .eq("status", "approved")
     .maybeSingle();
   if (error) throw new Error(`호스트 조회 실패: ${error.message}`);
@@ -171,7 +180,7 @@ export async function listFeaturedHosts(limit = 4): Promise<HostDetail[]> {
   const supabase = await createSupabaseServerClient();
   const { data, error } = await supabase
     .from("host_profiles")
-    .select("user_id, display_name, headline, bio, expertise, instagram_handle, career, credentials, portfolio_url, teaching_experience, primary_pillar, is_featured, featured_order, is_sample")
+    .select(HOST_DETAIL_SELECT)
     .eq("status", "approved")
     // 운영팀 추천(featured) 먼저 — 팔로워 수 등 인기 지표는 순서에 쓰지 않음
     .order("is_featured", { ascending: false })

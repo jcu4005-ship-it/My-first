@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { requireActiveMember } from "@/lib/auth/guards";
 import { formatShortDateTime, isFuture } from "@/lib/format";
 import { MEETUP_STATUS_LABEL, getMyHostProfile, listMyMeetups } from "@/lib/hosting/queries";
+import { hostHref } from "@/lib/hosting/avatar";
 
 export const metadata: Metadata = { title: "호스트" };
 export const instant = false;
@@ -26,9 +27,10 @@ export default async function HostDashboard() {
           <div>
             <p className="text-xs tracking-[0.25em] text-accent">HOST</p>
             <h1 className="mt-1 font-display text-3xl font-bold">{host.display_name}</h1>
-            <Link href={`/hosts/${member.id}`} className="mt-1 inline-block text-sm text-muted-foreground underline underline-offset-4">
-              공개 프로필 보기
-            </Link>
+            <span className="mt-1 flex gap-4 text-sm">
+              <Link href={hostHref(host)} className="text-muted-foreground underline underline-offset-4">공개 프로필 보기</Link>
+              <Link href="/host/profile" className="underline underline-offset-4" data-testid="edit-profile-link">프로필 관리</Link>
+            </span>
           </div>
           <Button asChild>
             <Link href="/host/meetups/new">새 프로그램 만들기</Link>

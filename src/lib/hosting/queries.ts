@@ -25,6 +25,10 @@ export type MyHostProfile = {
   credentials: string;
   portfolio_url: string | null;
   teaching_experience: string;
+  slug: string | null;
+  occupation: string;
+  philosophy: string;
+  avatar_path: string | null;
   status: HostStatus;
   review_note: string | null;
 };
@@ -33,7 +37,7 @@ export async function getMyHostProfile(userId: string): Promise<MyHostProfile | 
   const supabase = await createSupabaseServerClient();
   const { data } = await supabase
     .from("host_profiles")
-    .select("user_id, display_name, headline, bio, expertise, instagram_handle, career, credentials, portfolio_url, teaching_experience, status, review_note")
+    .select("user_id, display_name, headline, bio, expertise, instagram_handle, career, credentials, portfolio_url, teaching_experience, slug, occupation, philosophy, avatar_path, status, review_note")
     .eq("user_id", userId)
     .maybeSingle();
   return data as MyHostProfile | null;
@@ -141,7 +145,7 @@ export async function listHostApplications(): Promise<HostApplication[]> {
   const supabase = await createSupabaseServerClient();
   const { data, error } = await supabase
     .from("host_profiles")
-    .select("user_id, display_name, headline, bio, expertise, instagram_handle, career, credentials, portfolio_url, teaching_experience, status, review_note, applied_at, reviewed_at, primary_pillar, is_featured, featured_order")
+    .select("user_id, display_name, headline, bio, expertise, instagram_handle, career, credentials, portfolio_url, teaching_experience, slug, occupation, philosophy, avatar_path, status, review_note, applied_at, reviewed_at, primary_pillar, is_featured, featured_order")
     .eq("is_sample", false)
     .order("applied_at", { ascending: false })
     .limit(100);

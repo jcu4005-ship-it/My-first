@@ -57,8 +57,15 @@ export async function proxy(request: NextRequest) {
     return m ? response : missing();
   }
   if (seg[0] === "hosts" && seg.length === 2) {
-    if (!UUID.test(seg[1])) return missing();
-    const { data: h } = await supabase.from("host_profiles").select("user_id").eq("user_id", seg[1]).eq("status", "approved").maybeSingle();
+    // /hosts/[slug] (예전 주소 /hosts/[사용자 id]도 허용 → 화면에서 slug 주소로 연결)
+    const isId = UUID.test(seg[1]);
+    if (!isId && !/^[a-z0-9][a-z0-9-]{1,40}[a-z0-9]$/.test(seg[1])) return missing();
+    const { data: h } = await supabase
+      .from("host_profiles")
+      .select("user_id")
+      .eq(isId ? "user_id" : "slug", seg[1])
+      .eq("status", "approved")
+      .maybeSingle();
     return h ? response : missing();
   }
 

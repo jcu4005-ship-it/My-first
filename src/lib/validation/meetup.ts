@@ -42,6 +42,16 @@ export const hostApplicationSchema = z.object({
     .refine((v) => v === "" || /^[A-Za-z0-9._]{1,30}$/.test(v), "인스타그램 아이디 형식을 확인해 주세요."),
 });
 
+/** 승인된 호스트의 공개 프로필 수정 (지원서 항목 + 직업·작업 철학·사진) */
+export const hostProfileSchema = hostApplicationSchema.extend({
+  occupation: text(60, "직업·전문 분야").min(2, "직업이나 전문 분야를 한 줄로 적어 주세요."),
+  philosophy: text(1000, "작업 철학"),
+  avatarPath: z
+    .string()
+    .trim()
+    .refine((v) => v === "" || /^[0-9a-f-]{36}\/[A-Za-z0-9._-]{1,80}$/.test(v), "사진 정보가 올바르지 않아요. 다시 올려 주세요."),
+});
+
 /** "14:00 인사와 소개" 형식의 줄을 진행 순서로 변환 */
 export function parseAgenda(raw: string): { time: string; title: string }[] {
   return raw
