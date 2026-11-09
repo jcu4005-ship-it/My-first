@@ -66,6 +66,8 @@ test("호스트 지원서(임시 저장·수정 요청·재제출) → 승인 �
   await host.reload();
   await expect(host.getByTestId("application-status")).toHaveAttribute("data-status", "submitted");
   await expect(host.getByTestId("application-summary")).toBeVisible(); // 심사 중에는 읽기 전용
+  await host.goto("/me");
+  await expect(host.getByTestId("me-application")).toHaveAttribute("data-status", "submitted"); // 마이페이지에서도 지원 상태 확인
 
   // 2. 관리자: 수정 요청 → 지원자 보완·재제출 → 승인 (2단계 인증)
   const admin = await loginPage(browser, adminUser.email);
@@ -85,7 +87,7 @@ test("호스트 지원서(임시 저장·수정 요청·재제출) → 승인 �
   await detail.getByTestId("request-revision").getByRole("button").click();
   await expect(admin.getByTestId("application-detail")).toHaveAttribute("data-status", "revision_requested");
 
-  await host.reload();
+  await host.goto("/become-a-host/apply");
   await expect(host.getByTestId("revision-note")).toContainText("준비물을 추가");
   const form3 = host.getByTestId("host-application-form");
   await form3.getByLabel("프로그램 기획안").fill("대상: 글쓰기 입문 직장인 / 2시간 / 준비물: 노트북 / 구조 배우기 → 한 편 쓰기 → 현장 첨삭 / 4만 원");

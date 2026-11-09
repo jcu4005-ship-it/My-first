@@ -1,9 +1,9 @@
 import type { Page } from "@playwright/test";
 
-import { expect, test } from "./fixtures";
+import { expect, newContext, test } from "./fixtures";
 
 import { isStaging, requireTestEnv } from "../support/env";
-import { PASSWORD, createMember, makeApprovedHost } from "../support/fixtures";
+import { PASSWORD, adminApi, createMember, makeApprovedHost } from "../support/fixtures";
 
 test.beforeAll(requireTestEnv);
 const samples = !isStaging || process.env.TEST_EXPECT_SAMPLES === "yes";
@@ -65,4 +65,46 @@ test("호스트 프로필 관리: 직업·작업 철학 저장, 사진 올리기
   await expect(page.getByTestId("host-occupation")).toHaveText("광고 사진가 · 스튜디오 운영");
   await expect(page.getByTestId("host-philosophy")).toContainText("장비보다 보는 눈");
   await expect(page.getByTestId("host-avatar").locator("img")).toHaveAttribute("src", /host-avatars/);
+});
+
+test("호스트 팔로우: 비로그인 안내 → 로그인 후 팔로우 → 마이페이지 목록 → 취소", async ({ page, browser }) => {
+  const h = await createMember("e2efh");
+  const hostName = `팔로우호스트${Date.now() % 10000}`;
+  await makeApprovedHost(h.id, hostName);
+  const { data } = await adminApi().from("host_profiles").select("slug").eq("user_id", h.id).single();
+  const path = `/hosts/${data!.slug}`;
+
+  // 비로그인: 로그인 안내 링크
+  const guest = await (await newContext(browser)).newPage();
+  await guest.goto(path);
+  await expect(guest.getByTestId("follow-login")).toHaveAttribute("href", `/login?next=${encodeURIComponent(path)}`);
+  await expect(guest.getByTestId("follower-count")).toHaveText("팔로워 0명");
+  await guest.context().close();
+
+  // 회원: 마이페이지 빈 상태 → 팔로우 → 목록
+  const m = await createMember("e2efm");
+  await login(page, m.email, "/me");
+  await expect(page.getByTestId("me-following")).toContainText("아직 팔로우한 호스트가 없어요");
+  await page.goto(path);
+  await page.getByTestId("follow-button").click();
+  await expect(page.getByTestId("follow-button")).toHaveAttribute("aria-pressed", "true");
+  await expect(page.getByTestId("follower-count")).toHaveText("팔로워 1명");
+  await page.goto("/me");
+  const item = page.locator(`[data-testid=followed-host][data-name="${hostName}"]`);
+  await expect(item).toBeVisible();
+  await expect(item).toContainText("지금 모집 중인 프로그램이 없어요");
+
+  // 취소
+  await item.getByRole("link", { name: hostName }).click();
+  await expect(page).toHaveURL(new RegExp(`${path}$`));
+  await page.getByTestId("follow-button").click();
+  await expect(page.getByTestId("follow-button")).toHaveAttribute("aria-pressed", "false");
+  await expect(page.getByTestId("follower-count")).toHaveText("팔로워 0명");
+
+  // 호스트 본인 페이지에는 팔로우 버튼 없음
+  const self = await (await newContext(browser)).newPage();
+  await login(self, h.email, path);
+  await expect(self.getByTestId("host-name")).toHaveText(hostName);
+  await expect(self.getByTestId("follow")).toHaveCount(0);
+  await self.context().close();
 });

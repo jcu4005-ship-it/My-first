@@ -29,7 +29,7 @@ select results_eq(
 select results_eq(
   $$ select table_name::text collate "C" as t, privilege_type::text collate "C" as p from information_schema.role_table_grants
      where grantee = 'authenticated' and table_schema = 'public' order by 1,2 $$,
-  $$ values ('audit_logs' collate "C",'SELECT' collate "C"), ('categories','SELECT'), ('host_applications','SELECT'), ('legal_consents','SELECT'), ('payment_events','SELECT'), ('user_roles','SELECT') $$,
+  $$ values ('audit_logs' collate "C",'SELECT' collate "C"), ('categories','SELECT'), ('host_applications','SELECT'), ('host_follows','SELECT'), ('legal_consents','SELECT'), ('payment_events','SELECT'), ('user_roles','SELECT') $$,
   'authenticated 테이블 단위 권한은 조회뿐이다 (RLS로 범위 제한)'
 );
 select results_eq(

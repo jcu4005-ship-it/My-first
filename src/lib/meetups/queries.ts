@@ -122,13 +122,16 @@ export async function listCategories(): Promise<Category[]> {
 }
 
 /** 공개된 프로그램 중 앞으로 열리는 회차가 있는 것, 가장 가까운 회차 순 */
-export async function listUpcomingMeetups(opts: { category?: string; categories?: string[]; hostId?: string; limit?: number } = {}) {
+export async function listUpcomingMeetups(
+  opts: { category?: string; categories?: string[]; hostId?: string; hostIds?: string[]; limit?: number } = {},
+) {
   const supabase = await createSupabaseServerClient();
   // 운영을 멈춘(비활성) 카테고리의 프로그램은 목록에서 제외 — 비활성 카테고리는 RLS로 보이지 않아 inner join에서 빠짐
   let query = supabase.from("meetups").select(`${CARD_SELECT}, category:categories!inner(slug)`).eq("status", "published");
   if (opts.category) query = query.eq("category_slug", opts.category);
   if (opts.categories) query = query.in("category_slug", opts.categories);
   if (opts.hostId) query = query.eq("host_id", opts.hostId);
+  if (opts.hostIds) query = query.in("host_id", opts.hostIds);
   const { data, error } = await query.returns<Row[]>();
   if (error) throw new Error(`프로그램 목록 조회 실패: ${error.message}`);
   const cards = (data ?? [])

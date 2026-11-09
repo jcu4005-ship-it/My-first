@@ -3,11 +3,14 @@ import Link from "next/link";
 import { notFound, permanentRedirect } from "next/navigation";
 
 import { Photo } from "@/components/media/photo";
+import { FollowButton } from "@/components/hosts/follow-button";
 import { MeetupGrid } from "@/components/meetups/meetup-card";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { pillarInfo } from "@/config/pillars";
+import { getCurrentMember } from "@/lib/auth/session";
 import { hostAvatarUrl } from "@/lib/hosting/avatar";
+import { getFollowState } from "@/lib/hosting/follows";
 import { getHost, listCategories, listUpcomingMeetups } from "@/lib/meetups/queries";
 
 export const instant = false;
@@ -47,7 +50,12 @@ export default async function HostPage({ params }: PageProps<"/hosts/[slug]">) {
   // 예전 주소(/hosts/사용자id) → 이름 주소로
   if (UUID.test(slug) && host.slug) permanentRedirect(`/hosts/${host.slug}`);
 
-  const [meetups, categories] = await Promise.all([listUpcomingMeetups({ hostId: host.user_id }), listCategories()]);
+  const member = await getCurrentMember();
+  const [meetups, categories, follow] = await Promise.all([
+    listUpcomingMeetups({ hostId: host.user_id }),
+    listCategories(),
+    getFollowState(host.user_id, member?.id ?? null),
+  ]);
   const names = Object.fromEntries(categories.map((c) => [c.slug, c.name]));
   const { soon, later } = splitBySoon(meetups);
   const pillar = pillarInfo(host.primary_pillar);
@@ -94,6 +102,15 @@ export default async function HostPage({ params }: PageProps<"/hosts/[slug]">) {
                     </li>
                   ))}
                 </ul>
+              )}
+              {!host.is_sample && member?.id !== host.user_id && (
+                <FollowButton
+                  hostId={host.user_id}
+                  path={`/hosts/${host.slug ?? host.user_id}`}
+                  following={follow.following}
+                  count={follow.count}
+                  loggedIn={Boolean(member && member.status === "active")}
+                />
               )}
               {host.instagram_handle && (
                 <a
