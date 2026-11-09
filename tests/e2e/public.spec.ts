@@ -7,15 +7,26 @@ test.beforeAll(requireTestEnv);
 // 샘플 데이터가 필요한 검사: 로컬·CI는 항상, 스테이징은 샘플을 넣은 경우(TEST_EXPECT_SAMPLES=yes)만
 const samples = !isStaging || process.env.TEST_EXPECT_SAMPLES === "yes";
 
-test("메인: 서비스 소개, 샘플 안내, 곧 열리는 프로그램, 호스트 소개", async ({ page }) => {
+test("메인: 세 갈래 분류, 이번 주 프로그램, 호스트, 저널, 큐레이션 기준, 멤버십 준비 중", async ({ page }) => {
   test.skip(!samples, "샘플 데이터 없음");
   await page.goto("/");
   await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+  await expect(page.getByTestId("home-pillars").getByTestId("pillar-tile")).toHaveCount(3);
   await expect(page.getByTestId("sample-notice")).toBeVisible();
-  const cards = page.getByTestId("meetup-card");
+  const cards = page.getByTestId("home-this-week").getByTestId("meetup-card");
   await expect(cards.first()).toBeVisible();
   expect(await cards.count()).toBeLessThanOrEqual(6);
   await expect(page.getByRole("heading", { name: "프로그램을 여는 사람들" })).toBeVisible();
+  await expect(page.getByTestId("home-journal").getByTestId("content-card").first()).toBeVisible();
+  await expect(page.getByTestId("home-curation")).toContainText("공개 전 검수");
+  // 멤버십은 준비 중 표시만 — 가입·결제 버튼 없음
+  const membership = page.getByTestId("membership-soon");
+  await expect(membership).toContainText("준비 중");
+  await expect(membership.getByRole("button")).toHaveCount(0);
+  await expect(membership.getByRole("link")).toHaveCount(0);
+
+  await page.getByTestId("home-pillars").getByTestId("pillar-tile").filter({ hasText: "Knowledge" }).click();
+  await expect(page).toHaveURL(/\/meetups\?pillar=knowledge$/);
 });
 
 test("메인 갤러리: 작품 클릭·좌우 버튼·키보드·스와이프로 이동, 상세 보기 연결", async ({ page }) => {
