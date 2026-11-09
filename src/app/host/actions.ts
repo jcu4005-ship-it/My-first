@@ -11,7 +11,7 @@ import { refundBooking } from "@/lib/payments/service";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { fieldErrors } from "@/lib/validation/auth";
 import { HOST_AVATAR_BUCKET } from "@/lib/hosting/avatar";
-import { hostApplicationSchema, hostProfileSchema, meetupFormSchema, sessionFormSchema } from "@/lib/validation/meetup";
+import { hostProfileSchema, meetupFormSchema, sessionFormSchema } from "@/lib/validation/meetup";
 
 const LOGIN_REQUIRED: FormState = { status: "error", message: "로그인이 필요합니다." };
 const NOT_HOST: FormState = { status: "error", message: "승인된 호스트만 할 수 있어요." };
@@ -19,30 +19,6 @@ const NOT_HOST: FormState = { status: "error", message: "승인된 호스트만 
 async function activeMember() {
   const m = await getCurrentMember();
   return m && m.status === "active" ? m : null;
-}
-
-/** 호스트 신청 */
-export async function applyHostAction(_prev: FormState, formData: FormData): Promise<FormState> {
-  const member = await activeMember();
-  if (!member) return LOGIN_REQUIRED;
-  const values = Object.fromEntries(["displayName", "headline", "bio", "expertise", "instagram", "career", "credentials", "portfolioUrl", "teachingExperience"].map((k) => [k, formValue(formData, k)]));
-  const parsed = hostApplicationSchema.safeParse(values);
-  if (!parsed.success) return { status: "error", fieldErrors: fieldErrors(parsed.error), values };
-  const supabase = await createSupabaseServerClient();
-  const { error } = await supabase.rpc("apply_host", {
-    p_display_name: parsed.data.displayName,
-    p_headline: parsed.data.headline,
-    p_bio: parsed.data.bio,
-    p_expertise: parsed.data.expertise,
-    p_instagram: parsed.data.instagram,
-    p_career: parsed.data.career,
-    p_credentials: parsed.data.credentials,
-    p_portfolio_url: parsed.data.portfolioUrl,
-    p_teaching_experience: parsed.data.teachingExperience,
-  });
-  if (error) return { status: "error", message: rpcErrorMessage(error), values };
-  revalidatePath("/host/apply");
-  return { status: "success", message: "호스트 신청을 받았어요. 운영팀이 경력과 포트폴리오를 확인한 뒤 알려 드릴게요." };
 }
 
 /** 프로그램 만들기 / 수정 — 저장 후 관리 화면으로 */

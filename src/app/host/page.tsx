@@ -16,7 +16,7 @@ export const instant = false;
 export default async function HostDashboard() {
   const member = await requireActiveMember("/host");
   const host = await getMyHostProfile(member.id);
-  if (!host || host.status !== "approved" || !member.roles.includes("host")) redirect("/host/apply");
+  if (!host || host.status !== "approved" || !member.roles.includes("host")) redirect("/become-a-host/apply");
   const meetups = await listMyMeetups(member.id);
 
   return (

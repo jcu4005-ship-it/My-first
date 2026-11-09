@@ -10,7 +10,7 @@ import { createServerClient } from "@supabase/ssr";
  *    - 없거나 비공개인 프로그램·호스트, 내 것이 아닌 관리 화면 → 404
  *    화면(guards.ts)과 DB(RLS·함수)의 권한 검사는 그대로 유지됩니다(다중 방어).
  */
-const PROTECTED_PREFIXES = ["/me", "/host", "/admin", "/reset-password", "/checkout"]; // /hosts(공개 프로필)는 제외
+const PROTECTED_PREFIXES = ["/me", "/host", "/admin", "/reset-password", "/checkout", "/become-a-host/apply"]; // /hosts(공개 프로필)는 제외
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 function under(pathname: string, prefix: string) {

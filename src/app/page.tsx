@@ -263,10 +263,10 @@ function BecomeHost() {
           </p>
           <div className="mt-10 grid grid-cols-1 gap-3 sm:flex">
             <Button asChild size="lg">
-              <Link href="/host/apply">호스트 지원하기</Link>
+              <Link href="/become-a-host/apply">호스트 지원하기</Link>
             </Button>
             <Button asChild size="lg" variant="outline">
-              <Link href="/for-hosts">호스트 정책 보기</Link>
+              <Link href="/become-a-host">호스트 정책 보기</Link>
             </Button>
           </div>
         </div>

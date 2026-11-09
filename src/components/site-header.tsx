@@ -65,7 +65,7 @@ async function UnreadBadge({ userId }: { userId: string }) {
 const NAV = [
   { href: "/meetups", label: "Experiences", ko: "프로그램" },
   { href: "/hosts", label: "Hosts", ko: "호스트" },
-  { href: "/for-hosts", label: "Become a Host", ko: "호스트 안내" },
+  { href: "/become-a-host", label: "Become a Host", ko: "호스트 안내" },
 ];
 
 /**

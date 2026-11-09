@@ -70,7 +70,7 @@ test("호스트 안내: 정책·과정·약속·로드맵, 지원하기 연결, 
   await page.goto("/");
   await page.getByRole("navigation", { name: "주요 메뉴" }).or(page.getByRole("navigation", { name: "주요 메뉴 (모바일)" }))
     .getByRole("link", { name: /Become a Host/ }).filter({ visible: true }).first().click();
-  await expect(page).toHaveURL(/\/for-hosts$/);
+  await expect(page).toHaveURL(/\/become-a-host$/);
   const main = page.getByTestId("for-hosts");
   await expect(main.getByRole("heading", { level: 1 })).toBeVisible();
   await expect(main.getByRole("heading", { name: "입장료는 없습니다" })).toBeVisible();
@@ -78,7 +78,9 @@ test("호스트 안내: 정책·과정·약속·로드맵, 지원하기 연결, 
   await expect(main.getByTestId("commission-note")).toContainText("정식 오픈 전");
   await expect(main.getByTestId("roadmap")).toContainText("앞으로의 계획");
   await main.getByRole("link", { name: "호스트 지원하기" }).first().click();
-  await expect(page).toHaveURL(/\/login\?next=%2Fhost%2Fapply/); // 비로그인은 로그인으로
+  await expect(page).toHaveURL(/\/login\?next=%2Fbecome-a-host%2Fapply/); // 비로그인은 로그인으로
+  await page.goto("/for-hosts"); // 예전 주소
+  await expect(page).toHaveURL(/\/become-a-host$/);
 });
 
 test("호스트 목록: 옛 주소 연결, 운영팀 추천, 3대 분류 필터, 검색, 빈 결과", async ({ page }) => {

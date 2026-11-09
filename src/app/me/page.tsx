@@ -47,7 +47,7 @@ async function MyPage({ member }: { member: Awaited<ReturnType<typeof requireMem
         {member.roles.includes("host") ? (
           <Button asChild variant="outline" size="sm"><Link href="/host">호스트 공간</Link></Button>
         ) : (
-          <Button asChild variant="outline" size="sm"><Link href="/host/apply">호스트 신청</Link></Button>
+          <Button asChild variant="outline" size="sm"><Link href="/become-a-host/apply">호스트 신청</Link></Button>
         )}
         {member.roles.includes("admin") && <Button asChild variant="outline" size="sm"><Link href="/admin">관리자</Link></Button>}
         <form action={signOutAction}>

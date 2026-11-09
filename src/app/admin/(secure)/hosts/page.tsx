@@ -1,72 +1,79 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
-import { ActionForm } from "@/components/forms/action-form";
 import { StatusPill } from "@/components/forms/controls";
+import { pillarInfo } from "@/config/pillars";
 import { requireAdmin } from "@/lib/auth/guards";
+import { APPLICATION_STATUS_LABEL, listApplicationsForAdmin, type ApplicationStatus } from "@/lib/hosting/applications";
+import { hostHref } from "@/lib/hosting/avatar";
 import { listHostApplications } from "@/lib/hosting/queries";
-
-import { reviewHostAction } from "../actions";
+import { cn } from "@/lib/utils";
 
 import { HostListingForm } from "./listing-form";
-import { hostHref } from "@/lib/hosting/avatar";
 
 export const metadata: Metadata = { title: "호스트 심사" };
 export const instant = false;
 
-const LABEL = { applied: "심사 대기", approved: "승인", rejected: "반려", suspended: "정지" } as const;
+const TABS: { key: ApplicationStatus | "open"; label: string }[] = [
+  { key: "open", label: "처리 필요" },
+  { key: "revision_requested", label: "수정 요청" },
+  { key: "approved", label: "승인" },
+  { key: "rejected", label: "반려" },
+];
 
-export default async function AdminHostsPage() {
+export default async function AdminHostsPage({ searchParams }: PageProps<"/admin/hosts">) {
   await requireAdmin("/admin/hosts");
-  const apps = await listHostApplications();
-  const pending = apps.filter((a) => a.status === "applied");
-  const done = apps.filter((a) => a.status !== "applied");
+  const sp = (await searchParams) as { tab?: string };
+  const tab = (TABS.find((t) => t.key === sp.tab)?.key ?? "open") as (typeof TABS)[number]["key"];
+  const [apps, hosts] = await Promise.all([listApplicationsForAdmin(), listHostApplications()]);
+  const shown = apps.filter((a) => (tab === "open" ? a.status === "submitted" || a.status === "reviewing" : a.status === tab));
+  const approvedHosts = hosts.filter((h) => h.status === "approved");
+
   return (
     <div>
       <h1 className="mb-6 font-display text-3xl font-bold">호스트 심사</h1>
-      <h2 className="mb-3 font-semibold">심사 대기 {pending.length}건</h2>
-      {pending.length === 0 && <p className="mb-8 text-sm text-muted-foreground">대기 중인 신청이 없어요.</p>}
-      <ul className="mb-10 flex flex-col gap-4">
-        {pending.map((a) => (
-          <li key={a.user_id} className="rounded-2xl border p-5" data-testid="host-application" data-name={a.display_name}>
-            <p className="font-semibold">{a.display_name}</p>
-            <p className="text-sm">{a.headline}</p>
-            <dl className="mt-3 grid gap-2 rounded-xl bg-secondary/60 p-3 text-sm" data-testid="host-application-credentials">
-              <div><dt className="text-xs text-muted-foreground">경력</dt><dd className="whitespace-pre-line">{a.career || "(미입력)"}</dd></div>
-              {a.credentials && <div><dt className="text-xs text-muted-foreground">자격·수상</dt><dd>{a.credentials}</dd></div>}
-              {a.teaching_experience && <div><dt className="text-xs text-muted-foreground">가르친 경험</dt><dd>{a.teaching_experience}</dd></div>}
-              <div>
-                <dt className="text-xs text-muted-foreground">포트폴리오</dt>
-                <dd className="break-all">
-                  {a.portfolio_url ? (
-                    <a href={a.portfolio_url} target="_blank" rel="noopener noreferrer nofollow" className="underline underline-offset-4">{a.portfolio_url}</a>
-                  ) : "(없음)"}
-                </dd>
-              </div>
-            </dl>
-            <p className="mt-2 text-sm leading-relaxed whitespace-pre-line text-muted-foreground">{a.bio}</p>
-            {a.expertise.length > 0 && <p className="mt-2 text-xs text-muted-foreground">전문 분야: {a.expertise.join(", ")}</p>}
-            {a.instagram_handle && <p className="text-xs text-muted-foreground">Instagram @{a.instagram_handle}</p>}
-            <div className="mt-4 flex flex-wrap items-start gap-4 border-t pt-4">
-              <ActionForm action={reviewHostAction} hidden={{ userId: a.user_id, decision: "approve", note: "" }} label="승인" variant="default" testId="approve-host" />
-              <ActionForm action={reviewHostAction} hidden={{ userId: a.user_id, decision: "reject" }} label="반려"
-                note={{ name: "note", placeholder: "반려 사유 (5자 이상, 신청자에게 보여요)" }} />
-            </div>
-          </li>
-        ))}
-      </ul>
-      <h2 className="mb-1 font-semibold">처리 완료</h2>
-      <p className="mb-3 text-xs text-muted-foreground">승인된 호스트는 대표 분류와 추천 여부를 정할 수 있어요. 추천은 팔로워 수와 관계없이 운영팀이 직접 고릅니다.</p>
+      <nav className="mb-6 flex flex-wrap gap-2" aria-label="지원서 상태">
+        {TABS.map((t) => {
+          const count = apps.filter((a) => (t.key === "open" ? a.status === "submitted" || a.status === "reviewing" : a.status === t.key)).length;
+          return (
+            <Link key={t.key} href={`/admin/hosts?tab=${t.key}`} aria-current={tab === t.key ? "page" : undefined}
+              className={cn("border px-3 py-2 text-sm", tab === t.key ? "border-foreground bg-foreground text-background" : "hover:border-foreground")}>
+              {t.label} {count}
+            </Link>
+          );
+        })}
+      </nav>
+
+      {shown.length === 0 ? (
+        <p className="mb-10 text-sm text-muted-foreground" data-testid="empty-state">해당 상태의 지원서가 없어요.</p>
+      ) : (
+        <ul className="mb-12 flex flex-col gap-3">
+          {shown.map((a) => (
+            <li key={a.id}>
+              <Link href={`/admin/hosts/${a.id}`} className="flex flex-col gap-2 border p-4 hover:border-foreground sm:flex-row sm:items-center sm:justify-between"
+                data-testid="host-application" data-name={a.display_name}>
+                <span>
+                  <span className="font-semibold">{a.display_name || "(이름 없음)"}</span>
+                  <span className="ml-2 text-xs text-muted-foreground">{pillarInfo(a.pillar)?.label ?? "분류 없음"}</span>
+                  <span className="mt-1 block text-sm text-muted-foreground">{a.headline}</span>
+                </span>
+                <span className="flex items-center gap-3 text-xs text-muted-foreground">
+                  {a.submitted_at && new Date(a.submitted_at).toLocaleDateString("ko-KR")}
+                  <StatusPill tone={a.status === "approved" ? "ok" : a.status === "rejected" ? "muted" : "warn"}>{APPLICATION_STATUS_LABEL[a.status]}</StatusPill>
+                </span>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      <h2 className="mb-1 font-semibold">승인된 호스트 {approvedHosts.length}명</h2>
+      <p className="mb-3 text-xs text-muted-foreground">대표 분류와 추천 여부를 정할 수 있어요. 추천은 팔로워 수와 관계없이 운영팀이 직접 고릅니다.</p>
       <ul className="flex flex-col gap-2 text-sm">
-        {done.map((a) => (
-          <li key={a.user_id} className="flex flex-col gap-3 rounded-lg border px-4 py-3" data-testid="host-row" data-name={a.display_name}>
-            <div className="flex items-center justify-between">
-              <Link href={hostHref(a)} className="hover:underline">{a.display_name}</Link>
-              <StatusPill tone={a.status === "approved" ? "ok" : "muted"}>{LABEL[a.status]}</StatusPill>
-            </div>
-            {a.status === "approved" && (
-              <HostListingForm userId={a.user_id} pillar={a.primary_pillar} featured={a.is_featured} order={a.featured_order} />
-            )}
+        {approvedHosts.map((a) => (
+          <li key={a.user_id} className="flex flex-col gap-3 border px-4 py-3" data-testid="host-row" data-name={a.display_name}>
+            <Link href={hostHref(a)} className="hover:underline">{a.display_name}</Link>
+            <HostListingForm userId={a.user_id} pillar={a.primary_pillar} featured={a.is_featured} order={a.featured_order} />
           </li>
         ))}
       </ul>

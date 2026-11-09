@@ -25,7 +25,7 @@ function kstDate(daysAhead: number) {
   return d.toISOString().slice(0, 10);
 }
 
-test("호스트 신청(경력) → 승인 → 프로그램 등록·일정 → 검수 → 공개 → 참가 신청 → 호스트 확인 → 취소", async ({ browser }) => {
+test("호스트 지원서(임시 저장·수정 요청·재제출) → 승인 → 프로그램 등록·일정 → 검수 → 공개 → 참가 신청 → 호스트 확인 → 취소", async ({ browser }) => {
   const hostUser = await createMember("flowh");
   const adminUser = await createMember("flowa");
   await grantRoleDirect(adminUser.id, "admin");
@@ -34,24 +34,40 @@ test("호스트 신청(경력) → 승인 → 프로그램 등록·일정 → �
   const hostName = `호스트${uniqueNickname("").slice(0, 6)}`;
   const title = `흐름 테스트 글쓰기 프로그램 ${Date.now() % 100000}`;
 
-  // 1. 호스트 신청
+  // 1. 호스트 지원: 임시 저장 → 필수 항목 검사 → 제출
   const host = await loginPage(browser, hostUser.email);
   await host.goto("/host");
-  await expect(host).toHaveURL(/\/host\/apply$/);
-  await host.getByLabel("호스트 이름").fill(hostName);
-  await host.getByLabel("한 줄 소개").fill("출판사 편집자 출신 글쓰기 코치");
-  await host.getByLabel("가르칠 분야의 경력").fill("짧음");
-  await host.getByLabel("포트폴리오 링크 (선택)").fill("http://not-secure.example");
-  await host.getByLabel("어떤 프로그램을 열고 싶나요?").fill("에세이 한 편을 처음부터 끝까지 완성하는 소수 정예 글쓰기 프로그램을 열고 싶어요.");
-  await host.getByRole("button", { name: "호스트 신청하기" }).click();
-  await expect(host.getByText("가르칠 분야의 경력을 20자 이상")).toBeVisible();
-  await expect(host.getByText("https:// 로 시작하는 링크")).toBeVisible();
-  await host.getByLabel("가르칠 분야의 경력").fill("출판사 에세이 편집자 10년, 글쓰기 원데이 프로그램 3년 진행");
-  await host.getByLabel("포트폴리오 링크 (선택)").fill("https://example.com/portfolio");
-  await host.getByRole("button", { name: "호스트 신청하기" }).click();
-  await expect(host.getByTestId("host-apply-status")).toContainText("검토 중");
+  await expect(host).toHaveURL(/\/become-a-host\/apply$/);
+  const appForm = host.getByTestId("host-application-form");
+  await appForm.getByLabel("호스트 이름", { exact: true }).fill(hostName);
+  await appForm.getByLabel("휴대폰 번호", { exact: true }).fill("010-1234-5678");
+  await appForm.getByLabel("지원 분류").selectOption("creators");
+  await appForm.getByLabel("한 줄 소개").fill("출판사 편집자 출신 글쓰기 코치");
+  await appForm.getByLabel("전문성과 경력").fill("짧음");
+  await appForm.getByLabel("포트폴리오·활동 링크 (선택)").fill("http://not-secure.example");
+  await appForm.getByRole("button", { name: "지원서 제출하기" }).click();
+  await expect(appForm.getByText("https:// 로 시작하는 링크")).toBeVisible();
+  await expect(appForm.getByText("가르칠 분야의 경력을 20자 이상")).toBeVisible();
+  await expect(appForm.getByText("동의해 주세요")).toBeVisible();
+  await appForm.getByLabel("포트폴리오·활동 링크 (선택)").fill("https://example.com/portfolio");
+  await appForm.getByLabel("전문성과 경력").fill("출판사 에세이 편집자 10년, 글쓰기 원데이 프로그램 3년 진행");
+  await appForm.getByRole("button", { name: "임시 저장" }).click();
+  await expect(appForm.getByTestId("form-success")).toContainText("임시 저장");
+  await host.reload();
+  await expect(host.getByTestId("application-status")).toHaveAttribute("data-status", "draft");
+  await expect(host.getByTestId("host-application-form").getByLabel("전문성과 경력")).toHaveValue(/출판사 에세이 편집자 10년/);
+  const form2 = host.getByTestId("host-application-form");
+  await form2.getByLabel("자기소개").fill("에세이 한 편을 처음부터 끝까지 완성하는 소수 정예 글쓰기 프로그램을 열고 싶어요.");
+  await form2.getByLabel("프로그램 기획안").fill("대상: 글쓰기 입문 직장인 / 2시간 / 구조 배우기 → 한 편 쓰기 → 현장 첨삭 / 4만 원");
+  await form2.getByLabel("참가자에게 줄 가치").fill("에세이 한 편을 완성해 가요");
+  await form2.getByTestId("consent").getByRole("checkbox").check();
+  await form2.getByRole("button", { name: "지원서 제출하기" }).click();
+  await expect(host.getByTestId("application-status")).toHaveAttribute("data-status", "submitted");
+  await host.reload();
+  await expect(host.getByTestId("application-status")).toHaveAttribute("data-status", "submitted");
+  await expect(host.getByTestId("application-summary")).toBeVisible(); // 심사 중에는 읽기 전용
 
-  // 2. 관리자 승인 (2단계 인증)
+  // 2. 관리자: 수정 요청 → 지원자 보완·재제출 → 승인 (2단계 인증)
   const admin = await loginPage(browser, adminUser.email);
   await admin.goto("/admin/hosts");
   await expect(admin).toHaveURL(/\/admin\/mfa/);
@@ -59,12 +75,27 @@ test("호스트 신청(경력) → 승인 → 프로그램 등록·일정 → �
   await admin.getByLabel(/6자리 코드/).fill(totp(secret));
   await admin.getByRole("button", { name: "확인" }).click();
   await expect(admin).toHaveURL(/\/admin\/hosts$/);
-  const app = admin.locator(`[data-testid=host-application][data-name="${hostName}"]`);
-  await expect(app.getByTestId("host-application-credentials")).toContainText("출판사 에세이 편집자 10년");
-  await expect(app.getByTestId("host-application-credentials")).toContainText("https://example.com/portfolio");
-  await app.getByTestId("approve-host").getByRole("button", { name: "승인" }).click();
-  await expect(app).toHaveCount(0); // 승인되면 심사 대기 목록에서 빠짐
-  await expect(admin.getByText(hostName)).toBeVisible(); // 처리 완료 목록에 표시
+  await admin.locator(`[data-testid=host-application][data-name="${hostName}"]`).click();
+  const detail = admin.getByTestId("application-detail");
+  await expect(detail).toContainText("010-1234-5678"); // 관리자는 연락처 확인 가능
+  await expect(detail).toContainText("https://example.com/portfolio");
+  await detail.getByTestId("start-review").getByRole("button").click();
+  await expect(detail.getByTestId("start-review")).toHaveCount(0);
+  await detail.getByTestId("request-revision").getByRole("textbox").fill("기획안에 준비물을 추가해 주세요");
+  await detail.getByTestId("request-revision").getByRole("button").click();
+  await expect(admin.getByTestId("application-detail")).toHaveAttribute("data-status", "revision_requested");
+
+  await host.reload();
+  await expect(host.getByTestId("revision-note")).toContainText("준비물을 추가");
+  const form3 = host.getByTestId("host-application-form");
+  await form3.getByLabel("프로그램 기획안").fill("대상: 글쓰기 입문 직장인 / 2시간 / 준비물: 노트북 / 구조 배우기 → 한 편 쓰기 → 현장 첨삭 / 4만 원");
+  await form3.getByRole("button", { name: "지원서 제출하기" }).click();
+  await expect(host.getByTestId("application-status")).toHaveAttribute("data-status", "submitted");
+
+  await admin.reload();
+  await admin.getByTestId("application-detail").getByTestId("approve-host").getByRole("button", { name: "승인" }).click();
+  await expect(admin.getByTestId("application-detail")).toHaveAttribute("data-status", "approved");
+  await expect(admin.getByTestId("application-history")).toContainText("수정 요청");
 
   // 3. 호스트: 프로그램 만들기 → 일정 추가 → 검수 요청
   await host.goto("/host");

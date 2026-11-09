@@ -15,7 +15,7 @@ export const instant = false;
 export default async function HostProfilePage() {
   const member = await requireActiveMember("/host/profile");
   const host = await getMyHostProfile(member.id);
-  if (!host || host.status !== "approved" || !member.roles.includes("host")) redirect("/host/apply");
+  if (!host || host.status !== "approved" || !member.roles.includes("host")) redirect("/become-a-host/apply");
   return (
     <>
       <SiteHeader />

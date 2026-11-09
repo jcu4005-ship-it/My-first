@@ -29,8 +29,8 @@ test("참가자: 관리자 화면 403, 호스트 화면은 호스트 신청으�
   await expect(page).toHaveURL(/\/me$/);
   await expect(page.getByRole("link", { name: "관리자" })).toHaveCount(0);
   await page.goto("/host");
-  await expect(page).toHaveURL(/\/host\/apply$/);
-  for (const path of ["/host/meetups/new", "/admin", "/admin/members", "/admin/audit", "/admin/mfa", "/admin/meetups", "/admin/hosts"]) {
+  await expect(page).toHaveURL(/\/become-a-host\/apply$/);
+  for (const path of ["/host/meetups/new", "/admin", "/admin/members", "/admin/audit", "/admin/mfa", "/admin/meetups", "/admin/hosts", "/admin/hosts/00000000-0000-4000-8000-000000000000"]) {
     const res = await page.goto(path);
     expect(res?.status(), `${path} HTTP 상태`).toBe(403);
     await expect(page.getByTestId("forbidden").filter({ visible: true }), path).toBeVisible();

@@ -76,7 +76,7 @@ export default async function MeetupsPage({ searchParams }: PageProps<"/meetups"
               <p className="mt-3 text-sm text-muted-foreground">
                 곧 새로운 프로그램이 열립니다. 이 분야의 전문가라면 호스트로 신청해 주세요.
               </p>
-              <Link href="/host/apply" className="eyebrow mt-8 inline-block border-b border-current pb-1">
+              <Link href="/become-a-host/apply" className="eyebrow mt-8 inline-block border-b border-current pb-1">
                 Become a host
               </Link>
             </div>

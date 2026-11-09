@@ -1,11 +1,9 @@
 "use client";
 
-import { useActionState } from "react";
-
 import { SelectField, TextareaField } from "@/components/forms/controls";
 import { Field, FormMessage } from "@/components/forms/field";
+import { useFormAction } from "@/components/forms/use-form-action";
 import { Button } from "@/components/ui/button";
-import { initialFormState } from "@/lib/forms";
 import { CLASS_LEVELS, MEETUP_TYPES } from "@/lib/validation/meetup";
 
 import { saveMeetupAction } from "../actions";
@@ -21,11 +19,11 @@ export function MeetupForm({
   categories: { slug: string; name: string }[];
   defaults?: MeetupFormDefaults;
 }) {
-  const [state, action, pending] = useActionState(saveMeetupAction, initialFormState);
+  const [state, action, pending, version] = useFormAction(saveMeetupAction);
   const e = state.fieldErrors ?? {};
   const v = state.values ?? defaults ?? {};
   return (
-    <form action={action} className="flex flex-col gap-6" noValidate data-testid="meetup-form">
+    <form key={version} action={action} className="flex flex-col gap-6" noValidate data-testid="meetup-form">
       {meetupId && <input type="hidden" name="meetupId" value={meetupId} />}
       <FormMessage message={state.message} />
 

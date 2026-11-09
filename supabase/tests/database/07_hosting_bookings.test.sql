@@ -1,7 +1,7 @@
 -- 호스트 신청·승인 → 모임 등록·검수 → 공개 → 참가 신청·취소 (무료 모임: 즉시 확정), 권한·정원·중복
 begin;
 \ir _helpers.psql
-select plan(43);
+select plan(45);
 
 select pg_temp.create_member('h@test.local', 'hostApplicant') as h \gset
 select pg_temp.create_member('p@test.local', 'participantP') as p \gset
@@ -9,31 +9,33 @@ select pg_temp.create_member('q@test.local', 'participantQ') as q \gset
 select pg_temp.create_member('adm@test.local', 'adminZ') as adm \gset
 select pg_temp.grant_role_direct(:'adm', 'admin');
 
--- ---------- 호스트 신청 ----------
+-- ---------- 호스트 신청 (지원서) ----------
 select pg_temp.login_as(:'h');
-select throws_ok($$ select public.apply_host('테스트 호스트', '한 줄 소개', '소개', array['글쓰기'], null, '짧은 경력', '', '', '') $$,
-  '22023', null, '경력을 20자 미만으로 쓰면 신청할 수 없다');
-select throws_ok($$ select public.apply_host('테스트 호스트', '한 줄 소개', '소개', array['글쓰기'], null, '출판사 편집자 10년, 글쓰기 강의 5년 진행', '', 'http://insecure.example', '') $$,
+select lives_ok($$ select public.save_host_application('테스트 호스트', '010-1234-5678', 'creators', array['글쓰기'], '한 줄 소개입니다', '자기소개를 스무 자 이상 적어 보는 테스트입니다.', '짧은 경력', '', '', '', null, '프로그램 기획안을 서른 자 이상 적어 보는 테스트 문장입니다.', '참가자는 글 한 편을 완성해요', '원데이', true) $$, '지원서 임시 저장');
+select throws_ok($$ select public.submit_host_application() $$, '22023', null, '경력을 20자 미만으로 쓰면 제출할 수 없다');
+select throws_ok($$ select public.save_host_application('테스트 호스트', '010-1234-5678', 'creators', array['글쓰기'], '한 줄 소개입니다', '자기소개를 스무 자 이상 적어 보는 테스트입니다.', '출판사 편집자 10년, 글쓰기 강의 5년 진행', '', 'http://insecure.example', '', null, '프로그램 기획안을 서른 자 이상 적어 보는 테스트 문장입니다.', '참가자는 글 한 편을 완성해요', '원데이', true) $$,
   '23514', null, '포트폴리오 링크는 https만 허용');
-select lives_ok($$ select public.apply_host('테스트 호스트', '한 줄 소개', '소개', array['글쓰기'], null, '출판사 편집자 10년, 글쓰기 강의 5년 진행', '문예 공모전 입선', 'https://example.com/portfolio', '원데이 클래스 30회') $$, '회원은 경력과 함께 호스트 신청 가능');
-select is((select career from public.host_profiles where user_id = auth.uid()), '출판사 편집자 10년, 글쓰기 강의 5년 진행', '경력이 저장된다');
-select throws_ok($$ select public.apply_host('테스트 호스트', '', '', null, null, '출판사 편집자 10년, 글쓰기 강의 5년 진행', '', '', '') $$, '22023', null, '중복 신청 불가');
+select lives_ok($$ select public.save_host_application('테스트 호스트', '010-1234-5678', 'creators', array['글쓰기'], '한 줄 소개입니다', '자기소개를 스무 자 이상 적어 보는 테스트입니다.', '출판사 편집자 10년, 글쓰기 강의 5년 진행', '문예 공모전 입선', 'https://example.com/portfolio', '원데이 클래스 30회', null, '프로그램 기획안을 서른 자 이상 적어 보는 테스트 문장입니다.', '참가자는 글 한 편을 완성해요', '원데이', true) $$, '경력 보완 후 저장');
+select lives_ok($$ select public.submit_host_application() $$, '회원은 지원서를 제출할 수 있다');
+select is((select career from public.host_applications where applicant_id = auth.uid()), '출판사 편집자 10년, 글쓰기 강의 5년 진행', '경력이 저장된다');
+select throws_ok($$ select public.save_host_application('다시', '', null, null, '', '', '', '', '', '', null, '', '', '', false) $$, '22023', null, '심사 중에는 고칠 수 없다');
 select throws_ok($$ insert into public.meetups (host_id, category_slug, title, summary, description, price) values (auth.uid(), 'writing', '승인 전 모임 등록', '승인 전 모임 등록 요약입니다', '승인 전 모임 등록 상세 설명입니다.', 0) $$,
   '42501', null, '승인 전에는 모임을 만들 수 없다');
-select throws_ok($$ select public.admin_review_host(auth.uid(), true, null) $$, '42501', null, '스스로 승인할 수 없다');
-select throws_ok($$ update public.host_profiles set status = 'approved' where user_id = auth.uid() $$, '42501', null, '승인 상태를 직접 바꿀 수 없다');
+select throws_ok($$ select public.admin_review_host_application((select id from public.host_applications where applicant_id = auth.uid()), 'approve', null) $$, '42501', null, '스스로 승인할 수 없다');
+select throws_ok($$ update public.host_applications set status = 'approved' where applicant_id = auth.uid() $$, '42501', null, '심사 상태를 직접 바꿀 수 없다');
 select pg_temp.logout();
+select set_config('t.app', (select id::text from public.host_applications where applicant_id = :'h'), false);
 
 -- ---------- 관리자 승인 ----------
 select pg_temp.login_as(:'adm', 'aal1');
-select throws_ok(format($$ select public.admin_review_host(%L, true, null) $$, :'h'), '42501', null, '2단계 인증 전 관리자는 승인 불가');
+select throws_ok($$ select public.admin_review_host_application(current_setting('t.app')::uuid, 'approve', null) $$, '42501', null, '2단계 인증 전 관리자는 승인 불가');
 select pg_temp.logout();
 select pg_temp.login_as(:'adm', 'aal2');
-select throws_ok(format($$ select public.admin_review_host(%L, false, '짧') $$, :'h'), '22023', null, '반려 사유 5자 미만 거부');
-select lives_ok(format($$ select public.admin_review_host(%L, true, null) $$, :'h'), '관리자 승인');
+select throws_ok($$ select public.admin_review_host_application(current_setting('t.app')::uuid, 'reject', '짧') $$, '22023', null, '반려 사유 5자 미만 거부');
+select lives_ok($$ select public.admin_review_host_application(current_setting('t.app')::uuid, 'approve', null) $$, '관리자 승인');
 select pg_temp.logout();
 select ok(exists(select 1 from public.user_roles where user_id = :'h' and role = 'host'), '승인 시 host 역할 부여');
-select ok(exists(select 1 from public.audit_logs where action = 'host.approve' and target_id = :'h'), '승인 감사 기록');
+select ok(exists(select 1 from public.audit_logs where action = 'host_application.approve' and target_id = current_setting('t.app')::uuid), '승인 감사 기록');
 
 -- ---------- 모임 등록·회차·검수 요청 ----------
 select pg_temp.login_as(:'h');

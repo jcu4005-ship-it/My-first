@@ -77,7 +77,7 @@ async function HostList({ pillar, q }: { pillar?: "knowledge" | "creators" | "ex
             <p className="mt-3 text-sm text-muted-foreground">
               {q ? "다른 이름이나 분야로 검색해 보세요." : "이 분야의 전문가라면 호스트로 함께해 주세요."}
             </p>
-            <Link href={q ? "/hosts" : "/for-hosts"} className="eyebrow mt-8 inline-block border-b border-current pb-1">
+            <Link href={q ? "/hosts" : "/become-a-host"} className="eyebrow mt-8 inline-block border-b border-current pb-1">
               {q ? "전체 호스트 보기" : "Become a host"}
             </Link>
           </div>

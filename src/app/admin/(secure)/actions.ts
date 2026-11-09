@@ -76,30 +76,39 @@ export async function setStatusAction(_prev: FormState, formData: FormData): Pro
   return { status: "success", message: "회원 상태를 변경했습니다." };
 }
 
-const hostReviewSchema = z.object({
-  userId: z.uuid(),
-  decision: z.enum(["approve", "reject"]),
-  note: z.string().trim().max(500),
+/** 호스트 신청 승인·반려 (승인 시 host 역할 부여, 감사 기록) */
+const applicationReviewSchema = z.object({
+  applicationId: z.uuid(),
+  action: z.enum(["start_review", "request_revision", "approve", "reject"]),
+  note: z.string().trim().max(1000),
 });
 
-/** 호스트 신청 승인·반려 (승인 시 host 역할 부여, 감사 기록) */
-export async function reviewHostAction(_prev: FormState, formData: FormData): Promise<FormState> {
+const REVIEW_DONE = {
+  start_review: "심사를 시작했어요.",
+  request_revision: "수정을 요청했어요. 지원자에게 알림이 가요.",
+  approve: "승인했어요. 공개 호스트 프로필이 만들어졌어요.",
+  reject: "반려했어요. 지원자에게 알림이 가요.",
+} as const;
+
+/** 호스트 지원서 심사 — 서버에서 관리자(aal2) 확인 후 DB 관리자 함수 (상태 전환·메모 필수·감사 기록·알림은 DB가 처리) */
+export async function reviewApplicationAction(_prev: FormState, formData: FormData): Promise<FormState> {
   if (!(await checkAdminForAction())) return FORBIDDEN;
-  const parsed = hostReviewSchema.safeParse({
-    userId: formValue(formData, "userId"),
-    decision: formValue(formData, "decision"),
+  const parsed = applicationReviewSchema.safeParse({
+    applicationId: formValue(formData, "applicationId"),
+    action: formValue(formData, "action"),
     note: formValue(formData, "note"),
   });
   if (!parsed.success) return { status: "error", message: "잘못된 요청입니다." };
   const supabase = await createSupabaseServerClient();
-  const { error } = await supabase.rpc("admin_review_host", {
-    p_user_id: parsed.data.userId,
-    p_approve: parsed.data.decision === "approve",
+  const { error } = await supabase.rpc("admin_review_host_application", {
+    p_id: parsed.data.applicationId,
+    p_action: parsed.data.action,
     p_note: parsed.data.note,
   });
   if (error) return { status: "error", message: dbMessage(error) };
   revalidatePath("/admin/hosts");
-  return { status: "success", message: parsed.data.decision === "approve" ? "승인했어요." : "반려했어요." };
+  revalidatePath(`/admin/hosts/${parsed.data.applicationId}`);
+  return { status: "success", message: REVIEW_DONE[parsed.data.action] };
 }
 
 const meetupReviewSchema = z.object({
