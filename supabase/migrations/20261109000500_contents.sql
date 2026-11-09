@@ -221,7 +221,7 @@ begin
     if char_length(coalesce(v_note, '')) < 5 then
       raise exception '사유를 5자 이상 입력하세요' using errcode = '22023';
     end if;
-    v_next := case when p_action = 'reject' then 'rejected' else 'archived' end;
+    v_next := case when p_action = 'reject' then 'rejected'::public.content_status else 'archived'::public.content_status end;
   else
     raise exception '알 수 없는 처리입니다' using errcode = '22023';
   end if;
