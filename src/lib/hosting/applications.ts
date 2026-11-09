@@ -86,3 +86,32 @@ export async function listApplicationHistory(id: string): Promise<ApplicationEve
     .order("created_at", { ascending: true });
   return (data ?? []) as ApplicationEvent[];
 }
+
+export type HostEvent = { id: number; action: string; reason: string | null; created_at: string; target_type: string };
+
+/** 관리자: 한 호스트의 처리 이력 (지원서 심사 + 호스트 상태·노출·주소 변경) */
+export async function listHostHistory(userId: string): Promise<HostEvent[]> {
+  const supabase = await createSupabaseServerClient();
+  const { data: apps } = await supabase.from("host_applications").select("id").eq("applicant_id", userId);
+  const appIds = (apps ?? []).map((a) => a.id as string);
+  const filter = [`and(target_type.eq.host,target_id.eq.${userId})`, ...(appIds.length ? [`and(target_type.eq.host_application,target_id.in.(${appIds.join(",")}))`] : [])];
+  const { data } = await supabase
+    .from("audit_logs")
+    .select("id, action, reason, created_at, target_type")
+    .or(filter.join(","))
+    .order("created_at", { ascending: false })
+    .limit(100);
+  return (data ?? []) as HostEvent[];
+}
+
+/** 관리자: 호스트의 예정된 참가 신청 수 (활동 중지 전 확인용) */
+export async function countUpcomingActiveBookings(hostId: string): Promise<number> {
+  const supabase = await createSupabaseServerClient();
+  const { count } = await supabase
+    .from("bookings")
+    .select("id, session:meetup_sessions!inner(starts_at, meetup:meetups!inner(host_id))", { count: "exact", head: true })
+    .in("status", ["confirmed", "pending_payment"])
+    .eq("session.meetup.host_id", hostId)
+    .gt("session.starts_at", new Date().toISOString());
+  return count ?? 0;
+}

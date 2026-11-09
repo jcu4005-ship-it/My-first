@@ -28,6 +28,7 @@ export default async function AdminHostsPage({ searchParams }: PageProps<"/admin
   const [apps, hosts] = await Promise.all([listApplicationsForAdmin(), listHostApplications()]);
   const shown = apps.filter((a) => (tab === "open" ? a.status === "submitted" || a.status === "reviewing" : a.status === tab));
   const approvedHosts = hosts.filter((h) => h.status === "approved");
+  const suspendedHosts = hosts.filter((h) => h.status === "suspended" && h.display_name !== "탈퇴한 호스트");
 
   return (
     <div>
@@ -72,11 +73,27 @@ export default async function AdminHostsPage({ searchParams }: PageProps<"/admin
       <ul className="flex flex-col gap-2 text-sm">
         {approvedHosts.map((a) => (
           <li key={a.user_id} className="flex flex-col gap-3 border px-4 py-3" data-testid="host-row" data-name={a.display_name}>
-            <Link href={hostHref(a)} className="hover:underline">{a.display_name}</Link>
+            <span className="flex flex-wrap items-center gap-x-4 gap-y-1">
+              <Link href={hostHref(a)} className="hover:underline">{a.display_name}</Link>
+              <Link href={`/admin/hosts/profile/${a.user_id}`} className="text-xs underline underline-offset-4" data-testid="manage-host">관리 (주소·활동 중지·이력)</Link>
+            </span>
             <HostListingForm userId={a.user_id} pillar={a.primary_pillar} featured={a.is_featured} order={a.featured_order} />
           </li>
         ))}
       </ul>
+      {suspendedHosts.length > 0 && (
+        <>
+          <h2 className="mt-10 mb-3 font-semibold">활동 중지된 호스트 {suspendedHosts.length}명</h2>
+          <ul className="flex flex-col gap-2 text-sm">
+            {suspendedHosts.map((a) => (
+              <li key={a.user_id} className="flex items-center justify-between border px-4 py-3" data-testid="suspended-host-row" data-name={a.display_name}>
+                <span>{a.display_name}</span>
+                <Link href={`/admin/hosts/profile/${a.user_id}`} className="text-xs underline underline-offset-4">관리</Link>
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
     </div>
   );
 }

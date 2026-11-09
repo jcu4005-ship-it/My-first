@@ -171,3 +171,50 @@ export async function updateHostListingAction(_prev: FormState, formData: FormDa
   revalidatePath("/hosts");
   return { status: "success", message: "저장했어요." };
 }
+
+const hostActiveSchema = z.object({
+  userId: z.uuid(),
+  active: z.enum(["true", "false"]),
+  reason: z.string().trim().min(5, "사유를 5자 이상 입력해 주세요.").max(500),
+});
+
+/** 호스트 활동 중지·재개 (사유 필수, 감사 기록·알림은 DB 함수가 남김) */
+export async function setHostActiveAction(_prev: FormState, formData: FormData): Promise<FormState> {
+  if (!(await checkAdminForAction())) return FORBIDDEN;
+  const parsed = hostActiveSchema.safeParse({
+    userId: formValue(formData, "userId"),
+    active: formValue(formData, "active"),
+    reason: formValue(formData, "reason"),
+  });
+  if (!parsed.success) return { status: "error", message: parsed.error.issues[0]?.message ?? "입력을 확인해 주세요." };
+  const supabase = await createSupabaseServerClient();
+  const { error } = await supabase.rpc("admin_set_host_active", {
+    p_user_id: parsed.data.userId,
+    p_active: parsed.data.active === "true",
+    p_reason: parsed.data.reason,
+  });
+  if (error) return { status: "error", message: dbMessage(error) };
+  revalidatePath("/admin/hosts");
+  revalidatePath(`/admin/hosts/profile/${parsed.data.userId}`);
+  revalidatePath("/hosts");
+  return { status: "success", message: parsed.data.active === "true" ? "다시 활성화했어요." : "활동을 중지했어요." };
+}
+
+const hostSlugSchema = z.object({
+  userId: z.uuid(),
+  slug: z.string().trim().toLowerCase().regex(/^[a-z0-9][a-z0-9-]{1,40}[a-z0-9]$/, "영문 소문자·숫자·하이픈 3~42자로 입력해 주세요."),
+});
+
+/** 호스트 공개 주소(slug) 변경 — 예전 주소는 더 이상 연결되지 않으므로 신중히 */
+export async function setHostSlugAction(_prev: FormState, formData: FormData): Promise<FormState> {
+  if (!(await checkAdminForAction())) return FORBIDDEN;
+  const parsed = hostSlugSchema.safeParse({ userId: formValue(formData, "userId"), slug: formValue(formData, "slug") });
+  if (!parsed.success) return { status: "error", message: parsed.error.issues[0]?.message ?? "입력을 확인해 주세요." };
+  const supabase = await createSupabaseServerClient();
+  const { error } = await supabase.rpc("admin_set_host_slug", { p_user_id: parsed.data.userId, p_slug: parsed.data.slug });
+  if (error) return { status: "error", message: dbMessage(error) };
+  revalidatePath("/admin/hosts");
+  revalidatePath(`/admin/hosts/profile/${parsed.data.userId}`);
+  revalidatePath("/hosts");
+  return { status: "success", message: `주소를 /hosts/${parsed.data.slug} 로 바꿨어요.` };
+}

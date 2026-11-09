@@ -3,7 +3,8 @@ import type { Page } from "@playwright/test";
 import { expect, newContext, test } from "./fixtures";
 
 import { isStaging, requireTestEnv } from "../support/env";
-import { PASSWORD, adminApi, createMember, makeApprovedHost } from "../support/fixtures";
+import { PASSWORD, adminApi, createMember, grantRoleDirect, makeApprovedHost } from "../support/fixtures";
+import { totp } from "../support/totp";
 
 test.beforeAll(requireTestEnv);
 const samples = !isStaging || process.env.TEST_EXPECT_SAMPLES === "yes";
@@ -107,4 +108,53 @@ test("호스트 팔로우: 비로그인 안내 → 로그인 후 팔로우 → �
   await expect(self.getByTestId("host-name")).toHaveText(hostName);
   await expect(self.getByTestId("follow")).toHaveCount(0);
   await self.context().close();
+});
+
+test("관리자 호스트 관리: 주소 변경 → 활동 중지(공개 화면에서 사라짐) → 재개 → 이력", async ({ page, browser }) => {
+  const h = await createMember("e2emh");
+  const hostName = `관리호스트${Date.now() % 10000}`;
+  await makeApprovedHost(h.id, hostName);
+  const a = await createMember("e2ema");
+  await grantRoleDirect(a.id, "admin");
+  const newSlug = `managed-${Date.now() % 1000000}`;
+
+  await login(page, a.email);
+  await page.goto("/admin/hosts?tab=approved");
+  await expect(page).toHaveURL(/\/admin\/mfa/);
+  const secret = (await page.getByTestId("mfa-secret").textContent())!.trim();
+  await page.getByLabel(/6자리 코드/).fill(totp(secret));
+  await page.getByRole("button", { name: "확인" }).click();
+  await expect(page).toHaveURL(/\/admin\/hosts/);
+  await page.locator(`[data-testid=host-row][data-name="${hostName}"]`).getByTestId("manage-host").click();
+  await expect(page.getByTestId("admin-host")).toHaveAttribute("data-status", "approved");
+
+  // 주소 변경
+  await page.getByTestId("host-slug-form").getByRole("textbox").fill(newSlug);
+  await page.getByTestId("host-slug-form").getByRole("button").click();
+  await expect(page.getByTestId("current-slug")).toHaveText(`/hosts/${newSlug}`);
+  const guest = await (await newContext(browser)).newPage();
+  await guest.goto(`/hosts/${newSlug}`);
+  await expect(guest.getByTestId("host-name")).toHaveText(hostName);
+
+  // 활동 중지: 사유 필수 → 중지 → 공개 페이지 404
+  page.on("dialog", (d) => d.accept());
+  const deactivate = page.getByTestId("deactivate-host");
+  await deactivate.getByRole("textbox").fill("짧음");
+  await deactivate.getByRole("button").click();
+  await expect(deactivate.getByTestId("form-error")).toContainText("5자 이상");
+  await deactivate.getByRole("textbox").fill("운영 정책 확인을 위해 일시 중지");
+  await deactivate.getByRole("button").click();
+  await expect(page.getByTestId("admin-host")).toHaveAttribute("data-status", "suspended");
+  expect((await guest.goto(`/hosts/${newSlug}`))?.status()).toBe(404);
+
+  // 재개
+  await page.getByTestId("reactivate-host").getByRole("textbox").fill("확인 완료, 활동 재개");
+  await page.getByTestId("reactivate-host").getByRole("button").click();
+  await expect(page.getByTestId("admin-host")).toHaveAttribute("data-status", "approved");
+  expect((await guest.goto(`/hosts/${newSlug}`))?.status()).toBe(200);
+
+  const history = page.getByTestId("host-history");
+  await expect(history).toContainText("주소 변경");
+  await expect(history).toContainText("활동 중지");
+  await expect(history).toContainText("활동 재개");
 });
