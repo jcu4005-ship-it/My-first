@@ -255,3 +255,20 @@ export async function updateHostProfileAction(_prev: FormState, formData: FormDa
   revalidatePath("/hosts");
   return { status: "success", message: "프로필을 저장했어요.", values };
 }
+
+const couponConsentSchema = z.object({ meetupId: z.uuid(), accept: z.enum(["true", "false"]) });
+
+/** 쿠폰 허용 동의·철회 — 할인(최대 10%)은 호스트 부담. 동의 기록은 DB 함수가 남김 */
+export async function couponConsentAction(_prev: FormState, formData: FormData): Promise<FormState> {
+  const member = await activeMember();
+  if (!member) return LOGIN_REQUIRED;
+  if (!member.roles.includes("host")) return NOT_HOST;
+  const parsed = couponConsentSchema.safeParse({ meetupId: formValue(formData, "meetupId"), accept: formValue(formData, "accept") });
+  if (!parsed.success) return { status: "error", message: "잘못된 요청입니다." };
+  const supabase = await createSupabaseServerClient();
+  const { error } = await supabase.rpc("host_set_coupon_consent", { p_meetup_id: parsed.data.meetupId, p_accept: parsed.data.accept === "true" });
+  if (error) return { status: "error", message: rpcErrorMessage(error) };
+  revalidatePath(`/host/meetups/${parsed.data.meetupId}`);
+  revalidatePath(`/meetups/${parsed.data.meetupId}`);
+  return { status: "success", message: parsed.data.accept === "true" ? "쿠폰 허용에 동의했어요." : "쿠폰 허용을 철회했어요. 이미 받은 신청은 그대로예요." };
+}

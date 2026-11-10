@@ -218,3 +218,54 @@ export async function setHostSlugAction(_prev: FormState, formData: FormData): P
   revalidatePath("/hosts");
   return { status: "success", message: `주소를 /hosts/${parsed.data.slug} 로 바꿨어요.` };
 }
+
+const couponCreateSchema = z.object({
+  code: z.string().trim().toUpperCase().regex(/^[A-Z0-9][A-Z0-9-]{2,18}[A-Z0-9]$/, "코드는 영문 대문자·숫자·하이픈 4~20자로 입력해 주세요."),
+  name: z.string().trim().min(2, "이름을 2자 이상 입력해 주세요.").max(40),
+  percent: z.coerce.number().int().min(1).max(10, "할인율은 최대 10%예요 (호스트 동의 한도)."),
+  firstOnly: z.enum(["on", "off"]),
+  max: z.string().trim().regex(/^\d*$/, "사용 한도는 숫자로 입력해 주세요."),
+  endsOn: z.string().trim().regex(/^(\d{4}-\d{2}-\d{2})?$/, "날짜를 확인해 주세요."),
+});
+
+/** 쿠폰 발급 (관리자 2단계 인증, 감사 기록은 DB 함수가 남김) */
+export async function createCouponAction(_prev: FormState, formData: FormData): Promise<FormState> {
+  if (!(await checkAdminForAction())) return FORBIDDEN;
+  const values = {
+    code: formValue(formData, "code"),
+    name: formValue(formData, "name"),
+    percent: formValue(formData, "percent") || "10",
+    firstOnly: formData.get("firstOnly") === "on" ? "on" : "off",
+    max: formValue(formData, "max"),
+    endsOn: formValue(formData, "endsOn"),
+  };
+  const parsed = couponCreateSchema.safeParse(values);
+  if (!parsed.success) return { status: "error", message: parsed.error.issues[0]?.message ?? "입력을 확인해 주세요.", values };
+  const v = parsed.data;
+  const supabase = await createSupabaseServerClient();
+  const { error } = await supabase.rpc("admin_create_coupon", {
+    p_code: v.code,
+    p_name: v.name,
+    p_percent: v.percent,
+    p_first_only: v.firstOnly === "on",
+    p_max: v.max ? Number(v.max) : null,
+    // 끝나는 날 자정(한국 시간)까지 사용 가능
+    p_ends_at: v.endsOn ? new Date(`${v.endsOn}T23:59:59+09:00`).toISOString() : null,
+  });
+  if (error) return { status: "error", message: dbMessage(error), values };
+  revalidatePath("/admin/coupons");
+  return { status: "success", message: `쿠폰 ${v.code}을(를) 만들었어요.` };
+}
+
+const couponActiveSchema = z.object({ couponId: z.uuid(), active: z.enum(["true", "false"]) });
+
+export async function setCouponActiveAction(_prev: FormState, formData: FormData): Promise<FormState> {
+  if (!(await checkAdminForAction())) return FORBIDDEN;
+  const parsed = couponActiveSchema.safeParse({ couponId: formValue(formData, "couponId"), active: formValue(formData, "active") });
+  if (!parsed.success) return { status: "error", message: "잘못된 요청입니다." };
+  const supabase = await createSupabaseServerClient();
+  const { error } = await supabase.rpc("admin_set_coupon_active", { p_id: parsed.data.couponId, p_active: parsed.data.active === "true" });
+  if (error) return { status: "error", message: dbMessage(error) };
+  revalidatePath("/admin/coupons");
+  return { status: "success", message: parsed.data.active === "true" ? "쿠폰을 켰어요." : "쿠폰을 껐어요." };
+}

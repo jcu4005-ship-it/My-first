@@ -39,6 +39,15 @@ export default async function CheckoutPage({ params }: PageProps<"/checkout/[boo
           <dl className="mt-4 flex flex-col gap-2 text-sm">
             <div className="flex justify-between"><dt className="text-muted-foreground">인원</dt><dd>{p.quantity}명</dd></div>
             <div className="flex justify-between"><dt className="text-muted-foreground">주문번호</dt><dd className="font-mono text-xs">{p.order_id}</dd></div>
+            {p.discount_amount > 0 && (
+              <>
+                <div className="flex justify-between"><dt className="text-muted-foreground">참가비</dt><dd>{formatPrice(p.gross_amount)}</dd></div>
+                <div className="flex justify-between" data-testid="checkout-discount">
+                  <dt className="text-muted-foreground">쿠폰 할인{p.coupon_name ? ` (${p.coupon_name})` : ""}</dt>
+                  <dd>−{formatPrice(p.discount_amount)}</dd>
+                </div>
+              </>
+            )}
             <div className="flex justify-between border-t pt-3 text-base font-semibold"><dt>결제 금액</dt><dd>{formatPrice(p.amount)}</dd></div>
           </dl>
         </section>

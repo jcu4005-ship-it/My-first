@@ -5,12 +5,13 @@ import { notFound } from "next/navigation";
 import { ActionForm } from "@/components/forms/action-form";
 import { StatusPill } from "@/components/forms/controls";
 import { SiteHeader } from "@/components/site-header";
+import { brand } from "@/config/brand";
 import { Button } from "@/components/ui/button";
 import { requireRole } from "@/lib/auth/guards";
 import { formatDate, formatPrice, formatTime, isFuture } from "@/lib/format";
 import { MEETUP_STATUS_LABEL, getHostSessionsAndParticipants, getMyMeetup } from "@/lib/hosting/queries";
 
-import { hostCancelMeetupAction, hostCancelSessionAction, meetupStatusAction, sessionStatusAction } from "../../actions";
+import { couponConsentAction, hostCancelMeetupAction, hostCancelSessionAction, meetupStatusAction, sessionStatusAction } from "../../actions";
 import { AddSessionForm, CapacityForm } from "./session-forms";
 
 export const metadata: Metadata = { title: "프로그램 관리" };
@@ -80,6 +81,27 @@ export default async function ManageMeetupPage({ params, searchParams }: PagePro
               confirmText="앞으로의 모든 일정을 취소할까요? 신청자에게 알림이 가고 결제는 전액 환불됩니다." testId="cancel-meetup" />
           )}
         </section>
+
+        {meetup.price > 0 && (
+          <section className="mt-8 flex flex-col gap-3 border p-5" data-testid="coupon-consent" data-accept={meetup.accept_coupons ? "true" : "false"}>
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <h2 className="font-semibold">참가자 할인 쿠폰</h2>
+              <StatusPill tone={meetup.accept_coupons ? "ok" : "muted"}>{meetup.accept_coupons ? "허용 중" : "허용 안 함"}</StatusPill>
+            </div>
+            <p className="text-sm leading-relaxed text-muted-foreground">
+              첫 1년 동안 {brand.name}은 수수료를 받지 않아요. 대신 {brand.name}이 발급한 쿠폰(최대 10% 할인)을 이 프로그램에 쓸 수 있게 해 주세요.
+              할인 금액은 호스트 정산액에서 빠져요. 예: 참가비 4만 원에 10% 쿠폰이면 3만 6천 원을 받아요. 언제든 철회할 수 있고, 이미 받은 신청에는 영향이 없어요.
+            </p>
+            {meetup.accept_coupons && meetup.coupons_consented_at && (
+              <p className="text-xs text-muted-foreground">동의한 시각: {new Date(meetup.coupons_consented_at).toLocaleString("ko-KR")}</p>
+            )}
+            {meetup.accept_coupons ? (
+              <ActionForm action={couponConsentAction} hidden={{ meetupId: meetup.id, accept: "false" }} label="쿠폰 허용 철회" testId="coupon-withdraw" />
+            ) : (
+              <ActionForm action={couponConsentAction} hidden={{ meetupId: meetup.id, accept: "true" }} label="동의하고 쿠폰 허용" variant="default" testId="coupon-accept" />
+            )}
+          </section>
+        )}
 
         <section className="mt-10">
           <h2 className="mb-4 text-lg font-semibold">일정과 참가자</h2>

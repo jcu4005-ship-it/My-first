@@ -42,6 +42,7 @@ export type MeetupDetail = MeetupCardData & {
   level: "all" | "beginner" | "intermediate" | "advanced";
   learning_outcomes: string;
   materials_note: string;
+  accept_coupons: boolean;
   host: (HostSummary & { bio: string; expertise: string[]; instagram_handle: string | null; career: string; occupation: string; avatar_path: string | null }) | null;
 };
 
@@ -147,7 +148,7 @@ export async function getMeetup(id: string): Promise<MeetupDetail | null> {
   const { data, error } = await supabase
     .from("meetups")
     .select(
-      "id, title, summary, description, price, category_slug, cover_image_url, meetup_type, is_sample, status, max_quantity_per_booking, target_audience, requirements, what_to_bring, agenda, refund_policy_text, level, learning_outcomes, materials_note, host:host_profiles(user_id, slug, display_name, headline, bio, expertise, instagram_handle, career, occupation, avatar_path, is_sample), sessions:meetup_sessions(id, starts_at, ends_at, area, venue_name, capacity, reserved_count, status)",
+      "id, title, summary, description, price, category_slug, cover_image_url, meetup_type, is_sample, status, max_quantity_per_booking, target_audience, requirements, what_to_bring, agenda, refund_policy_text, level, learning_outcomes, materials_note, accept_coupons, host:host_profiles(user_id, slug, display_name, headline, bio, expertise, instagram_handle, career, occupation, avatar_path, is_sample), sessions:meetup_sessions(id, starts_at, ends_at, area, venue_name, capacity, reserved_count, status)",
     )
     .eq("id", id)
     .eq("status", "published")

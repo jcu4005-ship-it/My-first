@@ -85,6 +85,8 @@ export type EditableMeetup = {
   materials_note: string;
   status: MeetupStatus;
   review_note: string | null;
+  accept_coupons: boolean;
+  coupons_consented_at: string | null;
 };
 
 export async function getMyMeetup(userId: string, id: string): Promise<EditableMeetup | null> {
@@ -92,7 +94,7 @@ export async function getMyMeetup(userId: string, id: string): Promise<EditableM
   const supabase = await createSupabaseServerClient();
   const { data } = await supabase
     .from("meetups")
-    .select("id, host_id, title, category_slug, meetup_type, summary, description, price, max_quantity_per_booking, target_audience, requirements, what_to_bring, agenda, refund_policy_text, level, learning_outcomes, materials_note, status, review_note")
+    .select("id, host_id, title, category_slug, meetup_type, summary, description, price, max_quantity_per_booking, target_audience, requirements, what_to_bring, agenda, refund_policy_text, level, learning_outcomes, materials_note, status, review_note, accept_coupons, coupons_consented_at")
     .eq("id", id)
     .eq("host_id", userId)
     .maybeSingle();

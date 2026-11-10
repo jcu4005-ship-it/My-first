@@ -226,6 +226,7 @@ export default async function MeetupDetailPage({ params }: PageProps<"/meetups/[
                   maxQuantity={meetup.max_quantity_per_booking}
                   sessions={bookingSessions}
                   state={viewerState}
+                  acceptCoupons={meetup.accept_coupons && meetup.price > 0}
                 />
               ) : (
                 <p className="text-sm text-muted-foreground">예정된 일정이 없습니다.</p>
