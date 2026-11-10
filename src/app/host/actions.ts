@@ -28,7 +28,7 @@ export async function saveMeetupAction(_prev: FormState, formData: FormData): Pr
   if (!member.roles.includes("host")) return NOT_HOST;
 
   const keys = ["title", "categorySlug", "meetupType", "summary", "description", "price", "maxQuantity",
-    "targetAudience", "requirements", "whatToBring", "agenda", "refundPolicyText", "level", "learningOutcomes", "materialsNote"];
+    "targetAudience", "requirements", "whatToBring", "agenda", "refundPolicyText", "level", "learningOutcomes", "materialsNote", "priceRationale"];
   const values = Object.fromEntries(keys.map((k) => [k, formValue(formData, k)]));
   const parsed = meetupFormSchema.safeParse(values);
   if (!parsed.success) {
@@ -51,21 +51,27 @@ export async function saveMeetupAction(_prev: FormState, formData: FormData): Pr
     level: v.level,
     learning_outcomes: v.learningOutcomes,
     materials_note: v.materialsNote,
+    price_rationale: v.priceRationale,
   };
   const supabase = await createSupabaseServerClient();
   const meetupId = formValue(formData, "meetupId");
   let id = meetupId;
+  let repriced = false;
   if (meetupId) {
-    const { data, error } = await supabase.from("meetups").update(row).eq("id", meetupId).eq("host_id", member.id).select("id");
+    const { data: before } = await supabase.from("meetups").select("status, price").eq("id", meetupId).eq("host_id", member.id).maybeSingle();
+    const { data, error } = await supabase.from("meetups").update(row).eq("id", meetupId).eq("host_id", member.id).select("id, status");
     if (error) return { status: "error", message: rpcErrorMessage(error), values };
     if (!data?.length) return { status: "error", message: "수정할 수 없는 프로그램입니다.", values };
+    // 공개 중 참가비 인상 → DB가 검수 대기로 되돌림
+    repriced = before?.status === "published" && data[0].status === "pending_review";
   } else {
     const { data, error } = await supabase.from("meetups").insert({ ...row, host_id: member.id }).select("id").single();
     if (error || !data) return { status: "error", message: rpcErrorMessage(error), values };
     id = data.id;
   }
   revalidatePath("/host");
-  redirect(`/host/meetups/${id}?saved=1`);
+  if (repriced) revalidatePath(`/meetups/${id}`);
+  redirect(`/host/meetups/${id}?saved=1${repriced ? "&repriced=1" : ""}`);
 }
 
 const statusSchema = z.object({ meetupId: z.uuid(), action: z.enum(["submit", "withdraw", "close"]) });

@@ -76,6 +76,7 @@ export const meetupFormSchema = z.object({
   level: z.enum(["all", "beginner", "intermediate", "advanced"], "난이도를 선택해 주세요."),
   learningOutcomes: text(500, "수업 후 할 수 있는 것").min(10, "수업이 끝나면 무엇을 할 수 있게 되는지 10자 이상 적어 주세요."),
   materialsNote: text(300, "재료·도구 안내"),
+  priceRationale: text(500, "가격 근거"),
   summary: z.string().trim().min(10, "한 줄 요약은 10자 이상이에요.").max(120, "한 줄 요약은 120자 이내로 입력해 주세요."),
   description: z.string().trim().min(20, "소개는 20자 이상 입력해 주세요.").max(5000, "소개는 5000자 이내로 입력해 주세요."),
   price: z

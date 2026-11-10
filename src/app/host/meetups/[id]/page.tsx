@@ -21,7 +21,7 @@ const SESSION_LABEL = { open: "모집 중", closed: "모집 마감", cancelled: 
 
 export default async function ManageMeetupPage({ params, searchParams }: PageProps<"/host/meetups/[id]">) {
   const { id } = await params;
-  const { saved } = (await searchParams) as { saved?: string };
+  const { saved, repriced } = (await searchParams) as { saved?: string; repriced?: string };
   const member = await requireRole("host", `/host/meetups/${id}`);
   const meetup = await getMyMeetup(member.id, id);
   if (!meetup) notFound();
@@ -34,6 +34,11 @@ export default async function ManageMeetupPage({ params, searchParams }: PagePro
       <main className="mx-auto w-full max-w-4xl flex-1 px-4 py-8 sm:px-8">
         <Link href="/host" className="text-sm text-muted-foreground">← 내 프로그램</Link>
         {saved && <p className="mt-4 rounded-xl bg-notice px-4 py-3 text-sm text-notice-foreground" data-testid="saved-notice">저장했어요.</p>}
+        {repriced && (
+          <p className="mt-4 rounded-xl bg-notice px-4 py-3 text-sm text-notice-foreground" data-testid="repriced-notice">
+            참가비를 올려서 다시 검수를 받아요. 운영팀이 승인하면 새 참가비로 다시 공개돼요. 그동안은 목록에 보이지 않아요.
+          </p>
+        )}
 
         <div className="mt-4 flex flex-wrap items-start justify-between gap-4">
           <div>

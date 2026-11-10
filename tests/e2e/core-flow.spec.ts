@@ -111,6 +111,7 @@ test("호스트 지원서(임시 저장·수정 요청·재제출) → 승인 �
   await host.getByLabel("수업이 끝나면 할 수 있는 것").fill("에세이 한 편을 도입-전개-마무리 구조로 쓸 수 있어요.\n내 문장을 스스로 퇴고할 수 있어요.");
   await host.getByLabel("재료·도구 제공 안내 (선택)").fill("첨삭 양식 제공, 노트북 필요");
   await host.getByLabel("참가비 (원)").fill("15,000");
+  await host.getByLabel("가격 근거 (유료 프로그램은 필수)").fill("2시간 첨삭 포함, 4명 정원, 첨삭 양식 제공");
   await host.getByLabel("1회 신청 가능 인원").selectOption("2");
   await host.getByLabel("진행 순서 (한 줄에 하나)").fill("14:00 인사\n14:20 문장 나누기");
   await host.getByRole("button", { name: "저장하고 일정 추가하기" }).click();
@@ -142,6 +143,7 @@ test("호스트 지원서(임시 저장·수정 요청·재제출) → 승인 �
   // 4. 관리자 공개
   await admin.goto("/admin/meetups");
   const review = admin.locator(`[data-testid=review-meetup][data-title="${title}"]`);
+  await expect(review.getByTestId("price-rationale")).toContainText("2시간 첨삭 포함"); // 운영팀이 가격 근거를 함께 검수
   await review.getByTestId("publish-meetup").getByRole("button").click();
   await expect(review).toHaveCount(0); // 공개되면 검수 대기 목록에서 빠짐
 

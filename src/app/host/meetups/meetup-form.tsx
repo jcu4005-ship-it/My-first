@@ -50,10 +50,13 @@ export function MeetupForm({
       <Field name="materialsNote" label="재료·도구 제공 안내 (선택)" defaultValue={v.materialsNote} error={e.materialsNote}
         hint="예: 재료비 포함, 완성품 지참 / 노트북 필요" />
       <div className="grid gap-5 sm:grid-cols-2">
-        <Field name="price" label="참가비 (원)" inputMode="numeric" defaultValue={v.price ?? "0"} error={e.price} hint="결제는 아직 연결되지 않았어요. 0이면 무료" />
+        <Field name="price" label="참가비 (원)" inputMode="numeric" defaultValue={v.price ?? "0"} error={e.price} hint="0이면 무료. 공개 후 올리면 다시 검수를 받아요" />
         <SelectField name="maxQuantity" label="1회 신청 가능 인원" defaultValue={v.maxQuantity ?? "1"}
           options={[1, 2, 3, 4].map((n) => ({ value: String(n), label: `최대 ${n}명` }))} error={e.maxQuantity} />
       </div>
+      <TextareaField name="priceRationale" label="가격 근거 (유료 프로그램은 필수)" rows={2} defaultValue={v.priceRationale} error={e.priceRationale}
+        placeholder="예: 3시간 실습, 재료비 1만 원 포함, 6명 정원, 완성작 1점"
+        hint="운영팀이 검수할 때 참가비와 함께 봐요. 참가자에게는 보이지 않아요. 검수 요청 전에 10자 이상 적어 주세요." />
       <TextareaField name="agenda" label="진행 순서 (한 줄에 하나)" rows={4} defaultValue={v.agenda} error={e.agenda}
         placeholder={"14:00 인사와 자기소개\n14:20 주제 대화"} hint="‘시간 내용’ 형식으로 적으면 시간표로 보여요." />
       <TextareaField name="targetAudience" label="이런 분께 추천해요" rows={2} defaultValue={v.targetAudience} error={e.targetAudience} />

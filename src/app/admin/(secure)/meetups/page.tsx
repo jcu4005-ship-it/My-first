@@ -38,6 +38,11 @@ export default async function AdminMeetupsPage({ searchParams }: PageProps<"/adm
             <p className="text-xs text-muted-foreground">{m.host?.display_name}{m.is_sample ? " · 샘플" : ""} · {m.category_slug} · {formatPrice(m.price)}{m.meetup_type === "alcohol" ? " · 주류" : ""}</p>
             <p className="mt-1 font-semibold">{m.title}</p>
             <p className="mt-1 text-sm text-muted-foreground">{m.summary}</p>
+            {m.price > 0 && (
+              <p className="mt-2 bg-notice px-3 py-2 text-sm text-notice-foreground" data-testid="price-rationale">
+                <strong>참가비 {formatPrice(m.price)} 근거:</strong> {m.price_rationale || "(없음)"}
+              </p>
+            )}
             <details className="mt-3 text-sm">
               <summary className="cursor-pointer text-muted-foreground">소개·일정 보기</summary>
               <p className="mt-2 leading-relaxed whitespace-pre-line">{m.description}</p>

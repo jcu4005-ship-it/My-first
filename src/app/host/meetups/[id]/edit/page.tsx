@@ -47,6 +47,7 @@ export default async function EditMeetupPage({ params }: PageProps<"/host/meetup
               level: meetup.level,
               learningOutcomes: meetup.learning_outcomes,
               materialsNote: meetup.materials_note,
+              priceRationale: meetup.price_rationale,
             }}
           />
         </div>
