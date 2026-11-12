@@ -73,7 +73,7 @@ export default async function HostPage({ params }: PageProps<"/hosts/[slug]">) {
         {/* 1~2. 사진 · 이름 · 전문 분야 */}
         <section className="section-dark">
           <div className="mx-auto grid w-full max-w-7xl gap-8 px-4 py-12 sm:px-8 sm:py-20 lg:grid-cols-[340px_1fr] lg:gap-16">
-            <div className="relative aspect-[4/5] w-full max-w-[22rem] overflow-hidden bg-espresso-soft" data-testid="host-avatar">
+            <div className="relative aspect-[4/5] w-full max-w-[22rem] overflow-hidden bg-forest-soft" data-testid="host-avatar">
               <Photo
                 src={avatar}
                 alt={`${host.display_name} 프로필 사진`}
@@ -81,7 +81,7 @@ export default async function HostPage({ params }: PageProps<"/hosts/[slug]">) {
                 sizes="(min-width: 1024px) 340px, 90vw"
                 fallback={
                   <div className="absolute inset-0 flex items-end p-6">
-                    <span aria-hidden className="absolute -top-6 -right-2 font-display text-[12rem] leading-none font-bold text-sand-light/[0.07]">
+                    <span aria-hidden className="absolute -top-6 -right-2 font-display text-[12rem] leading-none font-bold text-cream/[0.07]">
                       {host.display_name.slice(0, 1)}
                     </span>
                     <span className="relative eyebrow text-muted-foreground">{host.expertise.slice(0, 3).join(" · ") || "Host"}</span>
@@ -97,12 +97,12 @@ export default async function HostPage({ params }: PageProps<"/hosts/[slug]">) {
               <h1 className="mt-4 font-display text-4xl font-medium sm:text-6xl" data-testid="host-name">
                 {host.display_name}
               </h1>
-              {host.occupation && <p className="mt-3 text-base text-sand" data-testid="host-occupation">{host.occupation}</p>}
-              <p className="mt-4 max-w-2xl text-lg leading-relaxed text-sand">{host.headline}</p>
+              {host.occupation && <p className="mt-3 text-base text-linen" data-testid="host-occupation">{host.occupation}</p>}
+              <p className="mt-4 max-w-2xl text-lg leading-relaxed text-linen">{host.headline}</p>
               {host.expertise.length > 0 && (
                 <ul className="mt-6 flex flex-wrap gap-2">
                   {host.expertise.map((e) => (
-                    <li key={e} className="border border-sand-light/30 px-3 py-1 text-xs text-sand">
+                    <li key={e} className="border border-cream/30 px-3 py-1 text-xs text-linen">
                       {e}
                     </li>
                   ))}
@@ -166,7 +166,7 @@ export default async function HostPage({ params }: PageProps<"/hosts/[slug]">) {
           {/* 5. 작업 철학 */}
           {host.philosophy && (
             <Section eyebrow="Philosophy" title="작업 철학" testId="host-philosophy">
-              <blockquote className="border-l-2 border-terracotta pl-5 font-display text-xl leading-relaxed break-keep whitespace-pre-line">
+              <blockquote className="border-l-2 border-clay pl-5 font-display text-xl leading-relaxed break-keep whitespace-pre-line">
                 {host.philosophy}
               </blockquote>
             </Section>

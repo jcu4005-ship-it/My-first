@@ -6,20 +6,20 @@ import { cn } from "@/lib/utils";
 
 /** shadcn/ui Button — 브랜드 디자인 토큰을 사용합니다. */
 const buttonVariants = cva(
-  "inline-flex shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-[2px] text-sm font-medium tracking-wide transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
+  "inline-flex shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-full text-sm font-semibold transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
   {
     variants: {
       variant: {
         default: "bg-primary text-primary-foreground hover:bg-primary/90",
-        secondary: "bg-sand-light text-espresso hover:bg-white",
-        outline: "border border-current/40 bg-transparent hover:border-current hover:bg-current/5",
+        secondary: "bg-white text-forest hover:bg-cream",
+        outline: "border border-current/25 bg-transparent hover:border-current/60 hover:bg-current/5",
         ghost: "hover:bg-muted",
         link: "text-foreground underline-offset-4 hover:underline",
       },
       size: {
         default: "h-11 px-6",
         sm: "h-9 px-4",
-        lg: "h-12 px-8 text-base",
+        lg: "h-12 px-7 text-base",
         icon: "size-11",
       },
     },

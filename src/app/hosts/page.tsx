@@ -100,7 +100,7 @@ export default async function HostsPage({ searchParams }: PageProps<"/hosts">) {
           <div className="mx-auto w-full max-w-7xl px-4 pt-14 pb-12 sm:px-8 sm:pt-20 sm:pb-16">
             <p className="eyebrow text-muted-foreground">{info ? info.label : "Hosts"}</p>
             <h1 className="mt-4 font-display text-4xl font-medium sm:text-6xl">{info ? info.ko : "프로그램을 여는 사람들"}</h1>
-            <p className="mt-4 max-w-xl text-sm leading-relaxed text-sand sm:text-base">
+            <p className="mt-4 max-w-xl text-sm leading-relaxed text-linen sm:text-base">
               {info ? info.description : "운영팀이 경력과 포트폴리오를 확인한 호스트만 소개합니다."}
             </p>
             <form action="/hosts" method="get" role="search" className="mt-8 flex max-w-md gap-2" data-testid="host-search">
@@ -112,9 +112,9 @@ export default async function HostsPage({ searchParams }: PageProps<"/hosts">) {
                 defaultValue={q}
                 maxLength={40}
                 placeholder="이름, 분야로 검색 (예: 사진, 철학)"
-                className="h-12 min-w-0 flex-1 rounded-[2px] border border-sand-light/30 bg-transparent px-4 text-sm text-sand-light placeholder:text-sand/60 focus:border-sand-light focus:outline-none"
+                className="h-12 min-w-0 flex-1 rounded-[2px] border border-cream/30 bg-transparent px-4 text-sm text-cream placeholder:text-linen/60 focus:border-cream focus:outline-none"
               />
-              <button type="submit" className="h-12 shrink-0 rounded-[2px] bg-sand-light px-5 text-sm font-medium text-espresso">검색</button>
+              <button type="submit" className="h-12 shrink-0 rounded-[2px] bg-cream px-5 text-sm font-medium text-forest">검색</button>
             </form>
           </div>
         </section>

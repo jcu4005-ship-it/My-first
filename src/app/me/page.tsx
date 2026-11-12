@@ -102,7 +102,7 @@ async function MyPage({ member }: { member: Awaited<ReturnType<typeof requireMem
               const pillar = pillarInfo(host.primary_pillar);
               return (
                 <li key={host.user_id} className="flex gap-4 py-4" data-testid="followed-host" data-name={host.display_name}>
-                  <Link href={hostHref(host)} className="relative size-16 shrink-0 overflow-hidden bg-espresso text-sand-light">
+                  <Link href={hostHref(host)} className="relative size-16 shrink-0 overflow-hidden bg-forest text-cream">
                     <Photo src={avatar} alt={`${host.display_name} 프로필 사진`} sizes="64px"
                       fallback={<span className="absolute inset-0 flex items-center justify-center font-display text-2xl">{host.display_name.slice(0, 1)}</span>} />
                   </Link>

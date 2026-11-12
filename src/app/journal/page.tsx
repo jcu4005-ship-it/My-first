@@ -27,7 +27,7 @@ export default async function JournalPage({ searchParams }: PageProps<"/journal"
           <div className="mx-auto w-full max-w-7xl px-4 pt-14 pb-12 sm:px-8 sm:pt-20 sm:pb-16">
             <p className="eyebrow text-muted-foreground">{info ? info.label : "Journal"}</p>
             <h1 className="mt-4 font-display text-4xl font-medium sm:text-6xl">{info ? info.ko : "호스트의 이야기"}</h1>
-            <p className="mt-4 max-w-xl text-sm leading-relaxed text-sand sm:text-base">
+            <p className="mt-4 max-w-xl text-sm leading-relaxed text-linen sm:text-base">
               프로그램 너머의 작업과 생각. 호스트가 쓰고 운영팀이 검토한 글만 실립니다.
             </p>
           </div>

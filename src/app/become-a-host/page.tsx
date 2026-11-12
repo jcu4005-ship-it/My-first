@@ -63,7 +63,7 @@ export default function ForHostsPage() {
             <h1 className="mt-4 max-w-3xl font-display text-4xl leading-tight font-medium break-keep sm:text-6xl">
               당신의 전문성을, 누군가의 성장으로.
             </h1>
-            <p className="mt-6 max-w-xl leading-relaxed text-sand">
+            <p className="mt-6 max-w-xl leading-relaxed text-linen">
               입장료 없이 시작하고, 프로그램이 판매될 때만 함께 나눕니다. 모집과 결제, 운영은 {brand.name}이 맡습니다.
             </p>
             <div className="mt-10 grid grid-cols-1 gap-3 sm:flex">
@@ -84,7 +84,7 @@ export default function ForHostsPage() {
           <ol className="mt-10 grid gap-px bg-border sm:grid-cols-3">
             {PRINCIPLES.map((p) => (
               <li key={p.no} className="bg-background py-6 pr-6 sm:p-8 sm:first:pl-0">
-                <span className="eyebrow text-terracotta-deep">{p.no}</span>
+                <span className="eyebrow text-clay">{p.no}</span>
                 <h3 className="mt-3 font-display text-xl font-medium">{p.title}</h3>
                 <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{p.body}</p>
               </li>
@@ -110,13 +110,13 @@ export default function ForHostsPage() {
         </section>
 
         {/* 과정 */}
-        <section className="mt-20 bg-sand sm:mt-28" aria-labelledby="steps-title">
+        <section className="mt-20 bg-linen sm:mt-28" aria-labelledby="steps-title">
           <div className="mx-auto w-full max-w-7xl px-4 py-20 sm:px-8 sm:py-24">
             <p className="eyebrow text-muted-foreground">How it works</p>
             <h2 id="steps-title" className="mt-3 font-display text-3xl font-medium sm:text-5xl">지원부터 정산까지</h2>
             <ol className="mt-10 flex flex-col">
               {STEPS.map((s) => (
-                <li key={s.no} className="grid grid-cols-[3rem_1fr] gap-2 border-t border-espresso/15 py-5">
+                <li key={s.no} className="grid grid-cols-[3rem_1fr] gap-2 border-t border-forest/15 py-5">
                   <span className="eyebrow pt-1 text-muted-foreground">{s.no}</span>
                   <span>
                     <span className="block font-medium">{s.title}</span>
@@ -151,13 +151,13 @@ export default function ForHostsPage() {
             </p>
             <div className="relative -mx-4 mt-10 flex snap-x snap-mandatory scroll-px-4 gap-4 overflow-x-auto px-4 pb-2 no-scrollbar sm:mx-0 sm:grid sm:grid-cols-3 sm:overflow-visible sm:px-0 sm:pb-0">
               {ROADMAP.map((r) => (
-                <div key={r.phase} className="w-[78vw] max-w-[20rem] shrink-0 snap-start border-t border-sand-light/30 pt-6 sm:w-auto sm:max-w-none">
+                <div key={r.phase} className="w-[78vw] max-w-[20rem] shrink-0 snap-start border-t border-cream/30 pt-6 sm:w-auto sm:max-w-none">
                   <p className="eyebrow text-muted-foreground">
                     {r.phase}
-                    {r.status === "now" && <span className="ml-2 text-sand-light">· 지금</span>}
+                    {r.status === "now" && <span className="ml-2 text-cream">· 지금</span>}
                   </p>
                   <h3 className="mt-3 font-display text-2xl">{r.title}</h3>
-                  <ul className="mt-5 flex flex-col gap-2 text-sm text-sand">
+                  <ul className="mt-5 flex flex-col gap-2 text-sm text-linen">
                     {r.items.map((it) => (
                       <li key={it} className="flex gap-2">
                         <span aria-hidden className="text-muted-foreground">—</span>
@@ -172,7 +172,7 @@ export default function ForHostsPage() {
         </section>
 
         <section className="mx-auto w-full max-w-7xl px-4 pt-20 sm:px-8 sm:pt-28">
-          <div className="flex flex-col items-start gap-6 border-t border-espresso pt-10 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-col items-start gap-6 border-t border-forest pt-10 sm:flex-row sm:items-center sm:justify-between">
             <p className="max-w-xl font-display text-2xl leading-snug break-keep sm:text-3xl">가르칠 수 있는 무언가가 있다면, 그 이야기를 들려주세요.</p>
             <Button asChild size="lg">
               <Link href="/become-a-host/apply">호스트 지원하기</Link>

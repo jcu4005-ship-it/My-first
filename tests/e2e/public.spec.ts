@@ -29,58 +29,22 @@ test("메인: 세 갈래 분류, 이번 주 프로그램, 호스트, 저널, 큐
   await expect(page).toHaveURL(/\/meetups\?pillar=knowledge$/);
 });
 
-test("메인 갤러리: 작품 클릭·좌우 버튼·키보드·스와이프로 이동, 상세 보기 연결", async ({ page }) => {
+test("메인 추천 카드: 분류·호스트·일정·참가비가 보이고, 누르면 상세로", async ({ page }) => {
   test.skip(!samples, "샘플 데이터 없음");
   await page.goto("/");
-  const gallery = page.getByTestId("exhibition-gallery");
-  await expect(gallery).toBeVisible();
-  const items = gallery.getByTestId("gallery-item");
-  const total = await items.count();
-  expect(total).toBeGreaterThanOrEqual(3);
-  const activeIndex = async () => {
-    for (let i = 0; i < total; i++) if ((await items.nth(i).getAttribute("data-active")) === "true") return i;
-    return -1;
-  };
-  const start = await activeIndex();
-  expect(start).toBeGreaterThanOrEqual(0);
-
-  // 1) 옆 작품 클릭 → 가운데로
-  const target = start + 1;
-  await items.nth(target).click();
-  await expect(items.nth(target)).toHaveAttribute("data-active", "true");
-  const title = (await items.nth(target).getAttribute("aria-label"))!.split(" · ").slice(1).join(" · ").replace(" (선택됨)", "");
-  await expect(gallery.getByTestId("gallery-caption")).toContainText(title);
-
-  // 2) 좌우 버튼
-  await gallery.getByTestId("gallery-prev").click();
-  await expect(items.nth(start)).toHaveAttribute("data-active", "true");
-  await gallery.getByTestId("gallery-next").click();
-  await expect(items.nth(target)).toHaveAttribute("data-active", "true");
-
-  // 3) 키보드
-  await items.nth(target).focus();
-  await page.keyboard.press("ArrowLeft");
-  await expect(items.nth(start)).toHaveAttribute("data-active", "true");
-
-  // 4) 마우스 드래그 (왼쪽으로 끌면 다음 작품)
-  const box = (await gallery.boundingBox())!;
-  const y = box.y + 200;
-  await page.mouse.move(box.x + box.width / 2, y);
-  await page.mouse.down();
-  await page.mouse.move(box.x + box.width / 2 - 120, y, { steps: 8 });
-  await page.mouse.up();
-  await expect(items.nth(start + 1)).toHaveAttribute("data-active", "true");
-
-  // 5) 상세 보기 → 가운데 작품의 상세 페이지
-  await gallery.getByTestId("gallery-detail").click();
+  const card = page.getByTestId("home-this-week").getByTestId("meetup-card").first();
+  await expect(card).toContainText("by ");
+  await expect(card).toContainText("원");
+  const title = (await card.getByRole("heading").textContent())!.trim();
+  await card.click();
   await expect(page).toHaveURL(/\/meetups\/[0-9a-f-]{36}$/);
-  await expect(page.getByTestId("meetup-title")).toBeVisible();
+  await expect(page.getByTestId("meetup-title")).toHaveText(title);
 });
 
 test("호스트 안내: 정책·과정·약속·로드맵, 지원하기 연결, 메뉴에서 진입", async ({ page }) => {
   await page.goto("/");
   await page.getByRole("navigation", { name: "주요 메뉴" }).or(page.getByRole("navigation", { name: "주요 메뉴 (모바일)" }))
-    .getByRole("link", { name: /Become a Host/ }).filter({ visible: true }).first().click();
+    .getByRole("link", { name: "호스트 지원", exact: true }).filter({ visible: true }).first().click();
   await expect(page).toHaveURL(/\/become-a-host$/);
   const main = page.getByTestId("for-hosts");
   await expect(main.getByRole("heading", { level: 1 })).toBeVisible();

@@ -7,7 +7,7 @@ import { getCurrentMember } from "@/lib/auth/session";
 import type { FormState } from "@/lib/forms";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
-const schema = z.object({ hostId: z.string().regex(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i), intent: z.enum(["follow", "unfollow"]), path: z.string().regex(/^\/hosts\/[a-z0-9-]+$/i) });
+const schema = z.object({ hostId: z.string().regex(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i), intent: z.enum(["follow", "unfollow"]), path: z.string().regex(/^\/(hosts\/[a-z0-9-]+|meetups\/[0-9a-f-]{36})$/i) });
 
 /** 팔로우/취소 — 로그인·승인 호스트·자기 자신 여부는 DB 함수가 다시 확인 */
 export async function toggleFollowAction(_prev: FormState, formData: FormData): Promise<FormState> {

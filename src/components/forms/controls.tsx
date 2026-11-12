@@ -27,7 +27,7 @@ export function SelectField({
         name={name}
         defaultValue={defaultValue}
         aria-invalid={error ? true : undefined}
-        className="h-11 rounded-lg border border-border bg-background px-3 text-base sm:text-sm"
+        className="h-11 rounded-xl border border-border bg-white px-3 text-base sm:text-sm"
       >
         {options.map((o) => (
           <option key={o.value} value={o.value}>

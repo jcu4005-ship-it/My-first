@@ -3,44 +3,48 @@
 
 /*
  * 디자인 토큰 — 색·글꼴·모서리 값은 여기서만 정의합니다.
- * 방향: Premium Urban Lifestyle Club — 에디토리얼, 절제된 타이포그래피, 어두운/밝은 섹션 교차.
- * 팔레트: Deep Espresso #211D1A · Warm Sand #EAE4D9 · Burnt Terracotta #A66D50 · Olive #747A65 · White
- * 대비: 작은 본문 글자는 espresso 또는 muted-foreground(#5C574F)만 사용 (모래색 바탕에서 4.5:1 이상).
- *       terracotta·olive는 큰 글자·라벨·장식에만 사용.
- * 섹션 교차를 브랜드 디자인으로 쓰기 때문에 시스템 다크 모드에 따라 색을 뒤집지 않습니다.
+ * 방향: 간결하고 한눈에 보이는 화면 — 크림 바탕, 딥 그린 한 가지 강조색, 둥근 모서리, 가는 선 아이콘.
+ * 팔레트: Deep Green #2E4A3B · Forest Deep #1F3329 · Cream #F7F4EE · Linen #ECE7DD · Sage #6F8576 · Clay #9A5636
+ * 대비: 작은 본문 글자는 ink(#1C2620)·muted-foreground(#566159)·forest·clay만 사용 (크림 바탕에서 4.5:1 이상).
+ *       sage·mint는 큰 글자·장식·어두운 바탕 위 라벨에만 사용.
+ * 시스템 다크 모드에 따라 색을 뒤집지 않습니다 (브랜드 화면 고정).
  */
 :root {
-  --espresso: #211d1a;
-  --espresso-soft: #2d2824;
-  --sand: #eae4d9;
-  --sand-light: #f5f1ea;
-  --terracotta: #a66d50;
-  --terracotta-deep: #8a563d;      /* 작은 글자용 (대비 4.5:1 이상) */
-  --olive: #747a65;
+  --forest: #2e4a3b;
+  --forest-deep: #1f3329;
+  --forest-soft: #3d5c4b;
+  --ink: #1c2620;
+  --cream: #f7f4ee;
+  --linen: #ece7dd;
+  --sage: #6f8576;
+  --mint: #b9d3bf;
+  --clay: #9a5636;               /* 마감 임박 등 작은 경고 글자 */
   --white: #ffffff;
 
-  --background: var(--sand-light);
-  --foreground: var(--espresso);
-  --muted: var(--sand);
-  --muted-foreground: #5c574f;
-  --border: #d8d0c2;
-  --primary: var(--espresso);
-  --primary-foreground: var(--sand-light);
-  --secondary: var(--sand);
-  --secondary-foreground: var(--espresso);
-  --accent: var(--terracotta);
-  --accent-foreground: var(--white);
+  --background: var(--cream);
+  --foreground: var(--ink);
+  --card: #fbfaf7;
+  --muted: var(--linen);
+  --muted-foreground: #566159;
+  --border: #e2ddd3;
+  --primary: var(--forest);
+  --primary-foreground: #ffffff;
+  --secondary: var(--linen);
+  --secondary-foreground: var(--ink);
+  --accent: var(--forest);
+  --accent-foreground: #ffffff;
   --destructive: #a33a2a;
-  --notice: #e4dccb;               /* 테스트 모드·샘플 안내 띠 */
-  --notice-foreground: #4a3f30;
-  --ring: var(--espresso);
-  --radius: 0.25rem;
+  --notice: #e8efe6;               /* 테스트 모드·샘플 안내 띠 */
+  --notice-foreground: #23402f;
+  --ring: var(--forest);
+  --radius: 1rem;
   color-scheme: light;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-card: var(--card);
   --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
   --color-border: var(--border);
@@ -54,17 +58,20 @@
   --color-notice: var(--notice);
   --color-notice-foreground: var(--notice-foreground);
   --color-ring: var(--ring);
-  --color-espresso: var(--espresso);
-  --color-espresso-soft: var(--espresso-soft);
-  --color-sand: var(--sand);
-  --color-sand-light: var(--sand-light);
-  --color-terracotta: var(--terracotta);
-  --color-terracotta-deep: var(--terracotta-deep);
-  --color-olive: var(--olive);
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
+  --color-forest: var(--forest);
+  --color-forest-deep: var(--forest-deep);
+  --color-forest-soft: var(--forest-soft);
+  --color-ink: var(--ink);
+  --color-cream: var(--cream);
+  --color-linen: var(--linen);
+  --color-sage: var(--sage);
+  --color-mint: var(--mint);
+  --color-clay: var(--clay);
+  --radius-sm: calc(var(--radius) - 8px);
+  --radius-md: calc(var(--radius) - 4px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
   --font-sans: var(--font-pretendard), system-ui, sans-serif;
   --font-display: var(--font-display-serif), var(--font-pretendard), serif;
 }
@@ -78,12 +85,18 @@
     font-family: var(--font-sans);
     word-break: keep-all; /* 한글 단어 단위 줄바꿈 */
   }
+  /* 휴대폰 아래 탭 막대가 있으면 마지막 내용이 가려지지 않도록 */
+  @media (width < 48rem) {
+    body:has([data-tabbar]) {
+      padding-bottom: calc(4rem + env(safe-area-inset-bottom));
+    }
+  }
 }
 
 @layer components {
-  /* 영문 소제목 라벨 (예: DISCOVER NEW EXPERIENCES) */
+  /* 작은 소제목 라벨 */
   .eyebrow {
-    @apply text-[11px] font-medium tracking-[0.28em] uppercase;
+    @apply text-xs font-medium tracking-[0.08em];
   }
   /* 옆으로 넘기는 줄에서 스크롤바 숨김 (스와이프는 그대로) */
   .no-scrollbar {
@@ -92,12 +105,17 @@
   .no-scrollbar::-webkit-scrollbar {
     display: none;
   }
+  /* 둥근 알약 모양 라벨 (분류·상태) */
+  .pill {
+    @apply inline-flex items-center rounded-full px-3 py-1 text-xs font-medium;
+  }
   /* 어두운 섹션 */
   .section-dark {
-    @apply bg-espresso text-sand-light;
-    --muted-foreground: #b9b0a2;
-    --border: #3a342f;
-    --ring: var(--sand-light);
+    @apply bg-forest-deep text-cream;
+    --foreground: var(--cream);
+    --muted-foreground: #b7c4bb;
+    --border: #35503f;
+    --ring: var(--cream);
   }
 }
 

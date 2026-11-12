@@ -36,7 +36,7 @@ export default async function MeetupsPage({ searchParams }: PageProps<"/meetups"
               {active && <> <span className="opacity-50">/</span> {categoryStyle(active.slug).label}</>}
             </p>
             <h1 className="mt-4 font-display text-4xl font-medium sm:text-6xl">{active ? active.name : info ? info.ko : "모든 프로그램"}</h1>
-            <p className="mt-4 max-w-xl text-sm leading-relaxed text-sand sm:text-base">
+            <p className="mt-4 max-w-xl text-sm leading-relaxed text-linen sm:text-base">
               {active ? active.description : info ? info.description : "검증된 전문가와 함께하는, 곧 열리는 프로그램을 가까운 날짜 순으로 보여 드려요."}
             </p>
             <nav aria-label="대분류" className="mt-8 flex flex-wrap gap-2">
@@ -46,7 +46,7 @@ export default async function MeetupsPage({ searchParams }: PageProps<"/meetups"
                   href={p.slug ? `/meetups?pillar=${p.slug}` : "/meetups"}
                   aria-current={pillar === p.slug ? "page" : undefined}
                   data-testid="pillar-tab"
-                  className={`eyebrow border px-3 py-2 transition-colors ${pillar === p.slug ? "border-sand-light bg-sand-light text-espresso" : "border-sand-light/30 text-sand hover:border-sand-light"}`}
+                  className={`eyebrow border px-3 py-2 transition-colors ${pillar === p.slug ? "border-cream bg-cream text-forest" : "border-cream/30 text-linen hover:border-cream"}`}
                 >
                   {p.label}
                 </Link>

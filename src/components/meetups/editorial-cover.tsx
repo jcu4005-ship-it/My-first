@@ -12,6 +12,7 @@ export function EditorialCover({
   area,
   size = "card",
   showTitle = true,
+  showLabel = true,
   className,
 }: {
   category: string;
@@ -20,6 +21,8 @@ export function EditorialCover({
   size?: "card" | "hero";
   /** 상세 화면처럼 제목이 바로 아래 크게 나오는 곳에서는 false */
   showTitle?: boolean;
+  /** 카드처럼 분류 알약을 따로 얹는 곳에서는 false */
+  showLabel?: boolean;
   className?: string;
 }) {
   const s = categoryStyle(category);
@@ -31,8 +34,8 @@ export function EditorialCover({
       aria-hidden
     >
       <div className="flex items-center justify-between gap-4">
-        <span className="eyebrow">{s.label}</span>
-        {area && <span className="text-[11px] tracking-[0.15em] opacity-80">{area}</span>}
+        {showLabel && <span className="eyebrow">{s.label}</span>}
+        {showLabel && area && <span className="text-[11px] tracking-[0.15em] opacity-80">{area}</span>}
       </div>
       <span
         className="pointer-events-none absolute top-1/2 right-[-0.08em] -translate-y-1/2 font-display leading-none font-bold opacity-[0.09] select-none"
@@ -41,7 +44,7 @@ export function EditorialCover({
         {s.label.slice(0, 1)}
       </span>
       <div className="relative">
-        <span className="mb-3 block h-px w-10 bg-current opacity-60" />
+        {showTitle && <span className="mb-3 block h-px w-10 bg-current opacity-60" />}
         {showTitle && (
         <p className={cn("font-display leading-snug font-medium break-keep", hero ? "max-w-3xl text-3xl sm:text-5xl" : "line-clamp-3 text-xl")}>
           {title}

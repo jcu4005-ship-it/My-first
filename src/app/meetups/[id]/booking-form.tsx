@@ -91,7 +91,7 @@ export function BookingForm({
                 ) : !s.open || s.left === 0 ? (
                   <span className="text-muted-foreground" data-testid="seats-full">마감</span>
                 ) : s.left <= 3 ? (
-                  <span className="font-semibold text-terracotta-deep">{s.left}자리 남음</span>
+                  <span className="font-semibold text-clay">{s.left}자리 남음</span>
                 ) : (
                   <span className="text-muted-foreground">{s.left}자리 남음</span>
                 )}

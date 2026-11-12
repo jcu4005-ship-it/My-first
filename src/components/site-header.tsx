@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Bell, Search } from "lucide-react";
 import { Suspense } from "react";
 
 import { displayName } from "@/config/brand";
@@ -6,37 +7,43 @@ import { Button } from "@/components/ui/button";
 import { getCurrentMember } from "@/lib/auth/session";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
+import { MobileTabBar } from "./mobile-tab-bar";
+
+const iconButton =
+  "relative inline-flex size-10 items-center justify-center rounded-full border border-border bg-white/70 text-foreground transition-colors hover:bg-white";
+
 async function AccountNav() {
   const member = await getCurrentMember().catch(() => null);
   if (!member) {
     return (
-      <nav className="flex items-center gap-2 text-sm">
-        <Link href="/login" className="px-2 py-2 text-muted-foreground hover:text-foreground">
+      <nav className="flex items-center gap-2 text-sm" aria-label="계정">
+        <Link href="/login" className="px-2 py-2 font-medium text-muted-foreground hover:text-foreground">
           로그인
         </Link>
-        <Button asChild size="sm">
+        <Button asChild size="sm" className="hidden sm:inline-flex">
           <Link href="/signup">가입하기</Link>
         </Button>
       </nav>
     );
   }
+  const link = "hidden px-2 py-2 text-muted-foreground hover:text-foreground md:inline";
   return (
-    <nav className="flex items-center gap-0.5 text-sm whitespace-nowrap" data-testid="account-nav">
+    <nav className="flex items-center gap-1 text-sm whitespace-nowrap" data-testid="account-nav" aria-label="계정">
       {member.roles.includes("admin") && (
-        <Link href="/admin" className="hidden px-2 py-2 text-muted-foreground hover:text-foreground sm:inline">
+        <Link href="/admin" className={link}>
           관리자
         </Link>
       )}
       {member.roles.includes("host") && (
-        <Link href="/host" className="px-2 py-2 text-muted-foreground hover:text-foreground">
-          호스트
+        <Link href="/host" className={link}>
+          호스트 공간
         </Link>
       )}
-      <Link href="/me/bookings" className="px-2 py-2 text-muted-foreground hover:text-foreground">
+      <Link href="/me/bookings" className={link}>
         신청 내역
       </Link>
       <UnreadBadge userId={member.id} />
-      <Link href="/me" className="max-w-24 truncate px-2 py-2 font-medium" data-testid="nav-nickname">
+      <Link href="/me" className="hidden max-w-28 truncate px-2 py-2 font-medium md:inline" data-testid="nav-nickname">
         {member.nickname}
       </Link>
     </nav>
@@ -51,10 +58,10 @@ async function UnreadBadge({ userId }: { userId: string }) {
     .eq("user_id", userId)
     .is("read_at", null);
   return (
-    <Link href="/me/notifications" className="relative px-2 py-2 text-muted-foreground hover:text-foreground" aria-label={`알림 ${count ?? 0}개`} data-testid="nav-notifications">
-      알림
+    <Link href="/me/notifications" className={iconButton} aria-label={`알림 ${count ?? 0}개`} data-testid="nav-notifications">
+      <Bell aria-hidden strokeWidth={1.6} />
       {!!count && (
-        <span className="absolute top-0.5 -right-1 min-w-4 rounded-full bg-accent px-1 text-center text-[10px] leading-4 text-accent-foreground" data-testid="unread-count">
+        <span className="absolute -top-0.5 -right-0.5 min-w-4 rounded-full bg-clay px-1 text-center text-[10px] leading-4 text-white" data-testid="unread-count">
           {count > 9 ? "9+" : count}
         </span>
       )}
@@ -63,51 +70,46 @@ async function UnreadBadge({ userId }: { userId: string }) {
 }
 
 const NAV = [
-  { href: "/meetups", label: "Experiences", ko: "프로그램" },
-  { href: "/hosts", label: "Hosts", ko: "호스트" },
-  { href: "/journal", label: "Journal", ko: "저널" },
-  { href: "/become-a-host", label: "Become a Host", ko: "호스트 안내" },
+  { href: "/meetups", label: "프로그램" },
+  { href: "/hosts", label: "호스트" },
+  { href: "/journal", label: "저널" },
+  { href: "/become-a-host", label: "호스트 지원" },
 ];
 
 /**
- * 사이트 머리글. overlay=true면 메인 히어로 사진 위에 투명하게 겹칩니다.
- * 메뉴 이름은 영문 라벨 + 화면 읽기용 한글 이름을 함께 둡니다.
+ * 사이트 머리글: 이름 + 큰 메뉴 4개(PC) + 검색·알림 아이콘.
+ * 휴대폰에서는 위쪽 메뉴 대신 아래 탭 막대(홈·탐색·호스트·저널·마이)를 씁니다.
+ * tabBar=false: 아래쪽에 자체 고정 버튼이 있는 화면(프로그램 상세)에서 탭 막대를 숨김.
  */
-export function SiteHeader({ overlay = false }: { overlay?: boolean }) {
+export function SiteHeader({ tabBar = true }: { tabBar?: boolean }) {
   return (
-    <header
-      className={
-        overlay
-          ? "absolute inset-x-0 top-0 z-20 text-sand-light [--muted-foreground:#d6cec1] [--foreground:#f5f1ea] [--primary:#f5f1ea] [--primary-foreground:#211d1a]"
-          : "border-b border-border/70"
-      }
-    >
-      <div className="mx-auto flex w-full max-w-7xl items-center justify-between gap-3 px-4 py-4 sm:px-8">
-        <div className="flex items-center gap-8 whitespace-nowrap">
-          <Link href="/" className="font-display text-xl font-bold tracking-[0.12em] uppercase">
-            {displayName()}
-          </Link>
-          <nav aria-label="주요 메뉴" className="hidden items-center gap-6 md:flex">
-            {NAV.map((n) => (
-              <Link key={n.href} href={n.href} className="eyebrow text-muted-foreground transition-colors hover:text-foreground">
-                {n.label}
-                <span className="sr-only"> ({n.ko})</span>
-              </Link>
-            ))}
-          </nav>
+    <>
+      <header className="sticky top-0 z-30 border-b border-border/60 bg-background/90 backdrop-blur">
+        <div className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between gap-3 px-4 sm:px-6">
+          <div className="flex items-center gap-10 whitespace-nowrap">
+            <Link href="/" className="font-display text-2xl font-bold tracking-tight text-forest" aria-label={`${displayName()} 홈`}>
+              {displayName()}
+              <span aria-hidden>.</span>
+            </Link>
+            <nav aria-label="주요 메뉴" className="hidden items-center gap-7 md:flex">
+              {NAV.map((n) => (
+                <Link key={n.href} href={n.href} className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground">
+                  {n.label}
+                </Link>
+              ))}
+            </nav>
+          </div>
+          <div className="flex items-center gap-2">
+            <Link href="/meetups" className={iconButton} aria-label="프로그램 찾기">
+              <Search aria-hidden strokeWidth={1.6} />
+            </Link>
+            <Suspense fallback={<div className="h-10 w-10" />}>
+              <AccountNav />
+            </Suspense>
+          </div>
         </div>
-        <Suspense fallback={<div className="h-9" />}>
-          <AccountNav />
-        </Suspense>
-      </div>
-      <nav aria-label="주요 메뉴 (모바일)" className="no-scrollbar relative mx-auto flex w-full max-w-7xl gap-4 overflow-x-auto px-4 pb-3 whitespace-nowrap md:hidden">
-        {NAV.map((n) => (
-          <Link key={n.href} href={n.href} className="eyebrow relative shrink-0 py-1 text-muted-foreground hover:text-foreground">
-            {n.label}
-            <span className="sr-only"> ({n.ko})</span>
-          </Link>
-        ))}
-      </nav>
-    </header>
+      </header>
+      {tabBar && <MobileTabBar />}
+    </>
   );
 }

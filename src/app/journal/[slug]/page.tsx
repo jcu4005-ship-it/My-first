@@ -47,7 +47,7 @@ export default async function JournalArticlePage({ params }: PageProps<"/journal
             </p>
           </header>
           {cover && (
-            <div className="relative mx-auto mt-10 aspect-[16/10] w-full max-w-5xl overflow-hidden bg-espresso">
+            <div className="relative mx-auto mt-10 aspect-[16/10] w-full max-w-5xl overflow-hidden bg-forest">
               <Photo src={cover} alt="" priority sizes="(min-width: 1024px) 1024px, 100vw" fallback={null} />
             </div>
           )}
@@ -61,7 +61,7 @@ export default async function JournalArticlePage({ params }: PageProps<"/journal
         <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 px-4 pb-16 sm:px-8">
           {c.host && (
             <Link href={hostHref(c.host)} className="flex items-center gap-4 border p-4 hover:border-foreground" data-testid="content-host">
-              <span className="relative size-16 shrink-0 overflow-hidden bg-espresso text-sand-light">
+              <span className="relative size-16 shrink-0 overflow-hidden bg-forest text-cream">
                 <Photo src={avatar} alt="" sizes="64px"
                   fallback={<span className="absolute inset-0 flex items-center justify-center font-display text-2xl">{c.host.display_name.slice(0, 1)}</span>} />
               </span>

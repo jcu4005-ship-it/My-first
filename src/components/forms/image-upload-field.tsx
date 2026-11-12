@@ -85,7 +85,7 @@ export function ImageUploadField({
     <div className="flex flex-col gap-3" data-testid={`${testIdPrefix}-field`}>
       <span className="text-sm font-medium">{label}</span>
       <div className="flex items-end gap-4">
-        <div className={`relative flex items-center justify-center overflow-hidden bg-espresso text-xs text-sand ${aspect}`}>
+        <div className={`relative flex items-center justify-center overflow-hidden bg-forest text-xs text-linen ${aspect}`}>
           {url ? (
             // eslint-disable-next-line @next/next/no-img-element -- 방금 올린 사진 미리보기
             <img src={url} alt={`${label} 미리보기`} className="absolute inset-0 size-full object-cover" data-testid={`${testIdPrefix}-preview`} />

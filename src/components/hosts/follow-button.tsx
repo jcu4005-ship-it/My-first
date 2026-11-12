@@ -7,7 +7,7 @@ import { toggleFollowAction } from "@/app/hosts/[slug]/actions";
 import { initialFormState } from "@/lib/forms";
 
 /**
- * 호스트 팔로우 버튼 (어두운 배경용).
+ * 호스트 팔로우 버튼. tone="dark": 어두운 배경(호스트 페이지), "light": 밝은 배경 작은 알약 버튼(프로그램 상세).
  * - 비로그인: 로그인 후 돌아오는 링크
  * - 본인: 표시하지 않음 (호출하는 쪽에서 처리)
  */
@@ -17,17 +17,24 @@ export function FollowButton({
   following,
   count,
   loggedIn,
+  tone = "dark",
 }: {
   hostId: string;
   path: string;
   following: boolean;
   count: number;
   loggedIn: boolean;
+  tone?: "dark" | "light";
 }) {
   const [state, action, pending] = useActionState(toggleFollowAction, initialFormState);
-  const base = "inline-flex h-11 items-center justify-center px-6 text-sm font-medium transition-colors disabled:opacity-60";
+  const light = tone === "light";
+  const base = light
+    ? "inline-flex h-9 items-center justify-center rounded-full px-4 text-sm font-semibold transition-colors disabled:opacity-60"
+    : "inline-flex h-11 items-center justify-center rounded-full px-6 text-sm font-medium transition-colors disabled:opacity-60";
+  const on = light ? "border border-forest/30 text-forest hover:border-forest" : "border border-cream/40 text-cream hover:border-cream";
+  const off = light ? "bg-forest text-white hover:bg-forest/90" : "bg-cream text-forest hover:bg-linen";
   return (
-    <div className="mt-6 flex flex-wrap items-center gap-4" data-testid="follow">
+    <div className={light ? "flex flex-col items-end gap-1" : "mt-6 flex flex-wrap items-center gap-4"} data-testid="follow">
       {loggedIn ? (
         <form action={action}>
           <input type="hidden" name="hostId" value={hostId} />
@@ -38,21 +45,23 @@ export function FollowButton({
             disabled={pending}
             aria-pressed={following}
             data-testid="follow-button"
-            className={following ? `${base} border border-sand-light/40 text-sand-light hover:border-sand-light` : `${base} bg-sand-light text-espresso hover:bg-sand`}
+            className={`${base} ${following ? on : off}`}
           >
             {pending ? "처리 중…" : following ? "팔로잉 ✓" : "팔로우"}
           </button>
         </form>
       ) : (
-        <Link href={`/login?next=${encodeURIComponent(path)}`} className={`${base} bg-sand-light text-espresso hover:bg-sand`} data-testid="follow-login">
-          로그인하고 팔로우
+        <Link href={`/login?next=${encodeURIComponent(path)}`} className={`${base} ${off}`} data-testid="follow-login">
+          {light ? "팔로우" : "로그인하고 팔로우"}
         </Link>
       )}
-      <span className="text-sm text-sand" data-testid="follower-count">
-        팔로워 {count.toLocaleString("ko-KR")}명
-      </span>
+      {!light && (
+        <span className="text-sm text-linen" data-testid="follower-count">
+          팔로워 {count.toLocaleString("ko-KR")}명
+        </span>
+      )}
       {state.message && (
-        <p role={state.status === "error" ? "alert" : "status"} className={`w-full text-sm ${state.status === "error" ? "text-[#f0a08a]" : "text-sand"}`}>
+        <p role={state.status === "error" ? "alert" : "status"} className={light ? `max-w-48 text-right text-xs ${state.status === "error" ? "text-destructive" : "text-muted-foreground"}` : `w-full text-sm ${state.status === "error" ? "text-[#f0a08a]" : "text-linen"}`}>
           {state.message}
         </p>
       )}
