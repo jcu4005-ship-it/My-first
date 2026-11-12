@@ -61,8 +61,8 @@ export function StatusPill({ children, tone = "muted" }: { children: React.React
   const tones = {
     muted: "bg-secondary text-secondary-foreground",
     accent: "bg-accent text-accent-foreground",
-    ok: "bg-foreground text-background",
-    warn: "bg-notice text-notice-foreground",
+    ok: "bg-forest text-white",
+    warn: "bg-[#f6e7d9] text-clay",
   };
   return (
     <span className={cn("inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium", tones[tone])} data-testid="status-pill">

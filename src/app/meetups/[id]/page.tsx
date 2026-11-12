@@ -60,7 +60,7 @@ export default async function MeetupDetailPage({ params }: PageProps<"/meetups/[
   if (!meetup) notFound();
   const [mine, follow] = await Promise.all([
     member ? myConfirmedSessionIds(member.id, meetup.upcomingSessions.map((s) => s.id)) : Promise.resolve(new Set<string>()),
-    meetup.host && !meetup.host.is_sample ? getFollowState(meetup.host.user_id, member?.id ?? null) : Promise.resolve(null),
+    meetup.host ? getFollowState(meetup.host.user_id, member?.id ?? null) : Promise.resolve(null),
   ]);
   const viewerState = meetup.is_sample ? "sample" : !member ? "guest" : meetup.host?.user_id === member.id ? "own" : "ok";
   const bookingSessions = meetup.upcomingSessions.map((s) => ({

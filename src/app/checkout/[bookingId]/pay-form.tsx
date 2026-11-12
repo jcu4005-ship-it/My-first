@@ -15,7 +15,7 @@ export function PayForm({ bookingId, amount }: { bookingId: string; amount: numb
     <form action={action} className="flex flex-col gap-3">
       <input type="hidden" name="bookingId" value={bookingId} />
       <FormMessage message={state.message} />
-      <Button type="submit" size="lg" disabled={pending} data-testid="pay-test">
+      <Button type="submit" size="lg" className="w-full" disabled={pending} data-testid="pay-test">
         {pending ? "결제 중…" : `${formatPrice(amount)} 테스트 결제하기`}
       </Button>
     </form>

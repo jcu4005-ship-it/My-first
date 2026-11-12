@@ -176,7 +176,8 @@ test("호스트 지원서(임시 저장·수정 요청·재제출) → 승인 �
   await expect(p.getByTestId("booked-notice")).toBeVisible();
   const card = p.getByTestId("booking-card").filter({ hasText: title });
   await expect(card).toContainText("참가 확정");
-  await expect(card).toContainText("2명 · 30,000원");
+  await expect(card).toContainText("2명 · 호스트");
+  await expect(card).toContainText("30,000원");
   await expect(card).toContainText("결제 완료 (테스트)");
   await expect(card.getByTestId("booking-address")).toContainText("연남로 1");
 

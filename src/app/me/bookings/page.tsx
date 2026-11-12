@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { CalendarDays, MapPin } from "lucide-react";
 
 import { ActionForm } from "@/components/forms/action-form";
 import { StatusPill } from "@/components/forms/controls";
@@ -19,7 +20,7 @@ function BookingCard({ b, highlight }: { b: MyBooking; highlight: boolean }) {
   const upcoming = isFuture(b.starts_at);
   const confirmed = b.status === "confirmed";
   return (
-    <li className={`rounded-2xl border p-5 ${highlight ? "border-foreground ring-1 ring-foreground" : ""}`} data-testid="booking-card" data-status={b.status}>
+    <li className={`rounded-2xl border bg-card p-5 ${highlight ? "border-forest ring-1 ring-forest" : "border-border/70"}`} data-testid="booking-card" data-status={b.status}>
       <div className="flex flex-wrap items-center gap-2">
         {confirmed ? (
           <StatusPill tone={upcoming ? "ok" : "muted"}>{upcoming ? "참가 확정" : "참여 완료"}</StatusPill>
@@ -32,18 +33,26 @@ function BookingCard({ b, highlight }: { b: MyBooking; highlight: boolean }) {
         {b.payment_status === "paid" && <StatusPill tone="muted">결제 완료 (테스트)</StatusPill>}
         {b.is_sample && <SampleBadge />}
       </div>
-      <Link href={`/meetups/${b.meetup_id}`} className="mt-3 block font-semibold hover:underline">{b.title}</Link>
-      <p className="mt-1 text-sm text-muted-foreground">
-        {formatDate(b.starts_at)} {formatTime(b.starts_at)} · {b.area} · {b.venue_name}
+      <Link href={`/meetups/${b.meetup_id}`} className="mt-3 block font-semibold leading-snug hover:underline">{b.title}</Link>
+      <p className="mt-2 flex items-center gap-2 text-sm text-muted-foreground">
+        <CalendarDays aria-hidden className="size-4 shrink-0 text-forest" strokeWidth={1.6} />
+        {formatDate(b.starts_at)} {formatTime(b.starts_at)}
       </p>
-      <p className="mt-1 text-sm">{b.quantity}명 · {formatPrice(b.total_price)} · 호스트 {b.host_name}</p>
+      <p className="mt-1 flex items-center gap-2 text-sm text-muted-foreground">
+        <MapPin aria-hidden className="size-4 shrink-0 text-forest" strokeWidth={1.6} />
+        <span className="truncate">{b.area} · {b.venue_name}</span>
+      </p>
+      <p className="mt-3 flex items-center justify-between border-t border-border/70 pt-3 text-sm">
+        <span className="text-muted-foreground">{b.quantity}명 · 호스트 {b.host_name}</span>
+        <span className="font-bold text-forest">{formatPrice(b.total_price)}</span>
+      </p>
       {b.status === "pending_payment" && (
-        <Button asChild size="sm" className="mt-4"><Link href={`/checkout/${b.booking_id}`}>결제하기</Link></Button>
+        <Button asChild className="mt-4 w-full"><Link href={`/checkout/${b.booking_id}`}>결제하기</Link></Button>
       )}
       {confirmed && upcoming && (
         <>
           {b.address_detail && (
-            <p className="mt-3 rounded-lg bg-secondary px-3 py-2 text-sm" data-testid="booking-address">상세 주소: {b.address_detail}</p>
+            <p className="mt-3 rounded-xl bg-forest/5 px-3 py-2 text-sm text-forest" data-testid="booking-address">상세 주소: {b.address_detail}</p>
           )}
           <div className="mt-4">
             <ActionForm action={cancelBookingAction} hidden={{ bookingId: b.booking_id }} label="신청 취소" variant="ghost"
@@ -66,19 +75,19 @@ export default async function MyBookingsPage({ searchParams }: PageProps<"/me/bo
   return (
     <>
       <SiteHeader />
-      <main className="mx-auto w-full max-w-2xl flex-1 px-4 py-8">
-        <h1 className="font-display text-3xl font-bold">신청 내역</h1>
+      <main className="mx-auto w-full max-w-2xl flex-1 px-4 py-8 sm:px-6">
+        <h1 className="font-display text-2xl font-bold text-forest sm:text-3xl">신청 내역</h1>
         {booked && (
           <p className="mt-4 rounded-xl bg-notice px-4 py-3 text-sm text-notice-foreground" data-testid="booked-notice">
             신청이 확정되었어요! 상세 주소와 일정을 확인해 주세요.
           </p>
         )}
         <section className="mt-8">
-          <h2 className="mb-4 text-lg font-semibold">다가오는 프로그램</h2>
+          <h2 className="mb-3 text-lg font-bold">다가오는 프로그램 <span className="text-muted-foreground">{upcoming.length}</span></h2>
           {upcoming.length ? (
             <ul className="flex flex-col gap-3">{upcoming.map((b) => <BookingCard key={b.booking_id} b={b} highlight={b.booking_id === booked} />)}</ul>
           ) : (
-            <div className="rounded-2xl border border-dashed p-8 text-center">
+            <div className="rounded-2xl border border-dashed border-border p-8 text-center">
               <p className="text-muted-foreground">예정된 프로그램이 없어요.</p>
               <Button asChild className="mt-4"><Link href="/meetups">프로그램 둘러보기</Link></Button>
             </div>
@@ -86,7 +95,7 @@ export default async function MyBookingsPage({ searchParams }: PageProps<"/me/bo
         </section>
         {past.length > 0 && (
           <section className="mt-10">
-            <h2 className="mb-4 text-lg font-semibold">지난·취소한 신청</h2>
+            <h2 className="mb-3 text-lg font-bold">지난·취소한 신청</h2>
             <ul className="flex flex-col gap-3">{past.map((b) => <BookingCard key={b.booking_id} b={b} highlight={false} />)}</ul>
           </section>
         )}

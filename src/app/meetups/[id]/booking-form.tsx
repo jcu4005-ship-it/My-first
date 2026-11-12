@@ -65,8 +65,8 @@ export function BookingForm({
               key={s.id}
               data-testid="session-row"
               className={cn(
-                "flex cursor-pointer items-center justify-between gap-3 border bg-white/60 px-4 py-4 transition-colors",
-                sessionId === s.id && !disabled ? "border-foreground ring-1 ring-foreground" : "",
+                "flex cursor-pointer items-center justify-between gap-3 rounded-2xl border border-border bg-white px-4 py-4 transition-colors",
+                sessionId === s.id && !disabled ? "border-forest bg-forest/5 ring-1 ring-forest" : "hover:border-forest/40",
                 disabled && "cursor-default opacity-70",
               )}
             >
@@ -78,16 +78,16 @@ export function BookingForm({
                   checked={sessionId === s.id}
                   disabled={disabled}
                   onChange={() => { setSessionId(s.id); setQuantity(1); resetCoupon(); }}
-                  className="size-4 accent-[var(--foreground)]"
+                  className="size-4 accent-[var(--forest)]"
                 />
                 <span>
-                  <span className="block font-medium">{formatDate(s.starts_at)}</span>
+                  <span className="block font-semibold">{formatDate(s.starts_at)}</span>
                   <span className="block text-sm text-muted-foreground">{formatTime(s.starts_at)} · {s.area}</span>
                 </span>
               </span>
               <span className="text-xs">
                 {s.mine ? (
-                  <span className="font-semibold text-foreground" data-testid="session-mine">신청 완료</span>
+                  <span className="pill bg-forest text-white" data-testid="session-mine">신청 완료</span>
                 ) : !s.open || s.left === 0 ? (
                   <span className="text-muted-foreground" data-testid="seats-full">마감</span>
                 ) : s.left <= 3 ? (
@@ -102,10 +102,10 @@ export function BookingForm({
       </fieldset>
 
       {viewerState === "ok" && firstAvailable && maxQuantity > 1 && (
-        <label className="flex items-center justify-between text-sm">
-          <span>신청 인원</span>
+        <label className="flex items-center justify-between rounded-2xl bg-linen/60 px-4 py-3 text-sm">
+          <span className="font-medium">신청 인원</span>
           <select name="quantity" value={quantity} onChange={(e) => { setQuantity(Number(e.target.value)); resetCoupon(); }}
-            className="h-10 rounded-[2px] border border-border bg-white px-3" aria-label="신청 인원">
+            className="h-10 rounded-xl border border-border bg-white px-3" aria-label="신청 인원">
             {Array.from({ length: Math.max(1, maxForSelected) }, (_, i) => i + 1).map((n) => (
               <option key={n} value={n}>{n}명</option>
             ))}
@@ -115,8 +115,8 @@ export function BookingForm({
       {(maxQuantity === 1 || viewerState !== "ok") && <input type="hidden" name="quantity" value="1" />}
 
       {viewerState === "ok" && firstAvailable && acceptCoupons && (
-        <div className="flex flex-col gap-2" data-testid="coupon">
-          <label htmlFor="couponCode" className="text-sm">할인 쿠폰 (선택)</label>
+        <div className="flex flex-col gap-2 rounded-2xl bg-linen/60 px-4 py-3" data-testid="coupon">
+          <label htmlFor="couponCode" className="text-sm font-medium">할인 쿠폰 (선택)</label>
           <div className="flex gap-2">
             <input
               id="couponCode"
@@ -125,14 +125,14 @@ export function BookingForm({
               maxLength={20}
               autoComplete="off"
               placeholder="쿠폰 코드"
-              className="h-10 min-w-0 flex-1 rounded-[2px] border border-border bg-white px-3 text-sm uppercase"
+              className="h-10 min-w-0 flex-1 rounded-xl border border-border bg-white px-3 text-base uppercase sm:text-sm"
             />
             <Button type="button" variant="outline" disabled={checking || !code.trim() || !sessionId} onClick={checkCoupon}>
               {checking ? "확인 중…" : "적용"}
             </Button>
           </div>
           {preview && (
-            <p role={preview.ok ? "status" : "alert"} className={cn("text-sm", preview.ok ? "text-foreground" : "text-destructive")} data-testid="coupon-result">
+            <p role={preview.ok ? "status" : "alert"} className={cn("text-sm", preview.ok ? "font-semibold text-forest" : "text-destructive")} data-testid="coupon-result">
               {preview.ok ? `${preview.percent}% 할인 적용 · −${formatPrice(preview.discount)}` : preview.message}
             </p>
           )}
@@ -143,19 +143,19 @@ export function BookingForm({
       <FormMessage message={result.message} />
 
       {viewerState === "guest" ? (
-        <Button asChild size="lg">
+        <Button asChild size="lg" className="w-full">
           <Link href={`/login?next=/meetups/${meetupId}`}>로그인하고 신청하기</Link>
         </Button>
       ) : viewerState === "sample" ? (
-        <Button size="lg" disabled>샘플 프로그램은 신청할 수 없어요</Button>
+        <Button size="lg" className="w-full" disabled>샘플 프로그램은 신청할 수 없어요</Button>
       ) : viewerState === "own" ? (
-        <Button size="lg" disabled>내가 연 프로그램이에요</Button>
+        <Button size="lg" className="w-full" disabled>내가 연 프로그램이에요</Button>
       ) : firstAvailable ? (
-        <Button type="submit" size="lg" disabled={pending || !sessionId} data-testid="book-submit">
+        <Button type="submit" size="lg" className="w-full" disabled={pending || !sessionId} data-testid="book-submit">
           {pending ? "신청 중…" : `${formatPrice(applied ? applied.total : price * quantity)} · 참가 신청`}
         </Button>
       ) : (
-        <Button size="lg" disabled>신청 가능한 일정이 없어요</Button>
+        <Button size="lg" className="w-full" disabled>신청 가능한 일정이 없어요</Button>
       )}
       {viewerState === "ok" && <p className="text-center text-xs text-muted-foreground">무료 프로그램은 바로 확정되고, 유료 프로그램은 테스트 결제 화면으로 이동해요. (지금은 실제 청구가 없는 테스트 모드)</p>}
     </form>

@@ -150,6 +150,10 @@ test("상세: 난이도·배우는 것·일정·남은 자리·마감·호스트
   await page.getByTestId("host-link").click();
   await expect(page.getByTestId("host-name")).toHaveText("기타 선생 민재");
   await expect(page.getByTestId("host-credentials")).toContainText("세션 기타리스트");
+  // 샘플 호스트도 팔로우 가능 (비로그인은 로그인 안내 + 팔로워 수)
+  await expect(page).toHaveURL(/\/hosts\/minjae-guitar$/);
+  await expect(page.locator('[data-testid=follow-login][href="/login?next=%2Fhosts%2Fminjae-guitar"]')).toBeVisible();
+  await expect(page.getByTestId("follower-count")).toContainText("팔로워");
   await expect(page.getByTestId("meetup-card").filter({ visible: true })).toHaveCount(1);
 });
 

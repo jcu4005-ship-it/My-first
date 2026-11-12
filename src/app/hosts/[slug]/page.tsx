@@ -95,7 +95,7 @@ export default async function HostPage({ params }: PageProps<"/hosts/[slug]">) {
               {host.occupation && <p className="mt-1 text-muted-foreground" data-testid="host-occupation">{host.occupation}</p>}
               <p className="mt-3 max-w-2xl leading-relaxed">{host.headline}</p>
               <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-3">
-                {!host.is_sample && member?.id !== host.user_id && (
+                {member?.id !== host.user_id && (
                   <FollowButton
                     hostId={host.user_id}
                     path={`/hosts/${host.slug ?? host.user_id}`}
