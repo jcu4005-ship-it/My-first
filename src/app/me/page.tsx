@@ -5,6 +5,7 @@ import { requireMember } from "@/lib/auth/guards";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 import Link from "next/link";
+import { Bell, CalendarCheck, LayoutDashboard, ShieldCheck, Sparkles } from "lucide-react";
 
 import { signOutAction } from "@/app/(auth)/actions";
 import { Button } from "@/components/ui/button";
@@ -43,40 +44,45 @@ async function MyPage({ member }: { member: Awaited<ReturnType<typeof requireMem
   ]);
 
   return (
-    <div className="flex flex-col gap-12">
-      <div>
-        <h1 className="font-display text-3xl font-bold" data-testid="me-nickname">
-          {profile?.nickname}
-        </h1>
-        <p className="mt-2 text-sm text-muted-foreground">
-          {member.email} · {member.roles.map((r) => ROLE_LABEL[r]).join(", ")}
-        </p>
-        {member.status !== "active" && (
-          <p className="mt-4 rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive" role="alert">
+    <div className="flex flex-col gap-8">
+      <div className="flex items-center gap-4">
+        <span aria-hidden className="flex size-16 shrink-0 items-center justify-center rounded-full bg-forest font-display text-2xl text-cream">
+          {profile?.nickname?.slice(0, 1)}
+        </span>
+        <div className="min-w-0">
+          <h1 className="truncate font-display text-2xl font-bold text-forest sm:text-3xl" data-testid="me-nickname">
+            {profile?.nickname}
+          </h1>
+          <p className="mt-1 truncate text-sm text-muted-foreground">
+            {member.email} · {member.roles.map((r) => ROLE_LABEL[r]).join(", ")}
+          </p>
+        </div>
+      </div>
+      {member.status !== "active" && (
+          <p className="rounded-xl bg-destructive/10 px-3 py-2 text-sm text-destructive" role="alert">
             이용이 제한된 계정입니다. 운영팀에 문의해 주세요.
           </p>
         )}
-      </div>
 
-      <nav className="flex flex-wrap gap-2">
-        <Button asChild variant="outline" size="sm"><Link href="/me/bookings">신청 내역</Link></Button>
-        <Button asChild variant="outline" size="sm"><Link href="/me/notifications">알림</Link></Button>
-        {isHost ? (
-          <Button asChild variant="outline" size="sm"><Link href="/host">호스트 공간</Link></Button>
-        ) : (
-          <Button asChild variant="outline" size="sm"><Link href="/become-a-host/apply">호스트 신청</Link></Button>
-        )}
-        {member.roles.includes("admin") && <Button asChild variant="outline" size="sm"><Link href="/admin">관리자</Link></Button>}
-        <form action={signOutAction}>
-          <Button type="submit" variant="ghost" size="sm">로그아웃</Button>
-        </form>
+      <nav aria-label="바로가기" className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+        {[
+          { href: "/me/bookings", label: "신청 내역", icon: CalendarCheck },
+          { href: "/me/notifications", label: "알림", icon: Bell },
+          isHost ? { href: "/host", label: "호스트 공간", icon: LayoutDashboard } : { href: "/become-a-host/apply", label: "호스트 신청", icon: Sparkles },
+          ...(member.roles.includes("admin") ? [{ href: "/admin", label: "관리자", icon: ShieldCheck }] : []),
+        ].map(({ href, label, icon: Icon }) => (
+          <Link key={href} href={href} className="flex items-center gap-3 rounded-2xl border border-border/70 bg-card px-4 py-3.5 text-sm font-semibold hover:border-forest/40">
+            <Icon aria-hidden className="size-5 text-forest" strokeWidth={1.6} />
+            {label}
+          </Link>
+        ))}
       </nav>
 
       {application && (
-        <section className="border p-5" data-testid="me-application" data-status={application.status}>
+        <section className="rounded-2xl border border-border/70 bg-card p-5" data-testid="me-application" data-status={application.status}>
           <div className="flex items-center justify-between gap-4">
             <h2 className="text-lg font-semibold">호스트 지원</h2>
-            <span className="text-sm font-semibold">{APPLICATION_STATUS_LABEL[application.status]}</span>
+            <span className="pill bg-forest/10 text-forest">{APPLICATION_STATUS_LABEL[application.status]}</span>
           </div>
           {application.status === "revision_requested" && (
             <p className="mt-3 text-sm text-muted-foreground">운영팀이 보완을 요청했어요. 내용을 고쳐 다시 제출해 주세요.</p>
@@ -85,34 +91,34 @@ async function MyPage({ member }: { member: Awaited<ReturnType<typeof requireMem
         </section>
       )}
 
-      <section className="flex flex-col gap-5" data-testid="me-following">
+      <section className="flex flex-col gap-4" data-testid="me-following">
         <div className="flex items-baseline justify-between">
-          <h2 className="text-lg font-semibold">팔로우한 호스트</h2>
+          <h2 className="text-lg font-bold text-forest">팔로우한 호스트</h2>
           <span className="text-sm text-muted-foreground">{followed.length}명</span>
         </div>
         {followed.length === 0 ? (
-          <div className="border border-dashed px-5 py-8 text-sm text-muted-foreground">
+          <div className="rounded-2xl border border-dashed border-border px-5 py-8 text-sm text-muted-foreground">
             <p>아직 팔로우한 호스트가 없어요. 마음에 드는 호스트를 팔로우하면 새 프로그램을 여기서 바로 볼 수 있어요.</p>
-            <Link href="/hosts" className="mt-3 inline-block text-foreground underline underline-offset-4">호스트 둘러보기</Link>
+            <Link href="/hosts" className="mt-3 inline-block font-semibold text-forest underline-offset-4 hover:underline">호스트 둘러보기</Link>
           </div>
         ) : (
-          <ul className="flex flex-col divide-y border-y">
+          <ul className="flex flex-col gap-2">
             {followed.map(({ host, next }) => {
               const avatar = hostAvatarUrl(host.avatar_path);
               const pillar = pillarInfo(host.primary_pillar);
               return (
-                <li key={host.user_id} className="flex gap-4 py-4" data-testid="followed-host" data-name={host.display_name}>
-                  <Link href={hostHref(host)} className="relative size-16 shrink-0 overflow-hidden bg-forest text-cream">
+                <li key={host.user_id} className="flex gap-4 rounded-2xl border border-border/70 bg-card p-4" data-testid="followed-host" data-name={host.display_name}>
+                  <Link href={hostHref(host)} className="relative size-14 shrink-0 overflow-hidden rounded-full bg-forest text-cream">
                     <Photo src={avatar} alt={`${host.display_name} 프로필 사진`} sizes="64px"
                       fallback={<span className="absolute inset-0 flex items-center justify-center font-display text-2xl">{host.display_name.slice(0, 1)}</span>} />
                   </Link>
                   <div className="min-w-0 flex-1">
-                    <Link href={hostHref(host)} className="font-medium hover:underline">{host.display_name}</Link>
-                    <p className="truncate text-xs text-muted-foreground">{[pillar?.label, host.occupation].filter(Boolean).join(" · ")}</p>
+                    <Link href={hostHref(host)} className="font-semibold hover:underline">{host.display_name}</Link>
+                    <p className="truncate text-xs text-muted-foreground">{[pillar?.ko, host.occupation].filter(Boolean).join(" · ")}</p>
                     {next ? (
                       <Link href={`/meetups/${next.id}`} className="mt-2 block text-sm" data-testid="followed-next">
                         <span className="text-muted-foreground">다음 프로그램 · {formatShortDateTime(next.nextSession.starts_at)}</span>
-                        <span className="block truncate font-medium underline-offset-4 hover:underline">{next.title}</span>
+                        <span className="block truncate font-semibold text-forest underline-offset-4 hover:underline">{next.title}</span>
                       </Link>
                     ) : (
                       <p className="mt-2 text-sm text-muted-foreground">지금 모집 중인 프로그램이 없어요.</p>
@@ -127,15 +133,15 @@ async function MyPage({ member }: { member: Awaited<ReturnType<typeof requireMem
 
       <RecentlyViewedList />
 
-      <section className="flex flex-col gap-4" data-testid="me-activity">
+      <section className="flex flex-col gap-3" data-testid="me-activity">
         <div className="flex items-baseline justify-between">
-          <h2 className="text-lg font-semibold">최근 활동</h2>
-          <Link href="/me/notifications" className="text-sm underline underline-offset-4">전체 알림</Link>
+          <h2 className="text-lg font-bold text-forest">최근 활동</h2>
+          <Link href="/me/notifications" className="text-sm text-muted-foreground hover:text-foreground">전체 알림</Link>
         </div>
         {!recent || recent.length === 0 ? (
           <p className="text-sm text-muted-foreground">아직 활동 기록이 없어요.</p>
         ) : (
-          <ul className="flex flex-col divide-y border-y text-sm">
+          <ul className="flex flex-col divide-y divide-border/70 rounded-2xl border border-border/70 bg-card px-4 text-sm">
             {recent.map((n) => (
               <li key={n.id} className="flex items-center justify-between gap-4 py-3">
                 {n.link ? <Link href={n.link} className="min-w-0 truncate hover:underline">{n.title}</Link> : <span className="min-w-0 truncate">{n.title}</span>}
@@ -146,23 +152,27 @@ async function MyPage({ member }: { member: Awaited<ReturnType<typeof requireMem
         )}
       </section>
 
-      <section className="flex flex-col gap-6 border-t pt-10">
-        <h2 className="text-lg font-semibold">공개 프로필</h2>
+      <section className="flex flex-col gap-5 rounded-2xl border border-border/70 bg-card p-5 sm:p-6">
+        <h2 className="text-lg font-bold text-forest">공개 프로필</h2>
         <ProfileForm nickname={profile?.nickname ?? ""} bio={profile?.bio ?? null} />
       </section>
 
-      <section className="flex flex-col gap-6 border-t pt-10">
+      <section className="flex flex-col gap-5 rounded-2xl border border-border/70 bg-card p-5 sm:p-6">
         <div>
-          <h2 className="text-lg font-semibold">비공개 정보</h2>
+          <h2 className="text-lg font-bold text-forest">비공개 정보</h2>
           <p className="mt-1 text-sm text-muted-foreground">본인만 볼 수 있으며 호스트에게 공개되지 않습니다.</p>
         </div>
         <PrivateForm phone={priv?.phone ?? null} birthYear={priv?.birth_year ?? null} />
       </section>
 
-      <section className="border-t pt-10 text-sm text-muted-foreground">
-        <h2 className="text-lg font-semibold text-foreground">회원 탈퇴</h2>
-        <p className="mt-2">탈퇴하면 개인정보가 삭제되고 예정된 신청이 취소됩니다.</p>
-        <Link href="/me/withdraw" className="mt-3 inline-block underline underline-offset-4">회원 탈퇴하기</Link>
+      <section className="flex flex-col gap-4 border-t border-border/70 pt-6 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
+        <form action={signOutAction}>
+          <Button type="submit" variant="outline" size="sm">로그아웃</Button>
+        </form>
+        <p>
+          탈퇴하면 개인정보가 삭제되고 예정된 신청이 취소됩니다.{" "}
+          <Link href="/me/withdraw" className="underline underline-offset-4">회원 탈퇴하기</Link>
+        </p>
       </section>
     </div>
   );
@@ -173,7 +183,7 @@ export default async function Page() {
   return (
     <>
       <SiteHeader />
-      <main className="mx-auto w-full max-w-2xl flex-1 px-4 py-10 sm:px-8">
+      <main className="mx-auto w-full max-w-2xl flex-1 px-4 py-8 sm:px-6 sm:py-10">
         <MyPage member={member} />
       </main>
     </>

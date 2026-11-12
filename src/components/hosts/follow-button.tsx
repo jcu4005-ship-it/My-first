@@ -18,6 +18,7 @@ export function FollowButton({
   count,
   loggedIn,
   tone = "dark",
+  showCount,
 }: {
   hostId: string;
   path: string;
@@ -25,6 +26,8 @@ export function FollowButton({
   count: number;
   loggedIn: boolean;
   tone?: "dark" | "light";
+  /** 팔로워 수 표시 (기본: dark만) */
+  showCount?: boolean;
 }) {
   const [state, action, pending] = useActionState(toggleFollowAction, initialFormState);
   const light = tone === "light";
@@ -33,8 +36,9 @@ export function FollowButton({
     : "inline-flex h-11 items-center justify-center rounded-full px-6 text-sm font-medium transition-colors disabled:opacity-60";
   const on = light ? "border border-forest/30 text-forest hover:border-forest" : "border border-cream/40 text-cream hover:border-cream";
   const off = light ? "bg-forest text-white hover:bg-forest/90" : "bg-cream text-forest hover:bg-linen";
+  const withCount = showCount ?? !light;
   return (
-    <div className={light ? "flex flex-col items-end gap-1" : "mt-6 flex flex-wrap items-center gap-4"} data-testid="follow">
+    <div className={light && !withCount ? "flex flex-col items-end gap-1" : "flex flex-wrap items-center gap-3"} data-testid="follow">
       {loggedIn ? (
         <form action={action}>
           <input type="hidden" name="hostId" value={hostId} />
@@ -55,13 +59,13 @@ export function FollowButton({
           {light ? "팔로우" : "로그인하고 팔로우"}
         </Link>
       )}
-      {!light && (
-        <span className="text-sm text-linen" data-testid="follower-count">
+      {withCount && (
+        <span className={`text-sm ${light ? "text-muted-foreground" : "text-linen"}`} data-testid="follower-count">
           팔로워 {count.toLocaleString("ko-KR")}명
         </span>
       )}
       {state.message && (
-        <p role={state.status === "error" ? "alert" : "status"} className={light ? `max-w-48 text-right text-xs ${state.status === "error" ? "text-destructive" : "text-muted-foreground"}` : `w-full text-sm ${state.status === "error" ? "text-[#f0a08a]" : "text-linen"}`}>
+        <p role={state.status === "error" ? "alert" : "status"} className={light && !withCount ? `max-w-48 text-right text-xs ${state.status === "error" ? "text-destructive" : "text-muted-foreground"}` : `w-full text-sm ${state.status === "error" ? (light ? "text-destructive" : "text-[#f0a08a]") : light ? "text-muted-foreground" : "text-linen"}`}>
           {state.message}
         </p>
       )}

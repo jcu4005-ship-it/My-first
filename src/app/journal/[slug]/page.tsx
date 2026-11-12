@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { ContentGrid } from "@/components/contents/content-card";
+import { Section, SectionTitle } from "@/components/layout/page-parts";
 import { Photo } from "@/components/media/photo";
 import { RecordRecentlyViewed } from "@/components/recently-viewed";
 import { SiteFooter } from "@/components/site-footer";
@@ -38,56 +39,53 @@ export default async function JournalArticlePage({ params }: PageProps<"/journal
       <RecordRecentlyViewed item={{ kind: "content", href: `/journal/${c.slug}`, title: c.title }} />
       <main className="flex-1">
         <article>
-          <header className="mx-auto w-full max-w-3xl px-4 pt-12 sm:px-8 sm:pt-20">
-            <Link href={`/journal?type=${c.type}`} className="eyebrow text-muted-foreground">{type?.label} · {type?.ko}</Link>
-            <h1 className="mt-4 font-display text-3xl leading-tight font-medium break-keep sm:text-5xl" data-testid="content-title">{c.title}</h1>
+          <header className="mx-auto w-full max-w-3xl px-4 pt-10 sm:px-6 sm:pt-16">
+            <Link href={`/journal?type=${c.type}`} className="pill bg-forest/10 text-forest hover:bg-forest/15">{type?.ko}</Link>
+            <h1 className="mt-4 font-display text-3xl leading-tight font-bold break-keep text-forest sm:text-5xl" data-testid="content-title">{c.title}</h1>
             <p className="mt-5 text-lg leading-relaxed text-muted-foreground">{c.summary}</p>
             <p className="mt-6 text-sm text-muted-foreground">
               {[c.host?.display_name ?? `${brand.name} 운영팀`, c.published_at ? formatYmd(c.published_at) : null, c.is_sample ? "샘플" : null].filter(Boolean).join(" · ")}
             </p>
           </header>
           {cover && (
-            <div className="relative mx-auto mt-10 aspect-[16/10] w-full max-w-5xl overflow-hidden bg-forest">
+            <div className="relative mx-auto mt-8 aspect-[16/10] w-[calc(100%-2rem)] max-w-5xl overflow-hidden rounded-3xl bg-forest">
               <Photo src={cover} alt="" priority sizes="(min-width: 1024px) 1024px, 100vw" fallback={null} />
             </div>
           )}
-          <div className="mx-auto w-full max-w-3xl px-4 py-12 sm:px-8" data-testid="content-body">
+          <div className="mx-auto w-full max-w-3xl px-4 py-10 sm:px-6" data-testid="content-body">
             {paragraphs.map((p, i) => (
               <p key={i} className="mb-6 text-[1.05rem] leading-[1.9] break-keep whitespace-pre-line">{p}</p>
             ))}
           </div>
         </article>
 
-        <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 px-4 pb-16 sm:px-8">
+        <div className="mx-auto flex w-full max-w-3xl flex-col gap-3 px-4 pb-6 sm:px-6">
           {c.host && (
-            <Link href={hostHref(c.host)} className="flex items-center gap-4 border p-4 hover:border-foreground" data-testid="content-host">
-              <span className="relative size-16 shrink-0 overflow-hidden bg-forest text-cream">
+            <Link href={hostHref(c.host)} className="flex items-center gap-4 rounded-2xl border border-border/70 bg-card p-4 hover:border-forest/40" data-testid="content-host">
+              <span className="relative size-14 shrink-0 overflow-hidden rounded-full bg-forest text-cream">
                 <Photo src={avatar} alt="" sizes="64px"
                   fallback={<span className="absolute inset-0 flex items-center justify-center font-display text-2xl">{c.host.display_name.slice(0, 1)}</span>} />
               </span>
               <span>
-                <span className="eyebrow block text-muted-foreground">Host</span>
-                <span className="font-medium">{c.host.display_name}</span>
+                <span className="block text-xs text-muted-foreground">글쓴 호스트</span>
+                <span className="font-semibold">{c.host.display_name}</span>
               </span>
             </Link>
           )}
           {c.related && (
-            <Link href={`/meetups/${c.related.id}`} className="flex flex-col gap-1 border p-4 hover:border-foreground" data-testid="content-related">
-              <span className="eyebrow text-muted-foreground">관련 프로그램</span>
-              <span className="font-medium">{c.related.title}</span>
-              <span className="line-clamp-2 text-sm text-muted-foreground">{c.related.summary}</span>
+            <Link href={`/meetups/${c.related.id}`} className="flex flex-col gap-1 rounded-2xl bg-forest p-5 text-cream hover:bg-forest/95" data-testid="content-related">
+              <span className="text-xs text-mint">관련 프로그램</span>
+              <span className="font-semibold">{c.related.title}</span>
+              <span className="line-clamp-2 text-sm text-cream/80">{c.related.summary}</span>
             </Link>
           )}
         </div>
 
         {more.length > 0 && (
-          <section className="border-t">
-            <div className="mx-auto w-full max-w-7xl px-4 py-12 sm:px-8">
-              <p className="eyebrow text-muted-foreground">More from {c.host?.display_name}</p>
-              <h2 className="mt-2 mb-8 font-display text-2xl font-medium">이 호스트의 다른 글</h2>
-              <ContentGrid contents={more} />
-            </div>
-          </section>
+          <Section>
+            <SectionTitle>이 호스트의 다른 글</SectionTitle>
+            <ContentGrid contents={more} />
+          </Section>
         )}
       </main>
       <SiteFooter />

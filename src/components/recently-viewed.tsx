@@ -71,9 +71,9 @@ export function RecentlyViewedList() {
   }
 
   return (
-    <section className="flex flex-col gap-4" data-testid="recently-viewed">
+    <section className="flex flex-col gap-3" data-testid="recently-viewed">
       <div className="flex items-baseline justify-between">
-        <h2 className="text-lg font-semibold">최근 본 프로그램·글</h2>
+        <h2 className="text-lg font-bold text-forest">최근 본 프로그램·글</h2>
         {items.length > 0 && (
           <button type="button" onClick={clear} className="text-sm text-muted-foreground underline underline-offset-4">
             기록 지우기
@@ -83,10 +83,10 @@ export function RecentlyViewedList() {
       {items.length === 0 ? (
         <p className="text-sm text-muted-foreground">아직 본 프로그램이나 글이 없어요. 기록은 이 기기의 브라우저에만 저장돼요.</p>
       ) : (
-        <ul className="flex flex-col divide-y border-y text-sm">
+        <ul className="flex flex-col divide-y divide-border/70 rounded-2xl border border-border/70 bg-card px-4 text-sm">
           {items.map((x) => (
             <li key={x.href} className="flex items-center gap-3 py-3" data-testid="recent-item">
-              <span className="eyebrow w-16 shrink-0 text-muted-foreground">{x.kind === "program" ? "Program" : "Journal"}</span>
+              <span className="pill shrink-0 bg-linen text-muted-foreground">{x.kind === "program" ? "프로그램" : "저널"}</span>
               <Link href={x.href} className="min-w-0 truncate hover:underline">{x.title}</Link>
             </li>
           ))}

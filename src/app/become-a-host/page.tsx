@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { ArrowRight, Check } from "lucide-react";
 
 import { brand } from "@/config/brand";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
+import { Card, PageHero, Section, SectionTitle } from "@/components/layout/page-parts";
 import { Button } from "@/components/ui/button";
 
 export const metadata: Metadata = {
@@ -57,128 +59,126 @@ export default function ForHostsPage() {
     <>
       <SiteHeader />
       <main className="flex-1" data-testid="for-hosts">
-        <section className="section-dark">
-          <div className="mx-auto w-full max-w-7xl px-4 pt-16 pb-14 sm:px-8 sm:pt-24 sm:pb-20">
-            <p className="eyebrow text-muted-foreground">For Hosts</p>
-            <h1 className="mt-4 max-w-3xl font-display text-4xl leading-tight font-medium break-keep sm:text-6xl">
-              당신의 전문성을, 누군가의 성장으로.
-            </h1>
-            <p className="mt-6 max-w-xl leading-relaxed text-linen">
-              입장료 없이 시작하고, 프로그램이 판매될 때만 함께 나눕니다. 모집과 결제, 운영은 {brand.name}이 맡습니다.
-            </p>
-            <div className="mt-10 grid grid-cols-1 gap-3 sm:flex">
-              <Button asChild size="lg" variant="secondary">
-                <Link href="/become-a-host/apply">호스트 지원하기</Link>
-              </Button>
-              <Button asChild size="lg" variant="outline">
-                <Link href="#policy">정책 먼저 보기</Link>
-              </Button>
-            </div>
+        <PageHero
+          title={<>당신의 전문성을,<br />누군가의 성장으로.</>}
+          description={<>입장료 없이 시작하고, 프로그램이 판매될 때만 함께 나눕니다. 모집과 결제, 운영은 {brand.name}이 맡습니다.</>}
+        >
+          <div className="mt-7 flex flex-wrap gap-3">
+            <Button asChild size="lg">
+              <Link href="/become-a-host/apply">
+                호스트 지원하기
+                <ArrowRight aria-hidden strokeWidth={1.8} />
+              </Link>
+            </Button>
+            <Button asChild size="lg" variant="outline" className="text-forest">
+              <Link href="#policy">정책 먼저 보기</Link>
+            </Button>
           </div>
-        </section>
+        </PageHero>
 
         {/* 수익 원칙 */}
-        <section id="policy" className="mx-auto w-full max-w-7xl scroll-mt-8 px-4 pt-20 sm:px-8 sm:pt-28" aria-labelledby="policy-title">
-          <p className="eyebrow text-muted-foreground">Host Policy</p>
-          <h2 id="policy-title" className="mt-3 font-display text-3xl font-medium sm:text-5xl">함께 버는 구조</h2>
-          <ol className="mt-10 grid gap-px bg-border sm:grid-cols-3">
-            {PRINCIPLES.map((p) => (
-              <li key={p.no} className="bg-background py-6 pr-6 sm:p-8 sm:first:pl-0">
-                <span className="eyebrow text-clay">{p.no}</span>
-                <h3 className="mt-3 font-display text-xl font-medium">{p.title}</h3>
-                <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{p.body}</p>
+        <Section id="policy" className="scroll-mt-20" aria-labelledby="policy-title">
+          <SectionTitle id="policy-title">함께 버는 구조</SectionTitle>
+          <ol className="grid gap-3 sm:grid-cols-3 sm:gap-4">
+            {PRINCIPLES.map((p, i) => (
+              <li key={p.no}>
+                <Card className="h-full">
+                  <span className="flex size-8 items-center justify-center rounded-full bg-forest text-sm font-bold text-white">{i + 1}</span>
+                  <h3 className="mt-4 text-lg font-bold">{p.title}</h3>
+                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{p.body}</p>
+                </Card>
               </li>
             ))}
           </ol>
-          <p className="mt-6 bg-notice px-4 py-3 text-sm text-notice-foreground" data-testid="commission-note">
+          <p className="mt-4 rounded-xl bg-notice px-4 py-3 text-sm leading-relaxed text-notice-foreground" data-testid="commission-note">
             수수료가 없는 첫 1년 동안, 호스트가 프로그램마다 동의하면 {brand.name} 참가자 할인 쿠폰(최대 10%, 호스트 부담)을 쓸 수 있습니다. 1년 이후의 수수료율과 정산 조건은 정식 오픈 전에 확정해 호스트 계약에 명시합니다. 지금은 테스트 결제만 운영 중이며 실제 청구는 없습니다.
           </p>
-        </section>
+        </Section>
 
         {/* 호스트 유형 */}
-        <section className="mx-auto w-full max-w-7xl px-4 pt-20 sm:px-8 sm:pt-28" aria-labelledby="types-title">
-          <p className="eyebrow text-muted-foreground">Who hosts</p>
-          <h2 id="types-title" className="mt-3 font-display text-3xl font-medium sm:text-5xl">이런 분들이 가르칩니다</h2>
-          <ul className="mt-10 flex flex-col">
+        <Section aria-labelledby="types-title">
+          <SectionTitle id="types-title">이런 분들이 가르칩니다</SectionTitle>
+          <ul className="grid gap-3 sm:grid-cols-3 sm:gap-4">
             {HOST_TYPES.map((t) => (
-              <li key={t.name} className="grid grid-cols-1 gap-1 border-t py-5 sm:grid-cols-[14rem_1fr] sm:gap-6">
-                <span className="font-display text-xl">{t.name}</span>
-                <span className="text-sm leading-relaxed text-muted-foreground sm:pt-1">{t.body}</span>
+              <li key={t.name} className="rounded-2xl bg-linen/70 px-5 py-4">
+                <span className="block font-display text-lg font-bold text-forest">{t.name}</span>
+                <span className="mt-1 block text-sm leading-relaxed text-muted-foreground">{t.body}</span>
               </li>
             ))}
           </ul>
-        </section>
+        </Section>
 
         {/* 과정 */}
-        <section className="mt-20 bg-linen sm:mt-28" aria-labelledby="steps-title">
-          <div className="mx-auto w-full max-w-7xl px-4 py-20 sm:px-8 sm:py-24">
-            <p className="eyebrow text-muted-foreground">How it works</p>
-            <h2 id="steps-title" className="mt-3 font-display text-3xl font-medium sm:text-5xl">지원부터 정산까지</h2>
-            <ol className="mt-10 flex flex-col">
-              {STEPS.map((s) => (
-                <li key={s.no} className="grid grid-cols-[3rem_1fr] gap-2 border-t border-forest/15 py-5">
-                  <span className="eyebrow pt-1 text-muted-foreground">{s.no}</span>
-                  <span>
-                    <span className="block font-medium">{s.title}</span>
-                    <span className="mt-1 block text-sm leading-relaxed text-muted-foreground">{s.body}</span>
-                  </span>
-                </li>
-              ))}
-            </ol>
-          </div>
-        </section>
-
-        {/* 약속 */}
-        <section className="mx-auto w-full max-w-7xl px-4 pt-20 sm:px-8 sm:pt-28" aria-labelledby="promises-title">
-          <p className="eyebrow text-muted-foreground">Our Promises</p>
-          <h2 id="promises-title" className="mt-3 font-display text-3xl font-medium sm:text-5xl">함께 지키는 것</h2>
-          <ul className="mt-10 flex flex-col">
-            {PROMISES.map((p) => (
-              <li key={p} className="border-t py-5 leading-relaxed">
-                {p}
+        <Section aria-labelledby="steps-title">
+          <SectionTitle id="steps-title">지원부터 정산까지</SectionTitle>
+          <ol className="grid gap-3 sm:grid-cols-5 sm:gap-4">
+            {STEPS.map((s, i) => (
+              <li key={s.no} className="flex gap-4 rounded-2xl border border-border/70 bg-card p-4 sm:flex-col sm:gap-3">
+                <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-forest/10 text-sm font-bold text-forest">{i + 1}</span>
+                <span>
+                  <span className="block font-bold">{s.title}</span>
+                  <span className="mt-1 block text-sm leading-relaxed text-muted-foreground">{s.body}</span>
+                </span>
               </li>
             ))}
-          </ul>
-        </section>
+          </ol>
+        </Section>
+
+        {/* 약속 */}
+        <Section aria-labelledby="promises-title">
+          <SectionTitle id="promises-title">함께 지키는 것</SectionTitle>
+          <Card>
+            <ul className="flex flex-col gap-3.5">
+              {PROMISES.map((p) => (
+                <li key={p} className="flex gap-3 text-[15px] leading-relaxed">
+                  <span className="mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full bg-forest/10 text-forest">
+                    <Check aria-hidden className="size-3.5" strokeWidth={2.2} />
+                  </span>
+                  {p}
+                </li>
+              ))}
+            </ul>
+          </Card>
+        </Section>
 
         {/* 로드맵 */}
-        <section className="section-dark mt-20 sm:mt-28" aria-labelledby="roadmap-title" data-testid="roadmap">
-          <div className="mx-auto w-full max-w-7xl px-4 py-20 sm:px-8 sm:py-24">
-            <p className="eyebrow text-muted-foreground">Roadmap</p>
-            <h2 id="roadmap-title" className="mt-3 font-display text-3xl font-medium sm:text-5xl">앞으로의 계획</h2>
-            <p className="mt-4 max-w-xl text-sm leading-relaxed text-muted-foreground">
-              아래 계획은 준비 중이며, 순서와 내용은 호스트·참가자와 함께 운영하며 바뀔 수 있습니다.
-            </p>
-            <div className="relative -mx-4 mt-10 flex snap-x snap-mandatory scroll-px-4 gap-4 overflow-x-auto px-4 pb-2 no-scrollbar sm:mx-0 sm:grid sm:grid-cols-3 sm:overflow-visible sm:px-0 sm:pb-0">
-              {ROADMAP.map((r) => (
-                <div key={r.phase} className="w-[78vw] max-w-[20rem] shrink-0 snap-start border-t border-cream/30 pt-6 sm:w-auto sm:max-w-none">
-                  <p className="eyebrow text-muted-foreground">
-                    {r.phase}
-                    {r.status === "now" && <span className="ml-2 text-cream">· 지금</span>}
-                  </p>
-                  <h3 className="mt-3 font-display text-2xl">{r.title}</h3>
-                  <ul className="mt-5 flex flex-col gap-2 text-sm text-linen">
-                    {r.items.map((it) => (
-                      <li key={it} className="flex gap-2">
-                        <span aria-hidden className="text-muted-foreground">—</span>
-                        {it}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ))}
-            </div>
+        <Section aria-labelledby="roadmap-title" data-testid="roadmap">
+          <SectionTitle id="roadmap-title" description="아래 계획은 준비 중이며, 순서와 내용은 호스트·참가자와 함께 운영하며 바뀔 수 있습니다.">
+            앞으로의 계획
+          </SectionTitle>
+          <div className="grid gap-3 sm:grid-cols-3 sm:gap-4">
+            {ROADMAP.map((r) => (
+              <div
+                key={r.phase}
+                className={r.status === "now" ? "rounded-2xl bg-forest p-5 text-cream" : "rounded-2xl border border-border/70 bg-card p-5"}
+              >
+                <p className={r.status === "now" ? "pill bg-white/15 text-cream" : "pill bg-linen text-muted-foreground"}>
+                  {r.status === "now" ? "지금" : r.status === "next" ? "다음" : "나중에"}
+                </p>
+                <h3 className="mt-3 text-lg font-bold">{r.title}</h3>
+                <ul className={`mt-3 flex flex-col gap-1.5 text-sm ${r.status === "now" ? "text-cream/85" : "text-muted-foreground"}`}>
+                  {r.items.map((it) => (
+                    <li key={it} className="flex gap-2">
+                      <span aria-hidden>·</span>
+                      {it}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
           </div>
-        </section>
+        </Section>
 
-        <section className="mx-auto w-full max-w-7xl px-4 pt-20 sm:px-8 sm:pt-28">
-          <div className="flex flex-col items-start gap-6 border-t border-forest pt-10 sm:flex-row sm:items-center sm:justify-between">
-            <p className="max-w-xl font-display text-2xl leading-snug break-keep sm:text-3xl">가르칠 수 있는 무언가가 있다면, 그 이야기를 들려주세요.</p>
+        <Section>
+          <div className="flex flex-col items-start gap-5 rounded-3xl bg-linen/70 p-6 sm:flex-row sm:items-center sm:justify-between sm:p-8">
+            <p className="max-w-xl font-display text-xl leading-snug font-bold break-keep text-forest sm:text-2xl">
+              가르칠 수 있는 무언가가 있다면, 그 이야기를 들려주세요.
+            </p>
             <Button asChild size="lg">
               <Link href="/become-a-host/apply">호스트 지원하기</Link>
             </Button>
           </div>
-        </section>
+        </Section>
       </main>
       <SiteFooter />
     </>
