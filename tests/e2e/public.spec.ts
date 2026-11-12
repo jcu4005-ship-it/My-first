@@ -215,3 +215,15 @@ test("없는 프로그램·검토 중 프로그램·없는 호스트는 HTTP 404
     await expect(page.getByText("검토 중 테스트")).toHaveCount(0);
   }
 });
+
+test("개인정보 처리방침: 바닥글·가입 화면에서 연결, 초안 표시, 보호 장치 안내", async ({ page }) => {
+  await page.goto("/signup");
+  await expect(page.getByTestId("privacy-summary")).toContainText("수집 항목");
+  await page.goto("/");
+  await page.getByRole("contentinfo").getByRole("link", { name: "개인정보 처리방침" }).click();
+  await expect(page).toHaveURL(/\/privacy$/);
+  const policy = page.getByTestId("privacy-policy");
+  await expect(policy.getByRole("heading", { level: 1 })).toHaveText("개인정보 처리방침");
+  await expect(policy.getByTestId("privacy-draft-note")).toContainText("초안");
+  await expect(policy).toContainText("촬영 위치(GPS)");
+});

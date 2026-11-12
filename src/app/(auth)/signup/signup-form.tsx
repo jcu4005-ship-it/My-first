@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
+import Link from "next/link";
 
 import { Field, FormMessage } from "@/components/forms/field";
 import { Button } from "@/components/ui/button";
@@ -59,6 +60,13 @@ export function SignUpForm() {
         <p className="text-xs text-muted-foreground">
           현재 약관·개인정보 처리 문구는 출시 전 법률 검토를 거쳐 확정될 임시 문안입니다.
         </p>
+        <div className="rounded-lg bg-muted/40 p-3 text-xs leading-relaxed text-muted-foreground" data-testid="privacy-summary">
+          <p><strong className="text-foreground">수집 항목</strong> 이메일, 비밀번호(암호화), 닉네임</p>
+          <p><strong className="text-foreground">이용 목적</strong> 회원 식별, 로그인, 프로그램 신청 관리, 알림</p>
+          <p><strong className="text-foreground">보관 기간</strong> 탈퇴 시 즉시 삭제·익명화 (법령상 보관이 필요한 기록 제외)</p>
+          <p>동의를 거부할 수 있지만, 필수 항목에 동의하지 않으면 가입할 수 없어요.{" "}
+            <Link href="/privacy" target="_blank" className="underline underline-offset-4">개인정보 처리방침 전문</Link></p>
+        </div>
         <Check name="agreeTerms" label="이용약관 동의" required error={e.agreeTerms} />
         <Check name="agreePrivacy" label="개인정보 수집·이용 동의" required error={e.agreePrivacy} />
         <Check name="confirmAge14" label="만 14세 이상입니다" required error={e.confirmAge14} />

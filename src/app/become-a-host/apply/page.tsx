@@ -25,7 +25,7 @@ const STEPS: { key: HostApplicationRow["status"]; label: string }[] = [
 function toDefaults(a: HostApplicationRow | null): Record<string, string> {
   if (!a) return {};
   return {
-    displayName: a.display_name, contactPhone: a.contact_phone, pillar: a.pillar ?? "", fields: a.fields.join(", "),
+    displayName: a.display_name, contactPhone: a.contact_phone ?? "", pillar: a.pillar ?? "", fields: a.fields.join(", "),
     headline: a.headline, bio: a.bio, career: a.career, credentials: a.credentials, portfolioUrl: a.portfolio_url ?? "",
     teachingExperience: a.teaching_experience, instagram: a.instagram_handle ?? "", programProposal: a.program_proposal,
     valueToParticipants: a.value_to_participants, preferredFormat: a.preferred_format, consent: a.consented_at ? "on" : "",

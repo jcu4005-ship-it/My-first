@@ -75,8 +75,15 @@ test("관리자: 2단계 인증 전에는 관리자 화면 불가 → OTP 등록
 
   await page.getByRole("searchbox", { name: "회원 검색" }).or(page.getByLabel("회원 검색")).fill(target.email);
   await page.getByRole("button", { name: "검색" }).click();
-  const row = page.locator(`[data-testid=member-row][data-email="${target.email}"]`);
+  const row = page.locator(`[data-testid=member-row][data-nickname="${target.nickname}"]`);
   await expect(row).toBeVisible();
+  // 이메일은 가려서 보이고, 사유를 적어야 원문이 보여요
+  const email = row.getByTestId("email-reveal");
+  await expect(email.getByTestId("email-reveal-value")).not.toHaveText(target.email);
+  await expect(email.getByTestId("email-reveal-value")).toContainText("***@");
+  await email.getByRole("textbox").fill("본인 확인 요청 대응");
+  await email.getByRole("button", { name: "이메일 보기" }).click();
+  await expect(email.getByTestId("email-reveal-value")).toHaveText(target.email);
   await row.locator("summary").click();
   const roleForm = row.getByTestId("role-form");
   await roleForm.getByLabel("역할 변경", { exact: true }).selectOption("host:grant");
@@ -87,6 +94,7 @@ test("관리자: 2단계 인증 전에는 관리자 화면 불가 → OTP 등록
 
   await page.goto("/admin/audit");
   await expect(page.locator("[data-testid=audit-row][data-action='role.grant']").first()).toContainText("E2E 호스트 승인 테스트");
+  await expect(page.locator("[data-testid=audit-row][data-action='pii.reveal']").first()).toContainText("본인 확인 요청 대응");
   } finally {
     await revokeRoleDirect(admin.id, "admin");
   }

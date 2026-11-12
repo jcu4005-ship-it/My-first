@@ -269,3 +269,37 @@ export async function setCouponActiveAction(_prev: FormState, formData: FormData
   revalidatePath("/admin/coupons");
   return { status: "success", message: parsed.data.active === "true" ? "쿠폰을 켰어요." : "쿠폰을 껐어요." };
 }
+
+const revealSchema = z.object({ targetId: z.uuid(), reason: z.string().trim().min(5, "열람 사유를 5자 이상 입력해 주세요.").max(200) });
+
+/** 지원서 휴대폰 원문 열람 — 사유 필수, 감사 기록은 DB 함수가 남김. 결과는 화면에만 잠깐 보여 줌 */
+export async function revealApplicationContactAction(_prev: FormState, formData: FormData): Promise<FormState> {
+  if (!(await checkAdminForAction())) return FORBIDDEN;
+  const parsed = revealSchema.safeParse({ targetId: formValue(formData, "targetId"), reason: formValue(formData, "reason") });
+  if (!parsed.success) return { status: "error", message: parsed.error.issues[0]?.message ?? "입력을 확인해 주세요." };
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase.rpc("admin_application_contact", { p_id: parsed.data.targetId, p_reveal: true, p_reason: parsed.data.reason });
+  if (error || typeof data !== "string") return { status: "error", message: error ? dbMessage(error) : "열람하지 못했습니다." };
+  return { status: "success", message: data };
+}
+
+/** 회원 이메일 원문 열람 — 사유 필수, 감사 기록 */
+export async function revealMemberEmailAction(_prev: FormState, formData: FormData): Promise<FormState> {
+  if (!(await checkAdminForAction())) return FORBIDDEN;
+  const parsed = revealSchema.safeParse({ targetId: formValue(formData, "targetId"), reason: formValue(formData, "reason") });
+  if (!parsed.success) return { status: "error", message: parsed.error.issues[0]?.message ?? "입력을 확인해 주세요." };
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase.rpc("admin_reveal_member_email", { p_user_id: parsed.data.targetId, p_reason: parsed.data.reason });
+  if (error || typeof data !== "string") return { status: "error", message: error ? dbMessage(error) : "열람하지 못했습니다." };
+  return { status: "success", message: data };
+}
+
+/** 보관 기간이 지난 지원서 개인정보 정리 (감사 기록) */
+export async function purgeStalePiiAction(): Promise<FormState> {
+  if (!(await checkAdminForAction())) return FORBIDDEN;
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase.rpc("admin_purge_stale_pii");
+  if (error) return { status: "error", message: dbMessage(error) };
+  revalidatePath("/admin");
+  return { status: "success", message: `${typeof data === "number" ? data : 0}건의 개인정보를 정리했어요.` };
+}

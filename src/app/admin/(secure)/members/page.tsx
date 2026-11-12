@@ -5,6 +5,9 @@ import { Input } from "@/components/ui/input";
 import { requireAdmin } from "@/lib/auth/guards";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
+import { revealMemberEmailAction } from "../actions";
+import { RevealForm } from "../reveal-form";
+
 import { MemberActions } from "./member-actions";
 
 export const metadata: Metadata = { title: "회원 관리" };
@@ -38,14 +41,16 @@ export default async function Page({ searchParams }: PageProps<"/admin/members">
         <Button type="submit" variant="outline">검색</Button>
       </form>
       {error && <p role="alert" className="text-sm text-destructive">회원 목록을 불러오지 못했습니다.</p>}
-      <p className="mb-4 text-xs text-muted-foreground">이메일 열람은 감사 기록에 남습니다.</p>
+      <p className="mb-4 text-xs text-muted-foreground">이메일은 가려서 보여 줘요. 원문은 사유를 적어야 볼 수 있고, 열람과 목록 조회는 모두 감사 기록에 남습니다. 검색은 전체 이메일로도 돼요.</p>
       <ul className="flex flex-col gap-3" data-testid="member-list">
         {((data ?? []) as Member[]).map((m) => (
-          <li key={m.id} className="rounded-xl border p-4" data-testid="member-row" data-email={m.email}>
+          <li key={m.id} className="rounded-xl border p-4" data-testid="member-row" data-nickname={m.nickname}>
             <div className="flex flex-wrap items-baseline justify-between gap-2">
               <div>
                 <span className="font-medium">{m.nickname}</span>
-                <span className="ml-2 text-sm text-muted-foreground">{m.email}</span>
+                <div className="mt-1 text-sm text-muted-foreground">
+                  <RevealForm action={revealMemberEmailAction} targetId={m.id} masked={m.email} label="이메일" testId="email-reveal" />
+                </div>
               </div>
               <div className="text-xs text-muted-foreground">
                 <span data-testid="member-roles">{m.roles.join(", ")}</span> · {STATUS_LABEL[m.status]}

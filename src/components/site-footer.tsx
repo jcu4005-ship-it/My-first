@@ -21,6 +21,7 @@ export function SiteFooter() {
           <span className="eyebrow text-muted-foreground">Join</span>
           <Link href="/become-a-host" className="hover:underline hover:underline-offset-4">호스트 안내·정책</Link>
           <Link href="/signup" className="hover:underline hover:underline-offset-4">회원가입</Link>
+          <Link href="/privacy" className="hover:underline hover:underline-offset-4">개인정보 처리방침</Link>
         </nav>
       </div>
       <p className="mx-auto w-full max-w-7xl border-t px-4 pt-6 pb-10 text-xs leading-relaxed text-muted-foreground sm:px-8">

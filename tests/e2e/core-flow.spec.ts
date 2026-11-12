@@ -79,7 +79,14 @@ test("호스트 지원서(임시 저장·수정 요청·재제출) → 승인 �
   await expect(admin).toHaveURL(/\/admin\/hosts$/);
   await admin.locator(`[data-testid=host-application][data-name="${hostName}"]`).click();
   const detail = admin.getByTestId("application-detail");
-  await expect(detail).toContainText("010-1234-5678"); // 관리자는 연락처 확인 가능
+  // 연락처는 기본으로 가려져 있고, 사유를 적어야 원문이 보여요 (감사 기록)
+  const contact = detail.getByTestId("contact-reveal");
+  await expect(contact.getByTestId("contact-reveal-value")).toHaveText("010-****-5678");
+  await contact.getByRole("button", { name: "휴대폰 번호 보기" }).click();
+  await expect(contact.getByRole("alert")).toContainText("5자 이상");
+  await contact.getByRole("textbox").fill("심사 결과 안내 통화");
+  await contact.getByRole("button", { name: "휴대폰 번호 보기" }).click();
+  await expect(contact.getByTestId("contact-reveal-value")).toHaveText("010-1234-5678");
   await expect(detail).toContainText("https://example.com/portfolio");
   await detail.getByTestId("start-review").getByRole("button").click();
   await expect(detail.getByTestId("start-review")).toHaveCount(0);

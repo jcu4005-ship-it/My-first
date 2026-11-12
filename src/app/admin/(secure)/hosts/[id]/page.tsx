@@ -7,8 +7,10 @@ import { StatusPill } from "@/components/forms/controls";
 import { pillarInfo } from "@/config/pillars";
 import { requireAdmin } from "@/lib/auth/guards";
 import { APPLICATION_STATUS_LABEL, getApplicationForAdmin, listApplicationHistory } from "@/lib/hosting/applications";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
 
-import { reviewApplicationAction } from "../../actions";
+import { revealApplicationContactAction, reviewApplicationAction } from "../../actions";
+import { RevealForm } from "../../reveal-form";
 
 export const metadata: Metadata = { title: "지원서 상세" };
 export const instant = false;
@@ -26,12 +28,15 @@ export default async function AdminApplicationPage({ params }: PageProps<"/admin
   await requireAdmin(`/admin/hosts/${id}`);
   const app = await getApplicationForAdmin(id);
   if (!app) notFound();
-  const history = await listApplicationHistory(app.id);
+  const supabase = await createSupabaseServerClient();
+  const [history, { data: maskedPhone }] = await Promise.all([
+    listApplicationHistory(app.id),
+    supabase.rpc("admin_application_contact", { p_id: app.id, p_reveal: false, p_reason: null }),
+  ]);
   const open = app.status === "submitted" || app.status === "reviewing";
 
   const rows: [string, string | null][] = [
     ["호스트 이름", app.display_name],
-    ["휴대폰 (비공개)", app.contact_phone],
     ["지원 분류", pillarInfo(app.pillar) ? `${pillarInfo(app.pillar)!.label} · ${pillarInfo(app.pillar)!.ko}` : null],
     ["활동 분야", app.fields.join(", ")],
     ["한 줄 소개", app.headline],
@@ -57,6 +62,13 @@ export default async function AdminApplicationPage({ params }: PageProps<"/admin
       {app.review_note && <p className="mt-3 bg-notice px-4 py-3 text-sm text-notice-foreground">최근 메모: {app.review_note}</p>}
 
       <dl className="mt-6 flex flex-col text-sm">
+        <div className="grid gap-1 border-b py-3 sm:grid-cols-[10rem_1fr]">
+          <dt className="text-muted-foreground">휴대폰 (비공개)</dt>
+          <dd>
+            <RevealForm action={revealApplicationContactAction} targetId={app.id} masked={typeof maskedPhone === "string" ? maskedPhone : "-"}
+              label="휴대폰 번호" testId="contact-reveal" />
+          </dd>
+        </div>
         {rows.map(([k, v]) => (
           <div key={k} className="grid gap-1 border-b py-3 sm:grid-cols-[10rem_1fr]">
             <dt className="text-muted-foreground">{k}</dt>

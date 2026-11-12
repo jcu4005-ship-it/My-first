@@ -18,7 +18,8 @@ export type HostApplicationRow = {
   applicant_id: string;
   status: ApplicationStatus;
   display_name: string;
-  contact_phone: string;
+  /** 본인 화면에서만 채워짐 (표에서 직접 읽을 수 없음 — my_application_contact 함수) */
+  contact_phone?: string;
   pillar: "knowledge" | "creators" | "experts" | null;
   fields: string[];
   headline: string;
@@ -40,7 +41,7 @@ export type HostApplicationRow = {
 };
 
 const SELECT =
-  "id, applicant_id, status, display_name, contact_phone, pillar, fields, headline, bio, career, credentials, portfolio_url, teaching_experience, instagram_handle, program_proposal, value_to_participants, preferred_format, consented_at, review_note, reviewed_at, submitted_at, created_at, updated_at";
+  "id, applicant_id, status, display_name, pillar, fields, headline, bio, career, credentials, portfolio_url, teaching_experience, instagram_handle, program_proposal, value_to_participants, preferred_format, consented_at, review_note, reviewed_at, submitted_at, created_at, updated_at";
 
 /** 내 지원서: 진행 중인 것 우선, 없으면 가장 최근 것 (RLS: 본인 것만) */
 export async function getMyApplication(userId: string): Promise<HostApplicationRow | null> {
@@ -53,7 +54,10 @@ export async function getMyApplication(userId: string): Promise<HostApplicationR
     .limit(5);
   if (error) throw new Error(`지원서 조회 실패: ${error.message}`);
   const rows = (data ?? []) as HostApplicationRow[];
-  return rows.find((r) => ["draft", "submitted", "reviewing", "revision_requested"].includes(r.status)) ?? rows[0] ?? null;
+  const mine = rows.find((r) => ["draft", "submitted", "reviewing", "revision_requested"].includes(r.status)) ?? rows[0] ?? null;
+  if (!mine) return null;
+  const { data: phone } = await supabase.rpc("my_application_contact");
+  return { ...mine, contact_phone: typeof phone === "string" ? phone : "" };
 }
 
 /** 관리자: 지원서 목록 (RLS: 관리자 2단계 인증) */
