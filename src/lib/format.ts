@@ -44,3 +44,19 @@ export function isFuture(iso: string): boolean {
 export function formatYmd(iso: string): string {
   return new Intl.DateTimeFormat("ko-KR", { timeZone: TZ, year: "numeric", month: "numeric", day: "numeric" }).format(new Date(iso));
 }
+
+/** 초대장 날짜 조각: { md: "11.15", day: "15", wd: "일", wdEn: "SUN", time: "19:30" } */
+export function ticketDate(iso: string) {
+  const d = new Date(iso);
+  const parts = (opts: Intl.DateTimeFormatOptions, locale = "ko-KR") =>
+    Object.fromEntries(new Intl.DateTimeFormat(locale, { timeZone: TZ, ...opts }).formatToParts(d).map((p) => [p.type, p.value]));
+  const md = parts({ month: "numeric", day: "numeric" });
+  const hm = parts({ hour: "2-digit", minute: "2-digit", hourCycle: "h23" });
+  return {
+    md: `${md.month}.${md.day}`,
+    day: md.day,
+    wd: new Intl.DateTimeFormat("ko-KR", { timeZone: TZ, weekday: "short" }).format(d),
+    wdEn: new Intl.DateTimeFormat("en-US", { timeZone: TZ, weekday: "short" }).format(d).toUpperCase(),
+    time: `${hm.hour}:${hm.minute}`,
+  };
+}

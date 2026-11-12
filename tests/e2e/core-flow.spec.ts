@@ -157,7 +157,7 @@ test("호스트 지원서(임시 저장·수정 요청·재제출) → 승인 �
   // 5. 참가자: 목록에서 찾아 신청 (비로그인은 로그인 유도)
   await guest.goto("/meetups?category=writing");
   await guest.getByText(title).first().click();
-  await expect(guest.getByRole("link", { name: "로그인하고 신청하기" })).toBeVisible();
+  await expect(guest.getByRole("link", { name: "로그인하고 초대 수락하기" })).toBeVisible();
   const meetupUrl = guest.url();
 
   const p = await loginPage(browser, participant.email);

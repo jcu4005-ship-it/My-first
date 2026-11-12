@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useActionState, useState, useTransition } from "react";
 
+import { SeatTable } from "@/components/brand/seat-table";
 import { FormMessage } from "@/components/forms/field";
 import { Button } from "@/components/ui/button";
 import { formatDate, formatPrice, formatTime } from "@/lib/format";
@@ -16,6 +17,8 @@ export type BookingSession = {
   starts_at: string;
   area: string;
   left: number;
+  capacity: number;
+  reserved: number;
   open: boolean;
   mine: boolean;
 };
@@ -42,6 +45,9 @@ export function BookingForm({
   const [sessionId, setSessionId] = useState(firstAvailable?.id ?? "");
   const [quantity, setQuantity] = useState(1);
   const selected = sessions.find((s) => s.id === sessionId);
+  const canBook = viewerState === "ok" && Boolean(firstAvailable);
+  // 테이블 그림: 고른 일정(없으면 첫 일정)
+  const shown = selected ?? sessions[0];
   const maxForSelected = Math.min(maxQuantity, selected?.left ?? 1);
   const [code, setCode] = useState("");
   const [preview, setPreview] = useState<CouponPreview | null>(null);
@@ -54,9 +60,26 @@ export function BookingForm({
     });
 
   return (
-    <form action={action} className="flex flex-col gap-4" id="booking" data-testid="booking-form">
+    <form action={action} className="flex scroll-mt-24 flex-col gap-4" id="booking" data-testid="booking-form">
       <input type="hidden" name="meetupId" value={meetupId} />
-      <fieldset className="flex flex-col gap-3">
+      {shown && (
+        <div className="text-center">
+          <p className="font-display text-base font-bold">{canBook ? "몇 자리 앉을지 고르세요" : "이 테이블의 자리"}</p>
+          <SeatTable
+            capacity={shown.capacity}
+            taken={shown.reserved}
+            mine={canBook && selected ? quantity : 0}
+            closed={!shown.open || shown.left === 0}
+            size="lg"
+            className="mx-auto my-2 w-52"
+          />
+          <p className="text-xs text-muted-foreground">
+            {canBook && <><span className="text-clay">●</span> 내 자리 · </>}
+            {shown.capacity}명 테이블 중 {shown.reserved}명 예약
+          </p>
+        </div>
+      )}
+      <fieldset className="flex flex-col gap-2">
         <legend className="sr-only">일정 선택</legend>
         {sessions.map((s) => {
           const disabled = !s.open || s.left === 0 || s.mine || viewerState !== "ok";
@@ -65,7 +88,7 @@ export function BookingForm({
               key={s.id}
               data-testid="session-row"
               className={cn(
-                "flex cursor-pointer items-center justify-between gap-3 rounded-2xl border border-border bg-white px-4 py-4 transition-colors",
+                "flex cursor-pointer items-center justify-between gap-3 rounded-2xl border border-border bg-card px-4 py-3 transition-colors",
                 sessionId === s.id && !disabled ? "border-forest bg-forest/5 ring-1 ring-forest" : "hover:border-forest/40",
                 disabled && "cursor-default opacity-70",
               )}
@@ -102,7 +125,7 @@ export function BookingForm({
       </fieldset>
 
       {viewerState === "ok" && firstAvailable && maxQuantity > 1 && (
-        <label className="flex items-center justify-between rounded-2xl bg-linen/60 px-4 py-3 text-sm">
+        <label className="flex items-center justify-between rounded-2xl bg-linen/70 px-4 py-3 text-sm">
           <span className="font-medium">신청 인원</span>
           <select name="quantity" value={quantity} onChange={(e) => { setQuantity(Number(e.target.value)); resetCoupon(); }}
             className="h-10 rounded-xl border border-border bg-white px-3" aria-label="신청 인원">
@@ -115,7 +138,7 @@ export function BookingForm({
       {(maxQuantity === 1 || viewerState !== "ok") && <input type="hidden" name="quantity" value="1" />}
 
       {viewerState === "ok" && firstAvailable && acceptCoupons && (
-        <div className="flex flex-col gap-2 rounded-2xl bg-linen/60 px-4 py-3" data-testid="coupon">
+        <div className="flex flex-col gap-2 rounded-2xl bg-linen/70 px-4 py-3" data-testid="coupon">
           <label htmlFor="couponCode" className="text-sm font-medium">할인 쿠폰 (선택)</label>
           <div className="flex gap-2">
             <input
@@ -144,7 +167,7 @@ export function BookingForm({
 
       {viewerState === "guest" ? (
         <Button asChild size="lg" className="w-full">
-          <Link href={`/login?next=/meetups/${meetupId}`}>로그인하고 신청하기</Link>
+          <Link href={`/login?next=/meetups/${meetupId}`}>로그인하고 초대 수락하기</Link>
         </Button>
       ) : viewerState === "sample" ? (
         <Button size="lg" className="w-full" disabled>샘플 프로그램은 신청할 수 없어요</Button>
@@ -152,7 +175,7 @@ export function BookingForm({
         <Button size="lg" className="w-full" disabled>내가 연 프로그램이에요</Button>
       ) : firstAvailable ? (
         <Button type="submit" size="lg" className="w-full" disabled={pending || !sessionId} data-testid="book-submit">
-          {pending ? "신청 중…" : `${formatPrice(applied ? applied.total : price * quantity)} · 참가 신청`}
+          {pending ? "보내는 중…" : `초대 수락하기 · ${formatPrice(applied ? applied.total : price * quantity)}`}
         </Button>
       ) : (
         <Button size="lg" className="w-full" disabled>신청 가능한 일정이 없어요</Button>

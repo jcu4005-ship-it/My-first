@@ -13,7 +13,7 @@ import { formatDate, formatPrice, formatTime, isFuture } from "@/lib/format";
 
 import { cancelBookingAction } from "./actions";
 
-export const metadata: Metadata = { title: "신청 내역" };
+export const metadata: Metadata = { title: "내 초대장" };
 export const instant = false;
 
 function BookingCard({ b, highlight }: { b: MyBooking; highlight: boolean }) {
@@ -76,7 +76,7 @@ export default async function MyBookingsPage({ searchParams }: PageProps<"/me/bo
     <>
       <SiteHeader />
       <main className="mx-auto w-full max-w-2xl flex-1 px-4 py-8 sm:px-6">
-        <h1 className="font-display text-2xl font-bold text-forest sm:text-3xl">신청 내역</h1>
+        <h1 className="font-display text-2xl font-bold text-forest sm:text-3xl">내 초대장</h1>
         {booked && (
           <p className="mt-4 rounded-xl bg-notice px-4 py-3 text-sm text-notice-foreground" data-testid="booked-notice">
             신청이 확정되었어요! 상세 주소와 일정을 확인해 주세요.

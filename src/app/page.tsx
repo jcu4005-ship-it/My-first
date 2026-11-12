@@ -3,6 +3,8 @@ import { ArrowRight, Check } from "lucide-react";
 import { Suspense } from "react";
 
 import { brand } from "@/config/brand";
+import { Seal } from "@/components/brand/seat-table";
+import { seatsLeft } from "@/components/meetups/badges";
 import { ContentCard } from "@/components/contents/content-card";
 import { HostCard } from "@/components/hosts/host-card";
 import { MeetupCard } from "@/components/meetups/meetup-card";
@@ -51,36 +53,6 @@ function pickThisWeek(meetups: MeetupCardData[], limit = 6) {
   return week.length ? { thisWeek: true, list: week.slice(0, limit) } : { thisWeek: false, list: meetups.slice(0, limit) };
 }
 
-/* ---------- 1. 첫 화면 ---------- */
-
-function Hero() {
-  return (
-    <section className="relative overflow-hidden" aria-labelledby="hero-title">
-      {/* 장식: 은은한 초록 원 (사진이 준비되기 전) */}
-      <div aria-hidden className="pointer-events-none absolute -top-24 -right-24 size-[28rem] rounded-full bg-mint/35 blur-3xl sm:size-[36rem]" />
-      <div className="relative mx-auto w-full max-w-6xl px-4 pt-12 pb-12 sm:px-6 sm:pt-20 sm:pb-16">
-        <h1 id="hero-title" className="max-w-2xl font-display text-[2.1rem] leading-[1.25] font-bold break-keep text-forest sm:text-6xl sm:leading-[1.2]">
-          어제보다 나은 나를
-          <br />
-          발견하는 시간.
-        </h1>
-        <p className="mt-5 max-w-md text-base leading-relaxed text-muted-foreground sm:text-lg">{brand.tagline}</p>
-        <div className="mt-8 flex flex-wrap gap-3">
-          <Button asChild size="lg">
-            <Link href="/meetups">
-              프로그램 둘러보기
-              <ArrowRight aria-hidden strokeWidth={1.8} />
-            </Link>
-          </Button>
-          <Button asChild size="lg" variant="outline" className="text-forest">
-            <Link href="/become-a-host">호스트 지원</Link>
-          </Button>
-        </div>
-      </div>
-    </section>
-  );
-}
-
 /* ---------- 2~5. 데이터가 필요한 섹션 ---------- */
 
 async function HomeSections() {
@@ -97,53 +69,74 @@ async function HomeSections() {
     return p ? { ...acc, [p]: (acc[p] ?? 0) + 1 } : acc;
   }, {});
   const { thisWeek, list: picks } = pickThisWeek(meetups);
+  const openSeats = picks.reduce((sum, m) => sum + (m.nextSession.status === "open" ? seatsLeft(m.nextSession) : 0), 0);
   const hasSample = picks.some((m) => m.is_sample);
   const firstClassOf = (hostId: string) => meetups.find((m) => m.host?.user_id === hostId);
 
   return (
     <>
-      {/* 2. 세 갈래 */}
-      <section className="mx-auto w-full max-w-6xl px-4 sm:px-6" aria-label="분야로 찾기" data-testid="home-pillars">
-        <ul className="grid grid-cols-3 gap-2 sm:gap-4">
-          {PILLARS.map((p) => (
-            <li key={p.slug}>
-              <Link
-                href={`/meetups?pillar=${p.slug}`}
-                className="flex h-full flex-col rounded-2xl border border-border/70 bg-card px-3 py-4 transition-colors hover:border-forest/40 sm:px-5 sm:py-5"
-                data-testid="pillar-tile"
-              >
-                <span className="text-[15px] font-semibold text-forest sm:text-lg">{p.ko}</span>
-                <span className="mt-0.5 text-[11px] text-muted-foreground sm:text-xs">{p.label}</span>
-                <span className="mt-3 hidden text-sm leading-relaxed text-muted-foreground sm:block">{p.description}</span>
-                <span className="mt-3 text-xs font-medium text-forest">
-                  {pillarCounts[p.slug] ? `${pillarCounts[p.slug]}개 프로그램` : "둘러보기"}
-                </span>
-              </Link>
+      {/* 1. 첫 화면: 이번 주 빈자리 수 (실제 데이터) */}
+      <section className="relative mx-auto w-full max-w-6xl px-4 pt-8 sm:px-6 sm:pt-14" aria-labelledby="hero-title">
+        <p className="text-[11.5px] tracking-[0.14em] text-muted-foreground">{thisWeek ? "THIS WEEK'S TABLES" : "UPCOMING TABLES"}</p>
+        <h1 id="hero-title" className="mt-2 font-display text-[1.75rem] leading-[1.32] font-bold break-keep sm:text-5xl sm:leading-tight">
+          {thisWeek ? "이번 주" : "곧"}, 당신을 위한
+          <br />
+          {openSeats > 0 ? (
+            <>
+              자리가 <em className="text-clay not-italic">{openSeats}개</em> 비어 있어요.
+            </>
+          ) : (
+            "테이블을 준비하고 있어요."
+          )}
+        </h1>
+        <p className="mt-3 text-sm leading-relaxed text-muted-foreground sm:text-base">심사를 통과한 호스트가 열 명 남짓의 테이블만 차려요.</p>
+        <div className="mt-3 flex gap-4 text-xs text-muted-foreground" aria-hidden>
+          <span className="flex items-center gap-1.5"><i className="size-[11px] rounded-full bg-forest" />예약된 자리</span>
+          <span className="flex items-center gap-1.5"><i className="size-[11px] rounded-full border-[1.5px] border-dashed border-sage bg-card" />빈자리</span>
+        </div>
+        {/* 분야 */}
+        <nav aria-label="분야로 찾기" className="-mx-4 mt-5 overflow-x-auto px-4 no-scrollbar sm:mx-0 sm:px-0" data-testid="home-pillars">
+          <ul className="flex w-max gap-2">
+            <li>
+              <Link href="/meetups" className="inline-flex h-9 items-center rounded-full bg-foreground px-4 text-sm font-semibold text-white">전체</Link>
             </li>
-          ))}
-        </ul>
+            {PILLARS.map((p) => (
+              <li key={p.slug}>
+                <Link
+                  href={`/meetups?pillar=${p.slug}`}
+                  className="inline-flex h-9 items-center gap-1 rounded-full border border-border bg-card px-4 text-sm hover:border-forest/40"
+                  data-testid="pillar-tile"
+                >
+                  {p.ko}
+                  <span className="sr-only"> ({p.label})</span>
+                  {pillarCounts[p.slug] ? <span className="text-xs text-muted-foreground">{pillarCounts[p.slug]}</span> : null}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </nav>
       </section>
 
-      {/* 3. 추천 프로그램 */}
-      <section className="mt-10 bg-linen/60 py-10 sm:mt-14 sm:rounded-none sm:py-14" aria-labelledby="picks-title" data-testid="home-this-week">
-        <div className="mx-auto w-full max-w-6xl px-4 sm:px-6">
-          <SectionHeading title={thisWeek ? "이번 주 추천" : "곧 열리는 프로그램"} id="picks-title" href="/meetups" />
-          {hasSample && (
-            <p className="mb-5 rounded-xl bg-notice px-4 py-3 text-sm text-notice-foreground" data-testid="sample-notice">
-              지금 보이는 프로그램은 서비스 준비 중 보여 드리는 <strong>샘플</strong>입니다. 실제로 신청할 수 없어요.
-            </p>
-          )}
-          {picks.length ? (
-            <div className={`${rail} sm:grid-cols-2 lg:grid-cols-3`} data-testid="meetup-grid">
-              {picks.map((m) => (
-                <div key={m.id} className={railItem}>
-                  <MeetupCard meetup={m} categoryName={names[m.category_slug] ?? m.category_slug} />
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p className="py-12 text-center text-muted-foreground">곧 첫 프로그램이 열립니다.</p>
-          )}
+      {/* 2. 이번 주 테이블 */}
+      <section className="mx-auto mt-6 w-full max-w-6xl px-4 sm:mt-8 sm:px-6" aria-label={thisWeek ? "이번 주 테이블" : "곧 열리는 테이블"} data-testid="home-this-week">
+        {hasSample && (
+          <p className="mb-4 rounded-xl bg-notice px-4 py-3 text-sm text-notice-foreground" data-testid="sample-notice">
+            지금 보이는 프로그램은 서비스 준비 중 보여 드리는 <strong>샘플</strong>입니다. 실제로 신청할 수 없어요.
+          </p>
+        )}
+        {picks.length ? (
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4" data-testid="meetup-grid">
+            {picks.map((m) => (
+              <MeetupCard key={m.id} meetup={m} categoryName={names[m.category_slug] ?? m.category_slug} />
+            ))}
+          </div>
+        ) : (
+          <p className="rounded-2xl border-[1.5px] border-dashed border-[#cfc6b5] py-12 text-center text-muted-foreground">곧 첫 테이블이 차려집니다.</p>
+        )}
+        <div className="mt-4 text-center">
+          <Link href="/meetups" className="inline-flex items-center gap-1 text-sm font-semibold text-forest hover:underline hover:underline-offset-4">
+            모든 테이블 보기 <ArrowRight aria-hidden className="size-4" strokeWidth={1.8} />
+          </Link>
         </div>
       </section>
 
@@ -180,10 +173,13 @@ async function HomeSections() {
 
 function SectionsSkeleton() {
   return (
-    <div className="mx-auto grid w-full max-w-6xl grid-cols-1 gap-5 px-4 sm:grid-cols-3 sm:px-6">
-      {Array.from({ length: 3 }).map((_, i) => (
-        <div key={i} className="aspect-[4/5] animate-pulse rounded-2xl bg-muted" />
-      ))}
+    <div className="mx-auto w-full max-w-6xl px-4 pt-8 sm:px-6 sm:pt-14">
+      <div className="h-24 w-72 max-w-full animate-pulse rounded-xl bg-muted" />
+      <div className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-4">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <div key={i} className="aspect-[3/4] animate-pulse rounded-[18px] bg-muted" />
+        ))}
+      </div>
     </div>
   );
 }
@@ -193,7 +189,7 @@ function SectionsSkeleton() {
 const CURATION = [
   { title: "호스트 심사", body: "경력·포트폴리오와 기획안을 운영팀이 직접 확인해요." },
   { title: "공개 전 검수", body: "모든 프로그램과 글은 검수를 거친 뒤에만 공개돼요." },
-  { title: "작은 정원", body: "한 사람 한 사람을 볼 수 있는 인원으로 열어요." },
+  { title: "작은 테이블", body: "한 사람 한 사람을 볼 수 있는 인원으로만 열어요." },
   { title: "추천은 사람이", body: "팔로워 수가 아니라 운영팀이 직접 골라요." },
 ];
 
@@ -201,29 +197,31 @@ function TrustAndJoin() {
   return (
     <section className="mx-auto mt-12 w-full max-w-6xl px-4 sm:mt-16 sm:px-6" aria-labelledby="curation-title">
       <div className="grid gap-4 lg:grid-cols-[1.4fr_1fr]">
-        <div className="rounded-3xl border border-border/70 bg-card p-6 sm:p-8" data-testid="home-curation">
-          <h2 id="curation-title" className="font-display text-2xl font-bold text-forest">
-            아무나 열 수 없는 프로그램
-          </h2>
-          <ul className="mt-5 grid gap-4 sm:grid-cols-2">
+        <div className="relative rounded-[18px] border-[1.5px] border-dashed border-[#cfc6b5] p-5 sm:p-7" data-testid="home-curation">
+          <Seal className="absolute -top-3 right-4">심사<br />통과</Seal>
+          <h2 id="curation-title" className="font-display text-xl font-bold sm:text-2xl">아무나 차릴 수 없는 테이블</h2>
+          <p className="mt-2 flex flex-wrap items-center gap-1.5 text-[13px] font-semibold">
+            호스트 심사 <span className="text-sage">→</span> 프로그램 검수 <span className="text-sage">→</span> 초대장 발송
+          </p>
+          <ul className="mt-4 grid gap-3 sm:grid-cols-2">
             {CURATION.map((c) => (
-              <li key={c.title} className="flex gap-3">
-                <span className="mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full bg-forest/10 text-forest">
-                  <Check aria-hidden className="size-3.5" strokeWidth={2.2} />
+              <li key={c.title} className="flex gap-2.5">
+                <span className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-forest/10 text-forest">
+                  <Check aria-hidden className="size-3" strokeWidth={2.6} />
                 </span>
                 <span>
-                  <span className="block font-semibold">{c.title}</span>
-                  <span className="mt-0.5 block text-sm leading-relaxed text-muted-foreground">{c.body}</span>
+                  <span className="block text-sm font-semibold">{c.title}</span>
+                  <span className="mt-0.5 block text-[13px] leading-relaxed text-muted-foreground">{c.body}</span>
                 </span>
               </li>
             ))}
           </ul>
         </div>
         <div className="flex flex-col gap-4">
-          <div id="host" className="flex flex-1 flex-col rounded-3xl bg-forest p-6 text-cream sm:p-8">
-            <h2 className="font-display text-2xl font-bold">당신의 전문성을 새로운 경험으로</h2>
+          <div id="host" className="flex flex-1 flex-col rounded-[18px] bg-forest p-6 text-cream sm:p-7">
+            <h2 className="font-display text-xl font-bold sm:text-2xl">당신의 테이블을 차려 보세요</h2>
             <p className="mt-2 text-sm leading-relaxed text-cream/80">입장료 없이, 프로그램이 판매될 때만 함께 나눠요.</p>
-            <div className="mt-auto pt-6">
+            <div className="mt-auto pt-5">
               <Button asChild variant="secondary">
                 <Link href="/become-a-host/apply">
                   호스트 지원하기
@@ -232,7 +230,7 @@ function TrustAndJoin() {
               </Button>
             </div>
           </div>
-          <div className="rounded-3xl border border-dashed border-border p-5" data-testid="membership-soon">
+          <div className="ticket p-5" data-testid="membership-soon">
             <p className="flex items-center gap-2 text-sm font-semibold">
               {brand.name} 멤버십
               <span className="pill bg-linen text-muted-foreground">준비 중</span>
@@ -252,7 +250,6 @@ export default function Home() {
     <>
       <SiteHeader />
       <main className="flex-1">
-        <Hero />
         <Suspense fallback={<SectionsSkeleton />}>
           <HomeSections />
         </Suspense>

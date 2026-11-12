@@ -26,7 +26,7 @@ export default async function CheckoutPage({ params }: PageProps<"/checkout/[boo
   if (p.booking_status === "confirmed") redirect(`/me/bookings?booked=${bookingId}`);
   const expired = p.booking_status !== "pending_payment" || !isFuture(p.hold_expires_at);
 
-  const steps = ["신청", "결제", "참가 확정"];
+  const steps = ["초대 수락", "결제", "자리 확정"];
 
   return (
     <>

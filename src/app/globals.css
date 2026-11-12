@@ -3,30 +3,30 @@
 
 /*
  * 디자인 토큰 — 색·글꼴·모서리 값은 여기서만 정의합니다.
- * 방향: 간결하고 한눈에 보이는 화면 — 크림 바탕, 딥 그린 한 가지 강조색, 둥근 모서리, 가는 선 아이콘.
- * 팔레트: Deep Green #2E4A3B · Forest Deep #1F3329 · Cream #F7F4EE · Linen #ECE7DD · Sage #6F8576 · Clay #9A5636
- * 대비: 작은 본문 글자는 ink(#1C2620)·muted-foreground(#566159)·forest·clay만 사용 (크림 바탕에서 4.5:1 이상).
- *       sage·mint는 큰 글자·장식·어두운 바탕 위 라벨에만 사용.
+ * 방향: "테이블 + 초대장" — 종이 바탕, 딥 그린 테이블(빈자리 보기), 절취선 티켓 카드, 호스트 서명, 밀랍 도장.
+ * 팔레트: Deep Green #2E4A3B · Ink #1C3428 · Paper #F3EEE4 · Card #FFFDF8 · Sage #6E9479 · Seal(도장) #A2412F
+ * 대비: 작은 본문 글자는 ink·muted-foreground(#56635A)·forest·seal만 사용 (종이 바탕에서 4.5:1 이상).
+ *       sage·mint는 큰 글자·장식·점선 의자·어두운 바탕 위 라벨에만 사용. 도장색은 "마지막 자리·심사 통과·분야 표시"에만 조금.
  * 시스템 다크 모드에 따라 색을 뒤집지 않습니다 (브랜드 화면 고정).
  */
 :root {
   --forest: #2e4a3b;
   --forest-deep: #1f3329;
   --forest-soft: #3d5c4b;
-  --ink: #1c2620;
-  --cream: #f7f4ee;
-  --linen: #ece7dd;
-  --sage: #6f8576;
+  --ink: #1c3428;
+  --cream: #f3eee4;
+  --linen: #e9e2d4;
+  --sage: #6e9479;
   --mint: #b9d3bf;
-  --clay: #9a5636;               /* 마감 임박 등 작은 경고 글자 */
+  --clay: #a2412f;               /* 도장색: 마지막 자리·심사 통과·분야 표시 */
   --white: #ffffff;
 
   --background: var(--cream);
   --foreground: var(--ink);
-  --card: #fbfaf7;
+  --card: #fffdf8;
   --muted: var(--linen);
-  --muted-foreground: #566159;
-  --border: #e2ddd3;
+  --muted-foreground: #56635a;
+  --border: #e4dccb;
   --primary: var(--forest);
   --primary-foreground: #ffffff;
   --secondary: var(--linen);
@@ -84,6 +84,9 @@
     @apply bg-background text-foreground;
     font-family: var(--font-sans);
     word-break: keep-all; /* 한글 단어 단위 줄바꿈 */
+    /* 종이 질감: 아주 옅은 점 무늬 */
+    background-image: radial-gradient(rgb(28 52 40 / 0.045) 1px, transparent 1px);
+    background-size: 6px 6px;
   }
   /* 휴대폰 아래 탭 막대가 있으면 마지막 내용이 가려지지 않도록 */
   @media (width < 48rem) {
@@ -108,6 +111,26 @@
   /* 둥근 알약 모양 라벨 (분류·상태) */
   .pill {
     @apply inline-flex items-center rounded-full px-3 py-1 text-xs font-medium;
+  }
+  /* 초대장 티켓: 카드 + 절취선(.perf, 양 끝 반원 홈) */
+  .ticket {
+    @apply relative rounded-[18px] bg-card;
+    box-shadow: 0 1px 0 rgb(28 52 40 / 0.06), 0 12px 26px -18px rgb(28 52 40 / 0.45);
+  }
+  .perf {
+    @apply relative mx-3 border-t-[1.5px] border-dashed border-[#cfc6b5];
+  }
+  .perf::before,
+  .perf::after {
+    content: "";
+    @apply absolute -top-[9px] size-4 rounded-full bg-background;
+  }
+  .perf::before { left: -21px; }
+  .perf::after { right: -21px; }
+  /* 호스트 서명 ("— 민재 드림") */
+  .sign {
+    font-family: var(--font-display);
+    @apply text-muted-foreground;
   }
   /* 어두운 섹션 */
   .section-dark {

@@ -29,11 +29,12 @@ test("메인: 세 갈래 분류, 이번 주 프로그램, 호스트, 저널, 큐
   await expect(page).toHaveURL(/\/meetups\?pillar=knowledge$/);
 });
 
-test("메인 추천 카드: 분류·호스트·일정·참가비가 보이고, 누르면 상세로", async ({ page }) => {
+test("메인 추천 카드(초대장): 호스트 서명·빈자리 테이블·참가비가 보이고, 누르면 상세로", async ({ page }) => {
   test.skip(!samples, "샘플 데이터 없음");
   await page.goto("/");
   const card = page.getByTestId("home-this-week").getByTestId("meetup-card").first();
-  await expect(card).toContainText("by ");
+  await expect(card).toContainText(" 드림"); // 호스트 서명
+  await expect(card.getByTestId("seat-table")).toBeVisible(); // 빈자리 테이블
   await expect(card).toContainText("원");
   const title = (await card.getByRole("heading").textContent())!.trim();
   await card.click();

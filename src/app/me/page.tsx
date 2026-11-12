@@ -5,7 +5,7 @@ import { requireMember } from "@/lib/auth/guards";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 import Link from "next/link";
-import { Bell, CalendarCheck, LayoutDashboard, ShieldCheck, Sparkles } from "lucide-react";
+import { Bell, LayoutDashboard, ShieldCheck, Sparkles, Ticket } from "lucide-react";
 
 import { signOutAction } from "@/app/(auth)/actions";
 import { Button } from "@/components/ui/button";
@@ -66,7 +66,7 @@ async function MyPage({ member }: { member: Awaited<ReturnType<typeof requireMem
 
       <nav aria-label="바로가기" className="grid grid-cols-2 gap-2 sm:grid-cols-4">
         {[
-          { href: "/me/bookings", label: "신청 내역", icon: CalendarCheck },
+          { href: "/me/bookings", label: "내 초대장", icon: Ticket },
           { href: "/me/notifications", label: "알림", icon: Bell },
           isHost ? { href: "/host", label: "호스트 공간", icon: LayoutDashboard } : { href: "/become-a-host/apply", label: "호스트 신청", icon: Sparkles },
           ...(member.roles.includes("admin") ? [{ href: "/admin", label: "관리자", icon: ShieldCheck }] : []),
