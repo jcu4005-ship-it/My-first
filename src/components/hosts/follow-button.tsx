@@ -19,6 +19,7 @@ export function FollowButton({
   loggedIn,
   tone = "dark",
   showCount,
+  stretch = false,
 }: {
   hostId: string;
   path: string;
@@ -28,17 +29,21 @@ export function FollowButton({
   tone?: "dark" | "light";
   /** 팔로워 수 표시 (기본: dark만) */
   showCount?: boolean;
+  /** 줄 전체 폭을 채우는 큰 버튼 (호스트 명함) */
+  stretch?: boolean;
 }) {
   const [state, action, pending] = useActionState(toggleFollowAction, initialFormState);
   const light = tone === "light";
-  const base = light
+  const base = stretch
+    ? "inline-flex h-11 w-full items-center justify-center rounded-full px-4 text-sm font-bold transition-colors disabled:opacity-60"
+    : light
     ? "inline-flex h-9 items-center justify-center rounded-full px-4 text-sm font-semibold transition-colors disabled:opacity-60"
     : "inline-flex h-11 items-center justify-center rounded-full px-6 text-sm font-medium transition-colors disabled:opacity-60";
   const on = light ? "border border-forest/30 text-forest hover:border-forest" : "border border-cream/40 text-cream hover:border-cream";
   const off = light ? "bg-forest text-white hover:bg-forest/90" : "bg-cream text-forest hover:bg-linen";
   const withCount = showCount ?? !light;
   return (
-    <div className={light && !withCount ? "flex flex-col items-end gap-1" : "flex flex-wrap items-center gap-3"} data-testid="follow">
+    <div className={stretch ? "flex flex-1 flex-col gap-1 [&>form]:w-full" : light && !withCount ? "flex flex-col items-end gap-1" : "flex flex-wrap items-center gap-3"} data-testid="follow">
       {loggedIn ? (
         <form action={action}>
           <input type="hidden" name="hostId" value={hostId} />
@@ -65,7 +70,7 @@ export function FollowButton({
         </span>
       )}
       {state.message && (
-        <p role={state.status === "error" ? "alert" : "status"} className={light && !withCount ? `max-w-48 text-right text-xs ${state.status === "error" ? "text-destructive" : "text-muted-foreground"}` : `w-full text-sm ${state.status === "error" ? (light ? "text-destructive" : "text-[#f0a08a]") : light ? "text-muted-foreground" : "text-linen"}`}>
+        <p role={state.status === "error" ? "alert" : "status"} className={stretch ? `text-center text-xs ${state.status === "error" ? "text-destructive" : "text-muted-foreground"}` : light && !withCount ? `max-w-48 text-right text-xs ${state.status === "error" ? "text-destructive" : "text-muted-foreground"}` : `w-full text-sm ${state.status === "error" ? (light ? "text-destructive" : "text-[#f0a08a]") : light ? "text-muted-foreground" : "text-linen"}`}>
           {state.message}
         </p>
       )}
