@@ -31,6 +31,7 @@ export default async function EditMeetupPage({ params }: PageProps<"/host/meetup
           <MeetupForm
             meetupId={meetup.id}
             categories={categories}
+            userId={member.id}
             defaults={{
               title: meetup.title,
               categorySlug: meetup.category_slug,
@@ -48,6 +49,7 @@ export default async function EditMeetupPage({ params }: PageProps<"/host/meetup
               learningOutcomes: meetup.learning_outcomes,
               materialsNote: meetup.materials_note,
               priceRationale: meetup.price_rationale,
+              coverPath: meetup.cover_path ?? "",
             }}
           />
         </div>

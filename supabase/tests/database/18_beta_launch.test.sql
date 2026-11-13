@@ -29,7 +29,7 @@ select lives_ok($$ select public.admin_set_app_settings(true, false, '지인 대
 select ok(exists(select 1 from public.audit_logs where action = 'settings.update' and reason = '지인 대상 비공개 베타 시작'), '설정 변경 감사 기록');
 select throws_ok($$ select public.admin_create_invite_code('ab', '', 5, null) $$, '22023', '코드는 영문 대문자·숫자·하이픈 5~20자로 입력하세요', '잘못된 코드 형식 거부');
 select lives_ok($$ select public.admin_create_invite_code('friends-01', '지인 1차', 1, null) $$, '초대 코드 발급 (소문자는 대문자로)');
-select is((select code from public.invite_codes), 'FRIENDS-01', '관리자는 초대 코드를 볼 수 있다');
+select is((select code from public.invite_codes where code = 'FRIENDS-01'), 'FRIENDS-01', '관리자는 초대 코드를 볼 수 있다');
 select pg_temp.logout();
 
 -- 가입 화면용 확인 함수: 참/거짓만

@@ -28,7 +28,7 @@ export async function saveMeetupAction(_prev: FormState, formData: FormData): Pr
   if (!member.roles.includes("host")) return NOT_HOST;
 
   const keys = ["title", "categorySlug", "meetupType", "summary", "description", "price", "maxQuantity",
-    "targetAudience", "requirements", "whatToBring", "agenda", "refundPolicyText", "level", "learningOutcomes", "materialsNote", "priceRationale"];
+    "targetAudience", "requirements", "whatToBring", "agenda", "refundPolicyText", "level", "learningOutcomes", "materialsNote", "priceRationale", "coverPath"];
   const values = Object.fromEntries(keys.map((k) => [k, formValue(formData, k)]));
   const parsed = meetupFormSchema.safeParse(values);
   if (!parsed.success) {
@@ -52,6 +52,8 @@ export async function saveMeetupAction(_prev: FormState, formData: FormData): Pr
     learning_outcomes: v.learningOutcomes,
     materials_note: v.materialsNote,
     price_rationale: v.priceRationale,
+    // 본인 폴더 사진만 (DB도 한 번 더 확인)
+    cover_path: values.coverPath && values.coverPath.startsWith(`${member.id}/`) ? values.coverPath : null,
   };
   const supabase = await createSupabaseServerClient();
   const meetupId = formValue(formData, "meetupId");

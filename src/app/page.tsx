@@ -1,12 +1,15 @@
 import Link from "next/link";
 import { ArrowRight, Check } from "lucide-react";
-import { Suspense } from "react";
+import { cache, Suspense } from "react";
 
 import { brand } from "@/config/brand";
 import { Seal } from "@/components/brand/seat-table";
 import { ContentCard } from "@/components/contents/content-card";
 import { HostCard } from "@/components/hosts/host-card";
+import { SampleBadge } from "@/components/meetups/badges";
 import { MeetupCard } from "@/components/meetups/meetup-card";
+import { Photo } from "@/components/media/photo";
+import { formatPrice, formatShortDateTime } from "@/lib/format";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { Button } from "@/components/ui/button";
@@ -63,13 +66,13 @@ function pickThisWeek(meetups: MeetupCardData[], limit = 6) {
 
 /* ---------- 2~5. 데이터가 필요한 섹션 ---------- */
 
+/** 메인에서 같은 데이터를 두 번 읽지 않도록 (첫 화면·본문 공용) */
+const homeData = cache(() =>
+  Promise.all([listCategories(), listUpcomingMeetups(), listFeaturedHosts(4), listPublishedContents({ limit: 3 })]),
+);
+
 async function HomeSections() {
-  const [categories, meetups, hosts, contents] = await Promise.all([
-    listCategories(),
-    listUpcomingMeetups(),
-    listFeaturedHosts(4),
-    listPublishedContents({ limit: 3 }),
-  ]);
+  const [categories, meetups, hosts, contents] = await homeData();
   const names = Object.fromEntries(categories.map((c) => [c.slug, c.name]));
   const pillarOf = Object.fromEntries(categories.map((c) => [c.slug, c.pillar]));
   const pillarCounts = meetups.reduce<Record<string, number>>((acc, m) => {
@@ -236,18 +239,62 @@ function TrustAndJoin() {
 
 /* ---------- 1. 첫 화면: 둥글게 놓인 빈 의자와 원목 테이블 ---------- */
 
-function Hero() {
+async function Hero() {
+  const [categories, meetups] = await homeData();
+  const names = Object.fromEntries(categories.map((c) => [c.slug, c.name]));
+  const pillarOf = Object.fromEntries(categories.map((c) => [c.slug, c.pillar]));
+  const { list } = pickThisWeek(meetups, 5);
   return (
-    <section className="mx-auto flex w-full max-w-xl flex-col items-center px-4 pt-14 pb-14 text-center sm:pt-20 sm:pb-20" aria-labelledby="hero-title">
-      <p className="pl-[0.3em] font-display text-[clamp(40px,13vw,64px)] leading-none font-bold tracking-[0.3em] text-[#2b3a30] [text-shadow:0_1px_0_rgb(255_255_245/0.5),6px_10px_18px_rgb(35_51_42/0.18)]">
-        {brand.name}
-      </p>
-      <span aria-hidden className="mt-6 h-px w-12 bg-[#2b3a30]/40" />
-      <h1 id="hero-title" className="mt-6 font-display text-lg sm:text-xl">{brand.tagline}</h1>
-      <Button asChild size="lg" className="mt-7 bg-[linear-gradient(180deg,#2e4436,#1e2d24)] shadow-[0_10px_20px_-10px_rgb(20_30_22/0.7),inset_0_1px_0_rgb(255_255_255/0.12)]">
-        <Link href="/meetups">이번 주 자리 보기</Link>
-      </Button>
+    <section className="pt-5 pb-10 sm:pt-8" aria-labelledby="hero-title" data-testid="home-featured">
+      <h1 id="hero-title" className="px-4 font-display text-[15px] text-[#2b3a30] sm:px-6 sm:text-center sm:text-lg">{brand.tagline}</h1>
+      {list.length ? (
+        <ul className="mt-4 flex snap-x snap-mandatory scroll-px-4 gap-3 overflow-x-auto px-4 pb-3 no-scrollbar sm:mx-auto sm:max-w-6xl sm:px-6">
+          {list.map((m) => (
+            <li key={m.id} className="w-[84vw] max-w-[22rem] shrink-0 snap-start">
+              <FeaturedCard meetup={m} categoryName={names[m.category_slug] ?? m.category_slug} pillar={pillarOf[m.category_slug]} />
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p className="mx-4 mt-4 rounded-2xl bg-card/70 px-5 py-12 text-center text-muted-foreground">곧 첫 자리가 열립니다.</p>
+      )}
     </section>
+  );
+}
+
+/** 첫 화면 큰 카드: 호스트가 올린 사진 → 날짜·동네 → 제목 → 한 줄 소개 → 남은 자리·참가비 */
+function FeaturedCard({ meetup, categoryName, pillar }: { meetup: MeetupCardData; categoryName: string; pillar?: string }) {
+  const s = meetup.nextSession;
+  const left = Math.max(0, s.capacity - s.reserved_count);
+  const closed = s.status !== "open" || left === 0;
+  const pillarLabel = PILLARS.find((p) => p.slug === pillar)?.label.toUpperCase();
+  return (
+    <Link href={`/meetups/${meetup.id}`} className="group flex h-full flex-col overflow-hidden rounded-[24px] bg-card shadow-[0_18px_34px_-22px_rgb(35_51_42/0.6)]" data-testid="featured-card">
+      <div className="relative aspect-[4/5] overflow-hidden bg-[linear-gradient(150deg,#e3e9da_0%,#c4cfb5_70%,#b2bfa2_100%)]">
+        {meetup.cover_image_url ? (
+          <Photo src={meetup.cover_image_url} alt={meetup.title} priority sizes="(min-width: 640px) 352px, 84vw" fallback={null} className="transition-transform duration-500 group-hover:scale-[1.03]" />
+        ) : (
+          <div aria-hidden className="absolute inset-0 flex flex-col justify-end p-5">
+            {pillarLabel && <span className="text-[10px] tracking-[0.26em] text-[#44513f]">{pillarLabel}</span>}
+            <span className="mt-1 font-display text-3xl leading-tight font-bold text-[#2f3f34]">{categoryName}</span>
+          </div>
+        )}
+        <span className="absolute top-3 left-3 rounded-full bg-white/90 px-3 py-1 text-[11px] font-semibold text-foreground">{categoryName}</span>
+        {meetup.is_sample && <SampleBadge className="absolute top-3 right-3" />}
+      </div>
+      <div className="flex flex-1 flex-col px-4 pt-3.5 pb-4">
+        <p className="text-xs text-muted-foreground">{formatShortDateTime(s.starts_at)} · {s.area}</p>
+        <h2 className="mt-1 font-display text-xl leading-snug font-bold break-keep">{meetup.title}</h2>
+        <p className="mt-1.5 line-clamp-2 text-sm leading-relaxed text-muted-foreground">{meetup.summary}</p>
+        <p className="mt-auto flex items-center justify-between gap-2 border-t border-border/70 pt-3 text-sm">
+          <span className={closed ? "text-muted-foreground" : left <= 2 ? "font-semibold text-clay" : "font-semibold text-forest"}>
+            {closed ? "마감" : `${left}자리 남음`}
+            <span className="font-normal text-muted-foreground"> · {meetup.host?.display_name}</span>
+          </span>
+          <b className="shrink-0">{formatPrice(meetup.price)}</b>
+        </p>
+      </div>
+    </Link>
   );
 }
 
@@ -256,7 +303,9 @@ export default function Home() {
     <>
       <SiteHeader />
       <main className="flex-1">
-        <Hero />
+        <Suspense fallback={<div className="h-[560px]" />}>
+          <Hero />
+        </Suspense>
         <div className="paper rounded-t-[28px] pb-14 shadow-[0_-18px_40px_-30px_rgb(35_51_42/0.6)]">
           <Suspense fallback={<SectionsSkeleton />}>
             <HomeSections />

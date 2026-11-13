@@ -158,3 +158,27 @@ test("관리자 호스트 관리: 주소 변경 → 활동 중지(공개 화면�
   await expect(history).toContainText("활동 중지");
   await expect(history).toContainText("활동 재개");
 });
+
+test("프로그램 대표 사진: 호스트가 올리면 상세 화면에 보이고, 공개 중 변경은 감사 기록", async ({ page }) => {
+  const h = await createMember("e2ecov");
+  await makeApprovedHost(h.id, `사진호스트${Date.now() % 10000}`);
+  const { data: m, error } = await adminApi().from("meetups").insert({ host_id: h.id, category_slug: "writing", title: `사진 테스트 프로그램 ${Date.now() % 100000}`,
+    summary: "대표 사진 테스트용 프로그램입니다", description: "대표 사진 테스트용 프로그램의 상세 설명입니다. 충분히 길게 적습니다.",
+    price: 0, max_quantity_per_booking: 1, learning_outcomes: "사진을 올릴 수 있어요.", status: "published", published_at: new Date().toISOString() }).select("id").single();
+  if (error || !m) throw new Error(`프로그램 준비 실패: ${error?.message}`);
+  const start = new Date(Date.now() + 5 * 86400000);
+  await adminApi().from("meetup_sessions").insert({ meetup_id: m.id, starts_at: start.toISOString(), ends_at: new Date(start.getTime() + 7200000).toISOString(),
+    area: "연남동", venue_name: "테스트 장소", address_detail: "테스트 주소", capacity: 6 });
+
+  await login(page, h.email, `/host/meetups/${m.id}/edit`);
+  const form = page.getByTestId("meetup-form");
+  await form.getByTestId("meetup-cover-input").setInputFiles({ name: "cover.png", mimeType: "image/png", buffer: PNG });
+  await expect(form.getByTestId("meetup-cover-preview")).toBeVisible();
+  await form.getByRole("button", { name: "변경 내용 저장" }).click();
+  await expect.poll(async () => (await adminApi().from("meetups").select("cover_path").eq("id", m.id).single()).data?.cover_path ?? "").toMatch(new RegExp(`^${h.id}/`));
+  const { data: logs } = await adminApi().from("audit_logs").select("id").eq("action", "meetup.cover_change").eq("target_id", m.id);
+  expect(logs?.length).toBeGreaterThan(0);
+
+  await page.goto(`/meetups/${m.id}`);
+  await expect(page.locator(`img[src*="meetup-covers"]`).first()).toBeVisible();
+});

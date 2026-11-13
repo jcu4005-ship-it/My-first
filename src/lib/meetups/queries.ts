@@ -1,5 +1,6 @@
 import "server-only";
 
+import { meetupCoverUrl } from "@/lib/meetups/cover";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 export type Category = { slug: string; name: string; description: string; pillar: "knowledge" | "creators" | "experts" };
@@ -24,6 +25,7 @@ export type MeetupCardData = {
   price: number;
   category_slug: string;
   cover_image_url: string | null;
+  cover_path?: string | null;
   is_sample: boolean;
   host: HostSummary | null;
   nextSession: Session;
@@ -73,7 +75,7 @@ const HOST_DETAIL_SELECT =
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 const CARD_SELECT =
-  "id, title, summary, price, category_slug, cover_image_url, is_sample, status, host:host_profiles(user_id, slug, display_name, headline, is_sample), sessions:meetup_sessions(id, starts_at, ends_at, area, venue_name, capacity, reserved_count, status)";
+  "id, title, summary, price, category_slug, cover_image_url, cover_path, is_sample, status, host:host_profiles(user_id, slug, display_name, headline, is_sample), sessions:meetup_sessions(id, starts_at, ends_at, area, venue_name, capacity, reserved_count, status)";
 
 type Row = {
   id: string;
@@ -82,6 +84,7 @@ type Row = {
   price: number;
   category_slug: string;
   cover_image_url: string | null;
+  cover_path?: string | null;
   is_sample: boolean;
   host: HostSummary | null;
   sessions: Session[] | null;
@@ -104,7 +107,7 @@ function toCard(row: Row): MeetupCardData | null {
     summary: row.summary,
     price: row.price,
     category_slug: row.category_slug,
-    cover_image_url: row.cover_image_url,
+    cover_image_url: meetupCoverUrl(row.cover_path) ?? row.cover_image_url,
     is_sample: row.is_sample,
     host: row.host,
     nextSession: sessions[0],
@@ -148,7 +151,7 @@ export async function getMeetup(id: string): Promise<MeetupDetail | null> {
   const { data, error } = await supabase
     .from("meetups")
     .select(
-      "id, title, summary, description, price, category_slug, cover_image_url, meetup_type, is_sample, status, max_quantity_per_booking, target_audience, requirements, what_to_bring, agenda, refund_policy_text, level, learning_outcomes, materials_note, accept_coupons, host:host_profiles(user_id, slug, display_name, headline, bio, expertise, instagram_handle, career, occupation, avatar_path, is_sample), sessions:meetup_sessions(id, starts_at, ends_at, area, venue_name, capacity, reserved_count, status)",
+      "id, title, summary, description, price, category_slug, cover_image_url, cover_path, meetup_type, is_sample, status, max_quantity_per_booking, target_audience, requirements, what_to_bring, agenda, refund_policy_text, level, learning_outcomes, materials_note, accept_coupons, host:host_profiles(user_id, slug, display_name, headline, bio, expertise, instagram_handle, career, occupation, avatar_path, is_sample), sessions:meetup_sessions(id, starts_at, ends_at, area, venue_name, capacity, reserved_count, status)",
     )
     .eq("id", id)
     .eq("status", "published")
@@ -159,6 +162,7 @@ export async function getMeetup(id: string): Promise<MeetupDetail | null> {
   const sessions = upcoming(row.sessions);
   return {
     ...row,
+    cover_image_url: meetupCoverUrl(row.cover_path) ?? row.cover_image_url,
     agenda: Array.isArray(row.agenda) ? row.agenda : [],
     nextSession: sessions[0] ?? null,
     upcomingSessions: sessions,

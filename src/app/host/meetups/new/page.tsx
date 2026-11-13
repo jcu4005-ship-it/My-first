@@ -10,7 +10,7 @@ export const metadata: Metadata = { title: "새 프로그램 만들기" };
 export const instant = false;
 
 export default async function NewMeetupPage() {
-  await requireRole("host", "/host/meetups/new");
+  const member = await requireRole("host", "/host/meetups/new");
   const categories = await listCategories();
   return (
     <>
@@ -19,7 +19,7 @@ export default async function NewMeetupPage() {
         <h1 className="font-display text-3xl font-bold">새 프로그램 만들기</h1>
         <p className="mt-2 text-sm text-muted-foreground">저장 → 일정 추가 → 검수 요청 순서로 진행돼요. 승인되면 공개됩니다.</p>
         <div className="mt-8">
-          <MeetupForm categories={categories} />
+          <MeetupForm categories={categories} userId={member.id} />
         </div>
       </main>
     </>

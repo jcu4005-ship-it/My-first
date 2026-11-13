@@ -2,8 +2,10 @@
 
 import { SelectField, TextareaField } from "@/components/forms/controls";
 import { Field, FormMessage } from "@/components/forms/field";
+import { ImageUploadField } from "@/components/forms/image-upload-field";
 import { useFormAction } from "@/components/forms/use-form-action";
 import { Button } from "@/components/ui/button";
+import { MEETUP_COVER_BUCKET } from "@/lib/meetups/cover";
 import { CLASS_LEVELS, MEETUP_TYPES } from "@/lib/validation/meetup";
 
 import { saveMeetupAction } from "../actions";
@@ -14,7 +16,10 @@ export function MeetupForm({
   meetupId,
   categories,
   defaults,
+  userId,
 }: {
+  /** 사진 저장 폴더 (본인 id) */
+  userId: string;
   meetupId?: string;
   categories: { slug: string; name: string }[];
   defaults?: MeetupFormDefaults;
@@ -28,6 +33,17 @@ export function MeetupForm({
       <FormMessage message={state.message} />
 
       <Field name="title" label="프로그램 제목" defaultValue={v.title} error={e.title} hint="5~60자. 무엇을 배우는 프로그램인지 한눈에 보이게" />
+      <ImageUploadField
+        bucket={MEETUP_COVER_BUCKET}
+        userId={userId}
+        initialPath={v.coverPath || null}
+        name="coverPath"
+        label="대표 사진 (선택)"
+        filePrefix="meetup"
+        testIdPrefix="meetup-cover"
+        aspect="aspect-[4/3] w-48"
+        hint="메인 첫 화면과 목록에 크게 보여요. 직접 찍었거나 사용 허락을 받은 사진만 올려 주세요. 촬영 위치·기기 정보는 지우고 저장해요."
+      />
       <div className="grid gap-5 sm:grid-cols-2">
         <SelectField
           name="categorySlug"
