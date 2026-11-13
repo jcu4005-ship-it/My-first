@@ -43,7 +43,7 @@ export default async function MySupportTicketPage({ params, searchParams }: Page
         <div className="mt-6">
           <SupportThread messages={messages} viewer="member" />
         </div>
-        <div className="mt-8 rounded-[20px] bg-card p-5 shadow-[0_2px_0_rgb(80_55_25/0.08),0_14px_24px_-14px_rgb(80_55_25/0.4)]">
+        <div className="mt-8 rounded-[20px] bg-card p-5 shadow-[0_2px_0_rgb(35_51_42/0.08),0_14px_24px_-14px_rgb(35_51_42/0.4)]">
           <ReplyForm ticketId={ticket.id} />
         </div>
       </main>

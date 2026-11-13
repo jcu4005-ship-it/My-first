@@ -83,7 +83,7 @@ export function RecentlyViewedList() {
       {items.length === 0 ? (
         <p className="rounded-[18px] border-[1.5px] border-dashed border-[#cfc6b5] bg-card/60 px-5 py-5 text-sm text-muted-foreground">아직 본 프로그램이나 글이 없어요. 기록은 이 기기의 브라우저에만 저장돼요.</p>
       ) : (
-        <ul className="flex flex-col divide-y divide-dashed divide-[#ddd3c2] rounded-[20px] bg-card px-4 text-sm shadow-[0_2px_0_rgb(80_55_25/0.08),0_14px_24px_-14px_rgb(80_55_25/0.4)]">
+        <ul className="flex flex-col divide-y divide-dashed divide-[#ddd3c2] rounded-[20px] bg-card px-4 text-sm shadow-[0_2px_0_rgb(35_51_42/0.08),0_14px_24px_-14px_rgb(35_51_42/0.4)]">
           {items.map((x) => (
             <li key={x.href} className="flex items-center justify-between gap-3 py-3.5" data-testid="recent-item">
               <Link href={x.href} className="min-w-0 truncate hover:underline">{x.title}</Link>

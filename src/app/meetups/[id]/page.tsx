@@ -123,7 +123,7 @@ export default async function MeetupDetailPage({ params }: PageProps<"/meetups/[
         </div>
 
         {/* 2. 겹치는 종이 시트 */}
-        <div className="birch relative -mt-6 rounded-t-[26px]">
+        <div className="paper relative -mt-6 rounded-t-[26px]">
           <div className="mx-auto grid w-full max-w-5xl gap-8 px-4 pt-5 sm:px-6 lg:grid-cols-[1fr_320px] lg:gap-10">
             <article>
               {/* 호스트 */}

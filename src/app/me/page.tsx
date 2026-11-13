@@ -23,7 +23,7 @@ export const metadata: Metadata = { title: "마이페이지" };
 export const instant = false;
 
 const ROLE_LABEL = { participant: "참가자", host: "호스트", admin: "관리자" } as const;
-const sheet = "rounded-[20px] bg-card shadow-[0_2px_0_rgb(80_55_25/0.08),0_14px_24px_-14px_rgb(80_55_25/0.4)]";
+const sheet = "rounded-[20px] bg-card shadow-[0_2px_0_rgb(35_51_42/0.08),0_14px_24px_-14px_rgb(35_51_42/0.4)]";
 
 function Heading({ children, href, linkLabel }: { children: React.ReactNode; href?: string; linkLabel?: string }) {
   return (

@@ -73,7 +73,7 @@ export default function HelpPage() {
             {FAQ.map((g) => (
               <div key={g.group}>
                 <h3 className="mb-2 px-1 text-sm font-semibold text-muted-foreground">{g.group}</h3>
-                <div className="divide-y divide-dashed divide-[#ddd3c2] rounded-[20px] bg-card px-4 shadow-[0_2px_0_rgb(80_55_25/0.08),0_14px_24px_-14px_rgb(80_55_25/0.4)]">
+                <div className="divide-y divide-dashed divide-[#ddd3c2] rounded-[20px] bg-card px-4 shadow-[0_2px_0_rgb(35_51_42/0.08),0_14px_24px_-14px_rgb(35_51_42/0.4)]">
                   {g.items.map((it) => (
                     <details key={it.q} className="group py-1" data-testid="faq-item">
                       <summary className="flex cursor-pointer list-none items-center justify-between gap-3 py-3 text-[15px] font-medium">

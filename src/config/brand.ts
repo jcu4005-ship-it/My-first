@@ -6,18 +6,19 @@
  * - 사업자 정보는 확정 전이므로 비워 두며, 출시 전 체크리스트(설계안 9장)에서 채웁니다.
  */
 export const brand = {
-  /** 서비스 표시 이름 (가칭) */
-  name: "Gathering",
+  /** 서비스 표시 이름 (상표·도메인 확인 전이라 가칭 표기 유지) */
+  name: "ROUNDI",
   /** 가칭 여부 — true면 화면에 "(가칭)" 표기 */
   isPlaceholderName: true,
   /** 코드·저장소 내부 식별자 (사용자에게 보이지 않음) */
   codeName: "gathering",
   /** 메인 영문 카피 */
-  englishTagline: "Make time for what inspires you.",
+  englishTagline: "The personal is the most creative.",
   /** 한 줄 소개 (한글) */
-  tagline: "검증된 전문가에게 소수 정예로 배우고, 어제보다 나은 나를 만나는 시간.",
+  /** 핵심 철학 */
+  tagline: "개인적인 것이 가장 창의적이다.",
   description:
-    "검증된 전문가와 크리에이터가 여는 소수 정예 오프라인 프로그램과 경험",
+    "서로 다른 사람들이 둥글게 둘러앉아, 각자의 생각과 작업과 전문성을 나누는 곳",
   locale: "ko-KR",
   /** 사업자 정보 — 출시 전 확정 (설계안 9-2) */
   company: {

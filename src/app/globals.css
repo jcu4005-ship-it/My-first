@@ -3,8 +3,8 @@
 
 /*
  * 디자인 토큰 — 색·글꼴·모서리 값은 여기서만 정의합니다.
- * 방향: "테이블 + 초대장" — 자작나무 테이블 바탕, 흰 초대장 카드, 딥 그린 테이블(빈자리 보기), 절취선, 호스트 서명, 밀랍 도장.
- * 팔레트: Deep Green #2E4A3B · Ink #1C3428 · Birch #EADBC1(+나무결 public/textures/birch.svg) · Card #FFFFFF · Sage #6E9479 · Seal(도장) #A2412F
+ * 방향: "둥글게 둘러앉은 의자" — 세이지 바닥에 왼쪽 위 창가 빛, 둥근 원목 테이블과 의자(빈자리 보기), 흰 카드, 종이색 시트, 미세한 사진 입자.
+ * 팔레트: Ink #23332A · Deep Green #2E4A3B · Sage floor #B8C4A7 · Paper #F4F6EF · Card #FFFFFF · Wood #B97E52 · Seal #A2412F
  * 대비: 작은 본문 글자는 ink·muted-foreground(#56635A)·forest·seal만 사용 (종이 바탕에서 4.5:1 이상).
  *       sage·mint는 큰 글자·장식·점선 의자·어두운 바탕 위 라벨에만 사용. 도장색은 "마지막 자리·심사 통과·분야 표시"에만 조금.
  * 시스템 다크 모드에 따라 색을 뒤집지 않습니다 (브랜드 화면 고정).
@@ -13,9 +13,9 @@
   --forest: #2e4a3b;
   --forest-deep: #1f3329;
   --forest-soft: #3d5c4b;
-  --ink: #1c3428;
-  --cream: #eadbc1;
-  --linen: #e9e2d4;
+  --ink: #23332a;
+  --cream: #c3cdb4;
+  --linen: #dce3d3;
   --sage: #6e9479;
   --mint: #b9d3bf;
   --clay: #a2412f;               /* 도장색: 마지막 자리·심사 통과·분야 표시 */
@@ -25,8 +25,8 @@
   --foreground: var(--ink);
   --card: #ffffff;
   --muted: var(--linen);
-  --muted-foreground: #56635a;
-  --border: #e4dccb;
+  --muted-foreground: #44513f;
+  --border: #d3dacb;
   --primary: var(--forest);
   --primary-foreground: #ffffff;
   --secondary: var(--linen);
@@ -84,9 +84,15 @@
     @apply bg-background text-foreground;
     font-family: var(--font-sans);
     word-break: keep-all; /* 한글 단어 단위 줄바꿈 */
-    /* 자작나무 결 (코드로 그린 작은 그림, 세로로 반복) */
-    background-image: url("/textures/birch.svg");
-    background-size: 390px 1200px;
+    /* 세이지 바닥 + 왼쪽 위 창가 빛 + 비스듬한 빛줄기 + 미세한 사진 입자 (모두 코드로 그림) */
+    background-color: #b3c0a3;
+    background-image:
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.1 0 0 0 0 0.15 0 0 0 0 0.1 0 0 0 .09 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"),
+      linear-gradient(115deg, rgb(255 255 240 / 0) 14%, rgb(255 255 236 / 0.2) 19%, rgb(255 255 240 / 0) 25%, rgb(255 255 240 / 0) 31%, rgb(255 255 236 / 0.14) 35%, rgb(255 255 240 / 0) 41%),
+      radial-gradient(90% 900px at 10% 0%, rgb(244 247 234 / 0.85) 0%, rgb(244 247 234 / 0) 65%),
+      linear-gradient(180deg, #c6d0b7 0px, #b3c0a3 1400px);
+    background-repeat: repeat, no-repeat, no-repeat, no-repeat;
+    background-size: 160px 160px, 100% 1400px, 100% 1400px, 100% 1400px;
   }
   /* 휴대폰 아래 탭 막대가 있으면 마지막 내용이 가려지지 않도록 */
   @media (width < 48rem) {
@@ -112,16 +118,15 @@
   .pill {
     @apply inline-flex items-center rounded-full px-3 py-1 text-xs font-medium;
   }
-  /* 자작나무 바탕 (body와 같은 결) — 겹치는 시트 등에 */
-  .birch {
-    background-color: var(--cream);
-    background-image: url("/textures/birch.svg");
-    background-size: 390px 1200px;
+  /* 종이색 시트 (세이지 바닥 위로 올라오는 본문) */
+  .paper {
+    --notch: #f4f6ef;
+    background-color: #f4f6ef;
   }
   /* 초대장 티켓: 카드 + 절취선(.perf, 양 끝 반원 홈) */
   .ticket {
     @apply relative rounded-[18px] bg-card;
-    box-shadow: 0 2px 0 rgb(80 55 25 / 0.08), 0 14px 24px -14px rgb(80 55 25 / 0.4);
+    box-shadow: 0 2px 0 rgb(35 51 42 / 0.06), 0 14px 26px -16px rgb(35 51 42 / 0.5);
   }
   .perf {
     @apply relative mx-3 border-t-[1.5px] border-dashed border-[#cfc6b5];
@@ -129,7 +134,8 @@
   .perf::before,
   .perf::after {
     content: "";
-    @apply absolute -top-[9px] size-4 rounded-full bg-background;
+    @apply absolute -top-[9px] size-4 rounded-full;
+    background: var(--notch, var(--background));
   }
   .perf::before { left: -21px; }
   .perf::after { right: -21px; }

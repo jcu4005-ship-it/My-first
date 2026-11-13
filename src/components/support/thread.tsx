@@ -16,7 +16,7 @@ export function SupportThread({ messages, viewer }: { messages: SupportMessage[]
             <p
               className={cn(
                 "max-w-[85%] rounded-2xl px-4 py-3 text-sm leading-relaxed whitespace-pre-line",
-                m.from_staff ? "bg-forest text-white" : "bg-card shadow-[0_8px_18px_-14px_rgb(80_55_25/0.5)]",
+                m.from_staff ? "bg-forest text-white" : "bg-card shadow-[0_8px_18px_-14px_rgb(35_51_42/0.5)]",
               )}
             >
               {m.body}

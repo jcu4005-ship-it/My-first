@@ -7,8 +7,7 @@ import type { MeetupCardData } from "@/lib/meetups/queries";
 import { SampleBadge, seatsLeft } from "./badges";
 
 /**
- * 프로그램 카드 = 초대장 티켓
- * 위: 날짜 + 테이블(빈자리) / 절취선 / 아래: 분야·동네, 제목, 호스트 서명, 참가비
+ * 프로그램 카드: 빛이 드는 세이지 바닥 위 의자 원(남은 자리) → 날짜·동네 → 제목 → 호스트 · 참가비
  */
 export function MeetupCard({ meetup, categoryName }: { meetup: MeetupCardData; categoryName: string }) {
   const s = meetup.nextSession;
@@ -19,32 +18,28 @@ export function MeetupCard({ meetup, categoryName }: { meetup: MeetupCardData; c
   return (
     <Link
       href={`/meetups/${meetup.id}`}
-      className="ticket group flex h-full flex-col transition-transform hover:-translate-y-0.5"
+      className="group relative flex h-full flex-col rounded-[20px] bg-card p-2.5 shadow-[0_12px_24px_-18px_rgb(35_51_42/0.55)] transition-transform hover:-translate-y-0.5 sm:p-3"
       data-testid="meetup-card"
     >
       {!closed && left === 1 && <Seal className="absolute -top-2 -right-1.5 z-10 size-10 text-[9.5px]">마지막<br />1석</Seal>}
-      <div className="flex items-center justify-between gap-2 px-3 pt-3">
-        <span className="font-display text-[15px] font-bold">
-          {d.md}
-          <span className="ml-1 font-sans text-[10.5px] font-semibold text-muted-foreground">
-            {d.wd} {d.time}
-          </span>
-        </span>
-        {meetup.is_sample && <SampleBadge />}
+      <div className="relative rounded-[14px] bg-[radial-gradient(90%_70%_at_15%_10%,#e6ecdd_0%,#c4cfb5_60%,#a9b898_100%)] p-[6%]">
+        <SeatTable capacity={s.capacity} taken={s.reserved_count} closed={closed} size="sm" />
+        {meetup.is_sample && <SampleBadge className="absolute top-2 right-2" />}
       </div>
-      <SeatTable capacity={s.capacity} taken={s.reserved_count} closed={closed} size="sm" className="mx-4 mt-1 mb-3" />
-      <div className="perf" />
-      <div className="flex flex-1 flex-col p-3">
-        <span className="truncate text-[11px] font-semibold text-clay">
-          {categoryName} · {s.area}
-        </span>
-        <h3 className="mt-0.5 line-clamp-2 text-sm leading-snug font-bold break-keep group-hover:underline group-hover:underline-offset-4">
+      <div className="flex flex-1 flex-col px-1 pt-2.5 pb-0.5">
+        <p className="truncate text-[11px] tracking-[0.04em] text-muted-foreground">
+          {d.md} {d.wdEn} · {s.area}
+          <span className="sr-only"> · {categoryName}</span>
+        </p>
+        <h3 className="mt-1 line-clamp-2 text-sm leading-snug font-bold break-keep group-hover:underline group-hover:underline-offset-4">
           {meetup.title}
         </h3>
-        {meetup.host && <p className="sign mt-1 truncate text-xs">— {meetup.host.display_name} 드림</p>}
-        <p className="mt-auto flex items-baseline justify-between gap-2 pt-2 text-[13.5px] font-extrabold">
-          {formatPrice(meetup.price)}
-          {more > 0 && <span className="text-[10.5px] font-medium text-muted-foreground">외 {more}회</span>}
+        <p className="mt-auto flex items-baseline justify-between gap-2 pt-2 text-xs">
+          <span className="truncate text-muted-foreground">
+            {meetup.host?.display_name}
+            {more > 0 && ` · 외 ${more}회`}
+          </span>
+          <b className="shrink-0 text-[13px]">{formatPrice(meetup.price)}</b>
         </p>
       </div>
     </Link>

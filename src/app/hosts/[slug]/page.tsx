@@ -65,7 +65,7 @@ export default async function HostPage({ params }: PageProps<"/hosts/[slug]">) {
   ].filter(Boolean) as { key: string; label: string; value: string; pre: boolean }[];
 
   const canFollow = member?.id !== host.user_id;
-  const sheet = "rounded-[20px] bg-card shadow-[0_2px_0_rgb(80_55_25/0.08),0_14px_24px_-14px_rgb(80_55_25/0.4)]";
+  const sheet = "rounded-[20px] bg-card shadow-[0_2px_0_rgb(35_51_42/0.08),0_14px_24px_-14px_rgb(35_51_42/0.4)]";
 
   return (
     <>

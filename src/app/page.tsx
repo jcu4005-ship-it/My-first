@@ -3,8 +3,7 @@ import { ArrowRight, Check } from "lucide-react";
 import { Suspense } from "react";
 
 import { brand } from "@/config/brand";
-import { Seal } from "@/components/brand/seat-table";
-import { seatsLeft } from "@/components/meetups/badges";
+import { Seal, SeatTable } from "@/components/brand/seat-table";
 import { ContentCard } from "@/components/contents/content-card";
 import { HostCard } from "@/components/hosts/host-card";
 import { MeetupCard } from "@/components/meetups/meetup-card";
@@ -17,25 +16,34 @@ import { listCategories, listFeaturedHosts, listUpcomingMeetups, type MeetupCard
 
 /* ---------- 공통 조각 ---------- */
 
-function SectionHeading({ title, id, href, linkLabel }: { title: string; id: string; href?: string; linkLabel?: string }) {
+/** 편집 스타일 제목: 세리프 제목 + 영문 작은 라벨 + 가는 선 */
+function Label({ title, en, id, href }: { title: string; en: string; id: string; href?: string }) {
   return (
-    <div className="mb-5 flex items-end justify-between gap-4 sm:mb-7">
-      <h2 id={id} className="font-display text-2xl font-bold break-keep text-forest sm:text-3xl">
-        {title}
-      </h2>
-      {href && (
-        <Link href={href} className="flex shrink-0 items-center gap-1 text-sm font-medium text-muted-foreground hover:text-foreground">
-          {linkLabel ?? "전체 보기"}
-          <ArrowRight aria-hidden className="size-4" strokeWidth={1.6} />
+    <div className="mx-4 mb-4 flex items-end justify-between gap-4 border-b border-[#d9ded2] pt-8 pb-2.5 sm:mx-6">
+      <h2 id={id} className="font-display text-[21px] font-bold break-keep sm:text-2xl">{title}</h2>
+      {href ? (
+        <Link href={href} className="flex shrink-0 items-center gap-1 text-[11px] tracking-[0.2em] text-muted-foreground hover:text-foreground">
+          {en}
+          <ArrowRight aria-hidden className="size-3.5" strokeWidth={1.6} />
+          <span className="sr-only"> 전체 보기</span>
         </Link>
+      ) : (
+        <span className="text-[10.5px] tracking-[0.24em] text-muted-foreground">{en}</span>
       )}
     </div>
   );
 }
 
+/** 세 테이블 한 줄 소개 */
+const PILLAR_LINE: Record<string, string> = {
+  knowledge: "자기만의 질문을 나눕니다.",
+  creators: "자기만의 작업을 같이 해 봅니다.",
+  experts: "현장에서 쌓은 방법을 나눕니다.",
+};
+
 /** 휴대폰: 옆으로 넘기는 한 줄 (다음 카드가 살짝 보이게), 태블릿·PC: 격자 */
 const rail =
-  "relative -mx-4 flex snap-x snap-mandatory scroll-px-4 gap-4 overflow-x-auto px-4 pb-2 no-scrollbar sm:mx-0 sm:grid sm:overflow-visible sm:px-0 sm:pb-0 sm:snap-none sm:gap-5";
+  "relative flex snap-x snap-mandatory scroll-px-4 gap-4 overflow-x-auto px-4 pb-2 no-scrollbar sm:grid sm:overflow-visible sm:pb-0 sm:snap-none sm:gap-5";
 const railItem = "w-[76vw] max-w-[20rem] shrink-0 snap-start sm:w-auto sm:max-w-none";
 
 /** 인기순: 예약률이 높은 순 (같으면 가까운 일정 순) */
@@ -69,82 +77,57 @@ async function HomeSections() {
     return p ? { ...acc, [p]: (acc[p] ?? 0) + 1 } : acc;
   }, {});
   const { thisWeek, list: picks } = pickThisWeek(meetups);
-  const openSeats = picks.reduce((sum, m) => sum + (m.nextSession.status === "open" ? seatsLeft(m.nextSession) : 0), 0);
   const hasSample = picks.some((m) => m.is_sample);
   const firstClassOf = (hostId: string) => meetups.find((m) => m.host?.user_id === hostId);
 
   return (
     <>
-      {/* 1. 첫 화면: 이번 주 빈자리 수 (실제 데이터) */}
-      <section className="relative mx-auto w-full max-w-6xl px-4 pt-8 sm:px-6 sm:pt-14" aria-labelledby="hero-title">
-        <p className="text-[11.5px] tracking-[0.14em] text-muted-foreground">{thisWeek ? "THIS WEEK'S TABLES" : "UPCOMING TABLES"}</p>
-        <h1 id="hero-title" className="mt-2 font-display text-[1.75rem] leading-[1.32] font-bold break-keep sm:text-5xl sm:leading-tight">
-          {thisWeek ? "이번 주" : "곧"}, 당신을 위한
-          <br />
-          {openSeats > 0 ? (
-            <>
-              자리가 <em className="text-clay not-italic">{openSeats}개</em> 비어 있어요.
-            </>
-          ) : (
-            "테이블을 준비하고 있어요."
-          )}
-        </h1>
-        <p className="mt-3 text-sm leading-relaxed text-muted-foreground sm:text-base">심사를 통과한 호스트가 열 명 남짓의 테이블만 차려요.</p>
-        <div className="mt-3 flex gap-4 text-xs text-muted-foreground" aria-hidden>
-          <span className="flex items-center gap-1.5"><i className="size-[11px] rounded-full bg-forest" />예약된 자리</span>
-          <span className="flex items-center gap-1.5"><i className="size-[11px] rounded-full border-[1.5px] border-dashed border-sage bg-card" />빈자리</span>
-        </div>
-        {/* 분야 */}
-        <nav aria-label="분야로 찾기" className="-mx-4 mt-5 overflow-x-auto px-4 no-scrollbar sm:mx-0 sm:px-0" data-testid="home-pillars">
-          <ul className="flex w-max gap-2">
-            <li>
-              <Link href="/meetups" className="inline-flex h-9 items-center rounded-full bg-foreground px-4 text-sm font-semibold text-white">전체</Link>
+      {/* 2. 세 개의 테이블 */}
+      <section className="mx-auto w-full max-w-4xl" aria-labelledby="tables-title" data-testid="home-pillars">
+        <Label id="tables-title" title="세 개의 테이블" en="THREE TABLES" />
+        <ol>
+          {PILLARS.map((p, i) => (
+            <li key={p.slug} className="border-b border-dashed border-[#d2d9c8] last:border-0">
+              <Link href={`/meetups?pillar=${p.slug}`} className="group grid grid-cols-[3rem_1fr_auto] items-start gap-2 px-5 py-4 sm:px-6" data-testid="pillar-tile">
+                <span className="font-display text-2xl leading-none text-sage">{String(i + 1).padStart(2, "0")}</span>
+                <span>
+                  <span className="block text-[11px] font-bold tracking-[0.26em]">{p.label.toUpperCase()}</span>
+                  <span className="mt-1 block font-display text-[15.5px] leading-snug group-hover:underline group-hover:underline-offset-4">{PILLAR_LINE[p.slug]}</span>
+                  <span className="mt-1 block text-xs text-muted-foreground">{p.ko}{pillarCounts[p.slug] ? ` · ${pillarCounts[p.slug]}개 프로그램` : ""}</span>
+                </span>
+                <ArrowRight aria-hidden className="mt-1 size-4 text-muted-foreground" strokeWidth={1.6} />
+              </Link>
             </li>
-            {PILLARS.map((p) => (
-              <li key={p.slug}>
-                <Link
-                  href={`/meetups?pillar=${p.slug}`}
-                  className="inline-flex h-9 items-center gap-1 rounded-full border border-border bg-card px-4 text-sm hover:border-forest/40"
-                  data-testid="pillar-tile"
-                >
-                  {p.ko}
-                  <span className="sr-only"> ({p.label})</span>
-                  {pillarCounts[p.slug] ? <span className="text-xs text-muted-foreground">{pillarCounts[p.slug]}</span> : null}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </nav>
+          ))}
+        </ol>
       </section>
 
-      {/* 2. 이번 주 테이블 */}
-      <section className="mx-auto mt-6 w-full max-w-6xl px-4 sm:mt-8 sm:px-6" aria-label={thisWeek ? "이번 주 테이블" : "곧 열리는 테이블"} data-testid="home-this-week">
-        {hasSample && (
-          <p className="mb-4 rounded-xl bg-notice px-4 py-3 text-sm text-notice-foreground" data-testid="sample-notice">
-            지금 보이는 프로그램은 서비스 준비 중 보여 드리는 <strong>샘플</strong>입니다. 실제로 신청할 수 없어요.
-          </p>
-        )}
-        {picks.length ? (
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4" data-testid="meetup-grid">
-            {picks.map((m) => (
-              <MeetupCard key={m.id} meetup={m} categoryName={names[m.category_slug] ?? m.category_slug} />
-            ))}
-          </div>
-        ) : (
-          <p className="rounded-2xl border-[1.5px] border-dashed border-[#cfc6b5] py-12 text-center text-muted-foreground">곧 첫 테이블이 차려집니다.</p>
-        )}
-        <div className="mt-4 text-center">
-          <Link href="/meetups" className="inline-flex items-center gap-1 text-sm font-semibold text-forest hover:underline hover:underline-offset-4">
-            모든 테이블 보기 <ArrowRight aria-hidden className="size-4" strokeWidth={1.8} />
-          </Link>
+      {/* 3. 이번 주 자리 */}
+      <section className="mx-auto mt-6 w-full max-w-6xl" aria-labelledby="picks-title" data-testid="home-this-week">
+        <Label id="picks-title" title={thisWeek ? "이번 주 자리" : "곧 열리는 자리"} en={thisWeek ? "THIS WEEK" : "COMING UP"} href="/meetups" />
+        <div className="px-4 sm:px-6">
+          {hasSample && (
+            <p className="mb-4 rounded-xl bg-notice px-4 py-3 text-sm text-notice-foreground" data-testid="sample-notice">
+              지금 보이는 프로그램은 서비스 준비 중 보여 드리는 <strong>샘플</strong>입니다. 실제로 신청할 수 없어요.
+            </p>
+          )}
+          {picks.length ? (
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4" data-testid="meetup-grid">
+              {picks.map((m) => (
+                <MeetupCard key={m.id} meetup={m} categoryName={names[m.category_slug] ?? m.category_slug} />
+              ))}
+            </div>
+          ) : (
+            <p className="rounded-2xl border border-dashed border-border py-12 text-center text-muted-foreground">곧 첫 자리가 열립니다.</p>
+          )}
         </div>
       </section>
 
       {/* 4. 호스트 */}
       {hosts.length > 0 && (
-        <section className="mx-auto mt-12 w-full max-w-6xl px-4 sm:mt-16 sm:px-6" aria-labelledby="hosts-title">
-          <SectionHeading title="프로그램을 여는 사람들" id="hosts-title" href="/hosts" />
-          <ul className={`${rail} sm:grid-cols-2 lg:grid-cols-4`}>
+        <section className="mx-auto mt-6 w-full max-w-6xl" aria-labelledby="hosts-title">
+          <Label title="프로그램을 여는 사람들" id="hosts-title" en="PEOPLE" href="/hosts" />
+          <ul className={`${rail} px-4 sm:grid-cols-2 sm:px-6 lg:grid-cols-4`}>
             {hosts.map((h) => (
               <li key={h.user_id} className={railItem}>
                 <HostCard host={h} representative={firstClassOf(h.user_id)} />
@@ -156,9 +139,9 @@ async function HomeSections() {
 
       {/* 5. 저널 */}
       {contents.length > 0 && (
-        <section className="mx-auto mt-12 w-full max-w-6xl px-4 sm:mt-16 sm:px-6" aria-labelledby="journal-title" data-testid="home-journal">
-          <SectionHeading title="호스트의 이야기" id="journal-title" href="/journal" />
-          <ul className={`${rail} sm:grid-cols-3`}>
+        <section className="mx-auto mt-6 w-full max-w-6xl" aria-labelledby="journal-title" data-testid="home-journal">
+          <Label title="호스트의 이야기" id="journal-title" en="JOURNAL" href="/journal" />
+          <ul className={`${rail} px-4 sm:grid-cols-3 sm:px-6`}>
             {contents.map((c) => (
               <li key={c.id} className={railItem}>
                 <ContentCard content={c} />
@@ -173,8 +156,8 @@ async function HomeSections() {
 
 function SectionsSkeleton() {
   return (
-    <div className="mx-auto w-full max-w-6xl px-4 pt-8 sm:px-6 sm:pt-14">
-      <div className="h-24 w-72 max-w-full animate-pulse rounded-xl bg-muted" />
+    <div className="mx-auto w-full max-w-6xl px-4 pt-8 sm:px-6">
+      <div className="h-40 w-full animate-pulse rounded-xl bg-muted" />
       <div className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-4">
         {Array.from({ length: 4 }).map((_, i) => (
           <div key={i} className="aspect-[3/4] animate-pulse rounded-[18px] bg-muted" />
@@ -195,9 +178,9 @@ const CURATION = [
 
 function TrustAndJoin() {
   return (
-    <section className="mx-auto mt-12 w-full max-w-6xl px-4 sm:mt-16 sm:px-6" aria-labelledby="curation-title">
+    <section className="mx-auto mt-10 w-full max-w-6xl px-4 sm:px-6" aria-labelledby="curation-title">
       <div className="grid gap-4 lg:grid-cols-[1.4fr_1fr]">
-        <div className="relative rounded-[18px] border-[1.5px] border-dashed border-[#cfc6b5] p-5 sm:p-7" data-testid="home-curation">
+        <div className="relative rounded-[18px] border-[1.5px] border-dashed border-[#cfd6c4] p-5 sm:p-7" data-testid="home-curation">
           <Seal className="absolute -top-3 right-4">심사<br />통과</Seal>
           <h2 id="curation-title" className="font-display text-xl font-bold sm:text-2xl">아무나 차릴 수 없는 테이블</h2>
           <p className="mt-2 flex flex-wrap items-center gap-1.5 text-[13px] font-semibold">
@@ -245,15 +228,40 @@ function TrustAndJoin() {
   );
 }
 
+/* ---------- 1. 첫 화면: 둥글게 놓인 빈 의자와 원목 테이블 ---------- */
+
+function Hero() {
+  return (
+    <section className="mx-auto flex w-full max-w-xl flex-col items-center px-4 pt-2 pb-12 text-center sm:pt-6" aria-labelledby="hero-title">
+      <SeatTable
+        capacity={8}
+        taken={0}
+        tableR={24}
+        chairR={39}
+        chairSize={10.5}
+        className="w-[min(94vw,440px)]"
+        center={<span className="pl-[0.2em] font-display text-[clamp(20px,6.4vw,30px)] font-bold tracking-[0.2em] whitespace-nowrap [text-shadow:0_1px_0_rgb(255_240_220/0.6),0_-1px_0_rgb(70_40_15/0.25)]">{brand.name}</span>}
+      />
+      <h1 id="hero-title" className="mt-1 font-display text-lg sm:text-xl">{brand.tagline}</h1>
+      <Button asChild size="lg" className="mt-5 bg-[linear-gradient(180deg,#2e4436,#1e2d24)] shadow-[0_10px_20px_-10px_rgb(20_30_22/0.7),inset_0_1px_0_rgb(255_255_255/0.12)]">
+        <Link href="/meetups">이번 주 자리 보기</Link>
+      </Button>
+    </section>
+  );
+}
+
 export default function Home() {
   return (
     <>
       <SiteHeader />
       <main className="flex-1">
-        <Suspense fallback={<SectionsSkeleton />}>
-          <HomeSections />
-        </Suspense>
-        <TrustAndJoin />
+        <Hero />
+        <div className="paper rounded-t-[28px] pb-14 shadow-[0_-18px_40px_-30px_rgb(35_51_42/0.6)]">
+          <Suspense fallback={<SectionsSkeleton />}>
+            <HomeSections />
+          </Suspense>
+          <TrustAndJoin />
+        </div>
       </main>
       <SiteFooter />
     </>

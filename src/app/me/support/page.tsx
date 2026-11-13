@@ -32,7 +32,7 @@ export default async function MySupportPage() {
           <ul className="mt-6 flex flex-col gap-2.5">
             {tickets.map((t) => (
               <li key={t.id}>
-                <Link href={`/me/support/${t.id}`} className="block rounded-2xl bg-card p-4 shadow-[0_2px_0_rgb(80_55_25/0.08),0_14px_24px_-14px_rgb(80_55_25/0.4)] hover:-translate-y-0.5 transition-transform" data-testid="ticket-row" data-status={t.status}>
+                <Link href={`/me/support/${t.id}`} className="block rounded-2xl bg-card p-4 shadow-[0_2px_0_rgb(35_51_42/0.08),0_14px_24px_-14px_rgb(35_51_42/0.4)] hover:-translate-y-0.5 transition-transform" data-testid="ticket-row" data-status={t.status}>
                   <span className="flex items-center gap-2">
                     <StatusPill tone={SUPPORT_STATUS_TONE[t.status]}>{SUPPORT_STATUS_LABEL[t.status]}</StatusPill>
                     <span className="text-xs text-muted-foreground">{SUPPORT_CATEGORY_LABEL[t.category]}</span>
