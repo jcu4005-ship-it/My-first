@@ -369,3 +369,39 @@ export async function setInviteActiveAction(_prev: FormState, formData: FormData
   revalidatePath("/admin/launch");
   return { status: "success", message: parsed.data.active === "true" ? "코드를 다시 켰어요." : "코드를 껐어요." };
 }
+
+/* ---------- 고객센터: 문의 답변 · 상태 ---------- */
+
+const replySchema = z.object({
+  ticketId: z.uuid(),
+  body: z.string().trim().min(5, "답변을 5자 이상 적어 주세요.").max(2000, "답변은 2000자까지예요."),
+  close: z.enum(["on", ""]).optional().default(""),
+});
+
+/** 문의 답변 — 회원 알림·감사 기록은 DB 함수가 남김 */
+export async function replySupportAction(_prev: FormState, formData: FormData): Promise<FormState> {
+  if (!(await checkAdminForAction())) return FORBIDDEN;
+  const raw = { ticketId: formValue(formData, "ticketId"), body: formValue(formData, "body"), close: formValue(formData, "close") };
+  const parsed = replySchema.safeParse(raw);
+  if (!parsed.success) return { status: "error", fieldErrors: fieldErrors(parsed.error), values: raw };
+  const supabase = await createSupabaseServerClient();
+  const { error } = await supabase.rpc("admin_reply_support", { p_ticket_id: parsed.data.ticketId, p_body: parsed.data.body, p_close: parsed.data.close === "on" });
+  if (error) return { status: "error", message: dbMessage(error), values: raw };
+  revalidatePath("/admin/support");
+  revalidatePath(`/admin/support/${parsed.data.ticketId}`);
+  return { status: "success", message: "답변을 보냈어요. 회원에게 알림이 갔어요." };
+}
+
+const supportStatusSchema = z.object({ ticketId: z.uuid(), status: z.enum(["open", "answered", "closed"]) });
+
+export async function setSupportStatusAction(_prev: FormState, formData: FormData): Promise<FormState> {
+  if (!(await checkAdminForAction())) return FORBIDDEN;
+  const parsed = supportStatusSchema.safeParse({ ticketId: formValue(formData, "ticketId"), status: formValue(formData, "status") });
+  if (!parsed.success) return { status: "error", message: "잘못된 요청입니다." };
+  const supabase = await createSupabaseServerClient();
+  const { error } = await supabase.rpc("admin_set_support_status", { p_ticket_id: parsed.data.ticketId, p_status: parsed.data.status });
+  if (error) return { status: "error", message: dbMessage(error) };
+  revalidatePath("/admin/support");
+  revalidatePath(`/admin/support/${parsed.data.ticketId}`);
+  return { status: "success", message: "상태를 바꿨어요." };
+}

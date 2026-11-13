@@ -10,7 +10,7 @@ import { createServerClient } from "@supabase/ssr";
  *    - 없거나 비공개인 프로그램·호스트, 내 것이 아닌 관리 화면 → 404
  *    화면(guards.ts)과 DB(RLS·함수)의 권한 검사는 그대로 유지됩니다(다중 방어).
  */
-const PROTECTED_PREFIXES = ["/me", "/host", "/admin", "/reset-password", "/checkout", "/become-a-host/apply"]; // /hosts(공개 프로필)는 제외
+const PROTECTED_PREFIXES = ["/me", "/host", "/admin", "/reset-password", "/checkout", "/become-a-host/apply", "/help/contact"]; // /hosts(공개 프로필)는 제외
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 function under(pathname: string, prefix: string) {
@@ -85,6 +85,13 @@ export async function proxy(request: NextRequest) {
     return carry(NextResponse.redirect(loginUrl));
   }
 
+  // ---- 내 문의: 본인 문의만 (없거나 남의 문의면 404) ----
+  if (seg[0] === "me" && seg[1] === "support" && seg.length === 3) {
+    if (!UUID.test(seg[2])) return missing();
+    const { data: t } = await supabase.from("support_tickets").select("id").eq("id", seg[2]).eq("user_id", claims.sub).maybeSingle();
+    return t ? response : missing();
+  }
+
   const needsRole = under(pathname, "/admin") || under(pathname, "/host/meetups") || under(pathname, "/host/contents");
   if (!needsRole && !(seg[0] === "checkout" && seg.length === 2)) return response;
 
@@ -103,6 +110,12 @@ export async function proxy(request: NextRequest) {
       mfa.pathname = "/admin/mfa";
       mfa.search = `?next=${encodeURIComponent(pathname + search)}`;
       return carry(NextResponse.redirect(mfa));
+    }
+    // 문의 답변 화면: 없는 문의면 404 (RLS: 관리자 2단계 인증만 조회)
+    if (seg[1] === "support" && seg.length === 3) {
+      if (!UUID.test(seg[2])) return missing();
+      const { data: t } = await supabase.from("support_tickets").select("id").eq("id", seg[2]).maybeSingle();
+      if (!t) return missing();
     }
     return response;
   }

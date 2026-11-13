@@ -15,24 +15,26 @@ export const instant = false;
 export default async function Page() {
   const admin = await requireAdmin("/admin");
   const supabase = await createSupabaseServerClient();
-  const [hosts, meetups, published, stale] = await Promise.all([
+  const [hosts, meetups, published, stale, support] = await Promise.all([
     // 호스트 지원은 지원서 표(host_applications)로 옮겨졌어요: 제출·심사 중인 지원서
     supabase.from("host_applications").select("id", { count: "exact", head: true }).in("status", ["submitted", "reviewing"]),
     supabase.from("meetups").select("id", { count: "exact", head: true }).eq("status", "pending_review"),
     supabase.from("meetups").select("id", { count: "exact", head: true }).eq("status", "published").eq("is_sample", false),
     supabase.rpc("admin_count_stale_pii"),
+    supabase.from("support_tickets").select("id", { count: "exact", head: true }).eq("status", "open"),
   ]);
   const staleCount = typeof stale.data === "number" ? stale.data : 0;
   const cards = [
     { href: "/admin/meetups", label: "검수 대기 프로그램", value: meetups.count ?? 0 },
     { href: "/admin/hosts", label: "심사 대기 호스트", value: hosts.count ?? 0 },
     { href: "/admin/meetups?status=published", label: "공개 중인 실제 프로그램", value: published.count ?? 0 },
+    { href: "/admin/support", label: "답변 대기 문의", value: support.count ?? 0 },
   ];
   return (
     <div data-testid="admin-dashboard">
       <h1 className="font-display text-3xl font-bold">관리자 대시보드</h1>
       <p className="mt-3 text-muted-foreground">{admin.nickname}님 · 2단계 인증 완료</p>
-      <ul className="mt-8 grid gap-3 sm:grid-cols-3">
+      <ul className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {cards.map((c) => (
           <li key={c.href}>
             <Link href={c.href} className="block rounded-xl border p-5 hover:border-foreground">
