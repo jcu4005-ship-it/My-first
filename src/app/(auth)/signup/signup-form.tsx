@@ -28,12 +28,25 @@ function Check({ name, label, required, error }: { name: string; label: string; 
   );
 }
 
-export function SignUpForm() {
+export function SignUpForm({ inviteOnly = false }: { inviteOnly?: boolean }) {
   const [state, action, pending] = useActionState(signUpAction, initialFormState);
   const e = state.fieldErrors ?? {};
   return (
     <form action={action} className="flex flex-col gap-5" noValidate>
       <FormMessage message={state.message} />
+      {inviteOnly && (
+        <div className="rounded-2xl bg-forest/5 p-4" data-testid="invite-field">
+          <Field
+            name="inviteCode"
+            label="초대 코드"
+            autoComplete="off"
+            required
+            defaultValue={state.values?.inviteCode}
+            error={e.inviteCode}
+            hint="지금은 초대받은 분만 가입할 수 있는 비공개 베타예요. 받은 초대 코드를 입력해 주세요."
+          />
+        </div>
+      )}
       <Field name="email" label="이메일" type="email" autoComplete="email" required defaultValue={state.values?.email} error={e.email} />
       <Field
         name="nickname"

@@ -36,7 +36,7 @@ export function BookingForm({
   maxQuantity: number;
   sessions: BookingSession[];
   /** guest: 비로그인, sample: 샘플, own: 내 프로그램, ok: 신청 가능 */
-  state: "guest" | "sample" | "own" | "ok";
+  state: "guest" | "sample" | "own" | "ok" | "beta_paid";
   /** 호스트가 쿠폰 허용에 동의한 유료 프로그램 */
   acceptCoupons?: boolean;
 }) {
@@ -169,6 +169,11 @@ export function BookingForm({
         <Button asChild size="lg" className="w-full">
           <Link href={`/login?next=/meetups/${meetupId}`}>로그인하고 초대 수락하기</Link>
         </Button>
+      ) : viewerState === "beta_paid" ? (
+        <div className="flex flex-col gap-2" data-testid="beta-paid-notice">
+          <Button size="lg" className="w-full" disabled>비공개 베타 기간에는 무료 프로그램만 신청할 수 있어요</Button>
+          <p className="text-center text-xs text-muted-foreground">결제 기능은 정식 오픈 때 열려요.</p>
+        </div>
       ) : viewerState === "sample" ? (
         <Button size="lg" className="w-full" disabled>샘플 프로그램은 신청할 수 없어요</Button>
       ) : viewerState === "own" ? (

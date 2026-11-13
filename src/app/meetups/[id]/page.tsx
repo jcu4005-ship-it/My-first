@@ -18,6 +18,7 @@ import { myConfirmedSessionIds } from "@/lib/bookings/queries";
 import { durationLabel, formatDate, formatPrice, formatTime, ticketDate } from "@/lib/format";
 import { getFollowState } from "@/lib/hosting/follows";
 import { getMeetup, listCategories } from "@/lib/meetups/queries";
+import { getAppSettings } from "@/lib/settings/queries";
 import { CLASS_LEVEL_LABEL } from "@/lib/validation/meetup";
 
 import { BookingForm } from "./booking-form";
@@ -59,13 +60,15 @@ const lines = (text: string) => text.split("\n").map((line) => line.trim()).filt
 
 export default async function MeetupDetailPage({ params }: PageProps<"/meetups/[id]">) {
   const { id } = await params;
-  const [meetup, categories, member] = await Promise.all([getMeetup(id), listCategories(), getCurrentMember()]);
+  const [meetup, categories, member, settings] = await Promise.all([getMeetup(id), listCategories(), getCurrentMember(), getAppSettings()]);
   if (!meetup) notFound();
   const [mine, follow] = await Promise.all([
     member ? myConfirmedSessionIds(member.id, meetup.upcomingSessions.map((s) => s.id)) : Promise.resolve(new Set<string>()),
     meetup.host ? getFollowState(meetup.host.user_id, member?.id ?? null) : Promise.resolve(null),
   ]);
-  const viewerState = meetup.is_sample ? "sample" : !member ? "guest" : meetup.host?.user_id === member.id ? "own" : "ok";
+  // 비공개 베타: 유료 프로그램 신청 막음 (DB도 한 번 더 막음)
+  const betaPaid = meetup.price > 0 && !settings.paid_bookings_enabled;
+  const viewerState = meetup.is_sample ? "sample" : betaPaid ? "beta_paid" : !member ? "guest" : meetup.host?.user_id === member.id ? "own" : "ok";
   const bookingSessions = meetup.upcomingSessions.map((s) => ({
     id: s.id,
     starts_at: s.starts_at,

@@ -41,6 +41,14 @@ export const signUpSchema = z
     agreePrivacy: checkbox,
     confirmAge14: checkbox,
     agreeMarketing: checkbox,
+    /** 비공개 베타 초대 코드 (초대제일 때만 필요, 검사는 서버·DB) */
+    inviteCode: z
+      .string()
+      .trim()
+      .max(20, "초대 코드를 다시 확인해 주세요.")
+      .transform((v) => v.toUpperCase())
+      .optional()
+      .default(""),
   })
   .superRefine((v, ctx) => {
     if (v.password !== v.passwordConfirm) {

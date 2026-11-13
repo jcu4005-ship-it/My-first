@@ -20,16 +20,16 @@ select results_eq(
 select results_eq(
   $$ select table_name::text collate "C" as t, privilege_type::text collate "C" as p from information_schema.column_privileges
      where grantee = 'anon' and table_schema = 'public' group by 1,2 order by 1,2 $$,
-  $$ values ('categories' collate "C",'SELECT' collate "C"), ('contents','SELECT'), ('host_profiles','SELECT'), ('meetup_sessions','SELECT'),
+  $$ values ('app_settings' collate "C",'SELECT' collate "C"), ('categories','SELECT'), ('contents','SELECT'), ('host_profiles','SELECT'), ('meetup_sessions','SELECT'),
             ('meetups','SELECT'), ('profiles','SELECT') $$,
-  'anon 열 권한은 공개 정보(카테고리·콘텐츠·호스트·모임·회차·프로필) 조회뿐이다'
+  'anon 열 권한은 공개 정보(서비스 설정·카테고리·콘텐츠·호스트·모임·회차·프로필) 조회뿐이다'
 );
 
 -- 로그인 회원(authenticated) 테이블 단위 권한: 조회만, 추가·수정·삭제 없음
 select results_eq(
   $$ select table_name::text collate "C" as t, privilege_type::text collate "C" as p from information_schema.role_table_grants
      where grantee = 'authenticated' and table_schema = 'public' order by 1,2 $$,
-  $$ values ('audit_logs' collate "C",'SELECT' collate "C"), ('categories','SELECT'), ('contents','SELECT'), ('coupons','SELECT'), ('host_follows','SELECT'), ('legal_consents','SELECT'), ('payment_events','SELECT'), ('user_roles','SELECT') $$,
+  $$ values ('audit_logs' collate "C",'SELECT' collate "C"), ('categories','SELECT'), ('contents','SELECT'), ('coupons','SELECT'), ('host_follows','SELECT'), ('invite_codes','SELECT'), ('legal_consents','SELECT'), ('payment_events','SELECT'), ('user_roles','SELECT') $$,
   'authenticated 테이블 단위 권한은 조회뿐이다 (RLS로 범위 제한)'
 );
 select results_eq(

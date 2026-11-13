@@ -303,3 +303,69 @@ export async function purgeStalePiiAction(): Promise<FormState> {
   revalidatePath("/admin");
   return { status: "success", message: `${typeof data === "number" ? data : 0}건의 개인정보를 정리했어요.` };
 }
+
+/* ---------- 비공개 베타: 서비스 설정 · 초대 코드 ---------- */
+
+const settingsSchema = z.object({
+  inviteOnly: z.enum(["true", "false"]),
+  paidBookings: z.enum(["true", "false"]),
+  reason: z.string().trim().min(5, "변경 사유를 5자 이상 입력해 주세요.").max(200),
+});
+
+/** 초대제·유료 신청 허용 변경 — 사유 필수, 감사 기록은 DB 함수가 남김 */
+export async function updateAppSettingsAction(_prev: FormState, formData: FormData): Promise<FormState> {
+  if (!(await checkAdminForAction())) return FORBIDDEN;
+  const raw = { inviteOnly: formValue(formData, "inviteOnly"), paidBookings: formValue(formData, "paidBookings"), reason: formValue(formData, "reason") };
+  const parsed = settingsSchema.safeParse(raw);
+  if (!parsed.success) return { status: "error", fieldErrors: fieldErrors(parsed.error), values: raw };
+  const supabase = await createSupabaseServerClient();
+  const { error } = await supabase.rpc("admin_set_app_settings", {
+    p_invite_only: parsed.data.inviteOnly === "true",
+    p_paid_bookings: parsed.data.paidBookings === "true",
+    p_reason: parsed.data.reason,
+  });
+  if (error) return { status: "error", message: dbMessage(error), values: raw };
+  revalidatePath("/admin/launch");
+  revalidatePath("/signup");
+  return { status: "success", message: "서비스 설정을 바꿨어요." };
+}
+
+const inviteSchema = z.object({
+  code: z.string().trim().toUpperCase().regex(/^[A-Z0-9][A-Z0-9-]{3,18}[A-Z0-9]$/, "영문 대문자·숫자·하이픈 5~20자로 입력해 주세요."),
+  note: z.string().trim().max(100, "메모는 100자까지예요.").optional().default(""),
+  maxUses: z.coerce.number().int("숫자로 입력해 주세요.").min(1, "1회 이상이어야 해요.").max(1000, "1000회까지 가능해요."),
+  expiresOn: z.string().trim().regex(/^(\d{4}-\d{2}-\d{2})?$/).optional().default(""),
+});
+
+/** 초대 코드 발급 */
+export async function createInviteCodeAction(_prev: FormState, formData: FormData): Promise<FormState> {
+  if (!(await checkAdminForAction())) return FORBIDDEN;
+  const raw = { code: formValue(formData, "code"), note: formValue(formData, "note"), maxUses: formValue(formData, "maxUses"), expiresOn: formValue(formData, "expiresOn") };
+  const parsed = inviteSchema.safeParse(raw);
+  if (!parsed.success) return { status: "error", fieldErrors: fieldErrors(parsed.error), values: raw };
+  const { code, note, maxUses, expiresOn } = parsed.data;
+  const supabase = await createSupabaseServerClient();
+  const { error } = await supabase.rpc("admin_create_invite_code", {
+    p_code: code,
+    p_note: note,
+    p_max_uses: maxUses,
+    // 마지막 사용일의 다음 날 0시(한국 시간)에 만료
+    p_expires_at: expiresOn ? new Date(new Date(`${expiresOn}T00:00:00+09:00`).getTime() + 86400000).toISOString() : null,
+  });
+  if (error) return { status: "error", message: dbMessage(error), values: raw };
+  revalidatePath("/admin/launch");
+  return { status: "success", message: `초대 코드 ${code}를 만들었어요.` };
+}
+
+const inviteActiveSchema = z.object({ inviteId: z.uuid(), active: z.enum(["true", "false"]) });
+
+export async function setInviteActiveAction(_prev: FormState, formData: FormData): Promise<FormState> {
+  if (!(await checkAdminForAction())) return FORBIDDEN;
+  const parsed = inviteActiveSchema.safeParse({ inviteId: formValue(formData, "inviteId"), active: formValue(formData, "active") });
+  if (!parsed.success) return { status: "error", message: "잘못된 요청입니다." };
+  const supabase = await createSupabaseServerClient();
+  const { error } = await supabase.rpc("admin_set_invite_active", { p_id: parsed.data.inviteId, p_active: parsed.data.active === "true" });
+  if (error) return { status: "error", message: dbMessage(error) };
+  revalidatePath("/admin/launch");
+  return { status: "success", message: parsed.data.active === "true" ? "코드를 다시 켰어요." : "코드를 껐어요." };
+}

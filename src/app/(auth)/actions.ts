@@ -6,6 +6,7 @@ import { LEGAL_DOCUMENTS } from "@/config/legal";
 import { formValue, type FormState } from "@/lib/forms";
 import { safeNextPath } from "@/lib/safe-redirect";
 import { requestOrigin } from "@/lib/site-url";
+import { getAppSettings } from "@/lib/settings/queries";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import {
   fieldErrors,
@@ -20,17 +21,26 @@ const GENERIC_ERROR = "요청을 처리하지 못했습니다. 잠시 후 다시
 /** 회원가입 — 역할은 DB가 participant로만 부여합니다(가입 정보로 역할 지정 불가). */
 export async function signUpAction(_prev: FormState, formData: FormData): Promise<FormState> {
   const raw = Object.fromEntries(
-    ["email", "password", "passwordConfirm", "nickname", "agreeTerms", "agreePrivacy", "confirmAge14", "agreeMarketing"].map(
+    ["email", "password", "passwordConfirm", "nickname", "agreeTerms", "agreePrivacy", "confirmAge14", "agreeMarketing", "inviteCode"].map(
       (k) => [k, formValue(formData, k)],
     ),
   );
-  const values = { email: raw.email, nickname: raw.nickname };
+  const values = { email: raw.email, nickname: raw.nickname, inviteCode: raw.inviteCode };
   const parsed = signUpSchema.safeParse(raw);
   if (!parsed.success) {
     return { status: "error", fieldErrors: fieldErrors(parsed.error), values };
   }
   const input = parsed.data;
   const supabase = await createSupabaseServerClient();
+
+  // 비공개 베타: 초대 코드 확인 (최종 검사·사용 처리는 DB 가입 트리거가 한 번 더)
+  const settings = await getAppSettings();
+  if (settings.invite_only) {
+    const { data: inviteOk } = await supabase.rpc("invite_code_valid", { p_code: input.inviteCode });
+    if (!inviteOk) {
+      return { status: "error", fieldErrors: { inviteCode: "사용할 수 없는 초대 코드예요. 받은 코드를 다시 확인해 주세요." }, values };
+    }
+  }
 
   const { data: available, error: availError } = await supabase.rpc("nickname_available", {
     p_nickname: input.nickname,
@@ -49,6 +59,7 @@ export async function signUpAction(_prev: FormState, formData: FormData): Promis
       emailRedirectTo: `${origin}/auth/callback?flow=signup&next=/me`,
       data: {
         nickname: input.nickname,
+        ...(settings.invite_only ? { invite_code: input.inviteCode } : {}),
         consents: {
           terms_version: LEGAL_DOCUMENTS.terms.version,
           privacy_version: LEGAL_DOCUMENTS.privacy.version,
@@ -69,6 +80,10 @@ export async function signUpAction(_prev: FormState, formData: FormData): Promis
     }
     if (error.code === "over_email_send_rate_limit" || error.status === 429) {
       return { status: "error", message: "요청이 많습니다. 잠시 후 다시 시도해 주세요.", values };
+    }
+    // 초대 코드를 확인한 사이 다른 사람이 마지막 사용 횟수를 쓴 경우 등
+    if (settings.invite_only && error.message?.includes("Database error")) {
+      return { status: "error", message: "가입하지 못했어요. 초대 코드와 닉네임을 다시 확인해 주세요.", values };
     }
     // 동시에 같은 닉네임이 가입된 경우 등 DB 규칙 위반
     if (error.message?.includes("Database error")) {
