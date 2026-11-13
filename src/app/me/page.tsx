@@ -3,7 +3,6 @@ import Link from "next/link";
 import { ChevronRight, LayoutDashboard, Mail, ShieldCheck, Sparkles, Ticket } from "lucide-react";
 
 import { signOutAction } from "@/app/(auth)/actions";
-import { BrandMark } from "@/components/brand/seat-table";
 import { Photo } from "@/components/media/photo";
 import { RecentlyViewedList } from "@/components/recently-viewed";
 import { SiteHeader } from "@/components/site-header";
@@ -233,7 +232,6 @@ async function MyPage({ member }: { member: Awaited<ReturnType<typeof requireMem
           <Link href="/me/withdraw" className="hover:text-foreground hover:underline">회원 탈퇴하기</Link>
         </span>
       </div>
-      <p aria-hidden className="flex justify-center opacity-40"><BrandMark /></p>
     </div>
   );
 }

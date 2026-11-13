@@ -3,7 +3,7 @@ import { ArrowRight, Check } from "lucide-react";
 import { Suspense } from "react";
 
 import { brand } from "@/config/brand";
-import { Seal, SeatTable } from "@/components/brand/seat-table";
+import { Seal } from "@/components/brand/seat-table";
 import { ContentCard } from "@/components/contents/content-card";
 import { HostCard } from "@/components/hosts/host-card";
 import { MeetupCard } from "@/components/meetups/meetup-card";
@@ -77,6 +77,7 @@ async function HomeSections() {
     return p ? { ...acc, [p]: (acc[p] ?? 0) + 1 } : acc;
   }, {});
   const { thisWeek, list: picks } = pickThisWeek(meetups);
+  const openSeats = picks.reduce((sum, m) => sum + (m.nextSession.status === "open" ? Math.max(0, m.nextSession.capacity - m.nextSession.reserved_count) : 0), 0);
   const hasSample = picks.some((m) => m.is_sample);
   const firstClassOf = (hostId: string) => meetups.find((m) => m.host?.user_id === hostId);
 
@@ -106,6 +107,11 @@ async function HomeSections() {
       <section className="mx-auto mt-6 w-full max-w-6xl" aria-labelledby="picks-title" data-testid="home-this-week">
         <Label id="picks-title" title={thisWeek ? "이번 주 자리" : "곧 열리는 자리"} en={thisWeek ? "THIS WEEK" : "COMING UP"} href="/meetups" />
         <div className="px-4 sm:px-6">
+          {openSeats > 0 && (
+            <p className="mb-4 text-sm text-muted-foreground" data-testid="open-seats">
+              {thisWeek ? "이번 주" : "곧 열리는 자리"} 남은 자리 <b className="font-display text-lg text-foreground">{openSeats}</b>개
+            </p>
+          )}
           {hasSample && (
             <p className="mb-4 rounded-xl bg-notice px-4 py-3 text-sm text-notice-foreground" data-testid="sample-notice">
               지금 보이는 프로그램은 서비스 준비 중 보여 드리는 <strong>샘플</strong>입니다. 실제로 신청할 수 없어요.
@@ -114,7 +120,7 @@ async function HomeSections() {
           {picks.length ? (
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4" data-testid="meetup-grid">
               {picks.map((m) => (
-                <MeetupCard key={m.id} meetup={m} categoryName={names[m.category_slug] ?? m.category_slug} />
+                <MeetupCard key={m.id} meetup={m} categoryName={names[m.category_slug] ?? m.category_slug} pillar={pillarOf[m.category_slug]} />
               ))}
             </div>
           ) : (
@@ -232,18 +238,13 @@ function TrustAndJoin() {
 
 function Hero() {
   return (
-    <section className="mx-auto flex w-full max-w-xl flex-col items-center px-4 pt-2 pb-12 text-center sm:pt-6" aria-labelledby="hero-title">
-      <SeatTable
-        capacity={8}
-        taken={0}
-        tableR={24}
-        chairR={39}
-        chairSize={10.5}
-        className="w-[min(94vw,440px)]"
-        center={<span className="pl-[0.2em] font-display text-[clamp(20px,6.4vw,30px)] font-bold tracking-[0.2em] whitespace-nowrap [text-shadow:0_1px_0_rgb(255_240_220/0.6),0_-1px_0_rgb(70_40_15/0.25)]">{brand.name}</span>}
-      />
-      <h1 id="hero-title" className="mt-1 font-display text-lg sm:text-xl">{brand.tagline}</h1>
-      <Button asChild size="lg" className="mt-5 bg-[linear-gradient(180deg,#2e4436,#1e2d24)] shadow-[0_10px_20px_-10px_rgb(20_30_22/0.7),inset_0_1px_0_rgb(255_255_255/0.12)]">
+    <section className="mx-auto flex w-full max-w-xl flex-col items-center px-4 pt-14 pb-14 text-center sm:pt-20 sm:pb-20" aria-labelledby="hero-title">
+      <p className="pl-[0.3em] font-display text-[clamp(40px,13vw,64px)] leading-none font-bold tracking-[0.3em] text-[#2b3a30] [text-shadow:0_1px_0_rgb(255_255_245/0.5),6px_10px_18px_rgb(35_51_42/0.18)]">
+        {brand.name}
+      </p>
+      <span aria-hidden className="mt-6 h-px w-12 bg-[#2b3a30]/40" />
+      <h1 id="hero-title" className="mt-6 font-display text-lg sm:text-xl">{brand.tagline}</h1>
+      <Button asChild size="lg" className="mt-7 bg-[linear-gradient(180deg,#2e4436,#1e2d24)] shadow-[0_10px_20px_-10px_rgb(20_30_22/0.7),inset_0_1px_0_rgb(255_255_255/0.12)]">
         <Link href="/meetups">이번 주 자리 보기</Link>
       </Button>
     </section>

@@ -55,6 +55,7 @@ export default async function HostPage({ params }: PageProps<"/hosts/[slug]">) {
   const portfolio = contents.filter((c) => c.type === "portfolio");
   const stories = contents.filter((c) => c.type !== "portfolio");
   const names = Object.fromEntries(categories.map((c) => [c.slug, c.name]));
+  const pillarOf = Object.fromEntries(categories.map((c) => [c.slug, c.pillar]));
   const { soon, later } = splitBySoon(meetups);
   const pillar = pillarInfo(host.primary_pillar);
   const avatar = hostAvatarUrl(host.avatar_path);
@@ -165,13 +166,13 @@ export default async function HostPage({ params }: PageProps<"/hosts/[slug]">) {
               {soon.length > 0 && (
                 <div data-testid="host-programs-soon">
                   {later.length > 0 && <h3 className="mb-2 text-sm font-semibold text-muted-foreground">곧 열려요</h3>}
-                  <MeetupGrid meetups={soon} categoryNames={names} />
+                  <MeetupGrid meetups={soon} categoryNames={names} pillarOf={pillarOf} />
                 </div>
               )}
               {later.length > 0 && (
                 <div data-testid="host-programs-later">
                   {soon.length > 0 && <h3 className="mb-2 text-sm font-semibold text-muted-foreground">예정된 테이블</h3>}
-                  <MeetupGrid meetups={later} categoryNames={names} />
+                  <MeetupGrid meetups={later} categoryNames={names} pillarOf={pillarOf} />
                 </div>
               )}
             </div>

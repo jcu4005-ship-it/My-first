@@ -29,17 +29,18 @@ test("메인: 세 갈래 분류, 이번 주 프로그램, 호스트, 저널, 큐
   await expect(page).toHaveURL(/\/meetups\?pillar=knowledge$/);
 });
 
-test("메인 추천 카드: 둥근 테이블(남은 자리)·참가비가 보이고, 누르면 상세로", async ({ page }) => {
+test("메인 추천 카드: 남은 자리(글자)·참가비가 보이고, 누르면 상세로 (의자 그림은 상세에서만)", async ({ page }) => {
   test.skip(!samples, "샘플 데이터 없음");
   await page.goto("/");
   const card = page.getByTestId("home-this-week").getByTestId("meetup-card").first();
-  await expect(card.getByTestId("seat-table")).toBeVisible(); // 둥근 테이블과 의자 (남은 자리)
-  await expect(card.getByTestId("seat-table")).toHaveAttribute("aria-label", /정원 \d+명/);
+  await expect(card.getByTestId("card-seats")).toContainText(/(\d+자리 남음|마감) · 정원 \d+명/); // 남은 자리는 글자로
+  await expect(card.getByTestId("seat-table")).toHaveCount(0); // 의자 그림은 상세에서만
   await expect(card).toContainText("원");
   const title = (await card.getByRole("heading").textContent())!.trim();
   await card.click();
   await expect(page).toHaveURL(/\/meetups\/[0-9a-f-]{36}$/);
   await expect(page.getByTestId("meetup-title")).toHaveText(title);
+  await expect(page.getByTestId("seat-table").first()).toBeVisible();
 });
 
 test("호스트 안내: 정책·과정·약속·로드맵, 지원하기 연결, 메뉴에서 진입", async ({ page }) => {

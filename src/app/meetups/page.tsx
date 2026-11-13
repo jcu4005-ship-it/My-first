@@ -63,7 +63,7 @@ export default async function MeetupsPage({ searchParams }: PageProps<"/meetups"
             </p>
           )}
           {meetups.length ? (
-            <MeetupGrid meetups={meetups} categoryNames={names} />
+            <MeetupGrid meetups={meetups} categoryNames={names} pillarOf={Object.fromEntries(categories.map((c) => [c.slug, c.pillar]))} />
           ) : (
             <div className="rounded-3xl border border-dashed border-border px-6 py-16 text-center" data-testid="empty-state">
               <p className="font-display text-xl font-bold text-forest">아직 열린 프로그램이 없어요</p>
