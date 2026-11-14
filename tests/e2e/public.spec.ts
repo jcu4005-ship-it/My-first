@@ -86,7 +86,7 @@ test("호스트 목록: 옛 주소 연결, 운영팀 추천, 3대 분류 필터,
   await expect(page.getByTestId("empty-state")).toContainText("찾는 호스트가 없어요");
 });
 
-test("첫 호스트(이름·분야만): 목록과 상세에 '소개 준비 중', 샘플 표시 없음", async ({ page }) => {
+test("첫 호스트(이름·분야만): 목록과 상세에 '소개 준비 중', 호스트에 샘플 표시 없음, 예시 프로그램은 샘플·신청 불가", async ({ page }) => {
   await page.goto("/hosts?q=" + encodeURIComponent("홍지완"));
   const card = page.getByTestId("host-card").filter({ visible: true });
   await expect(card).toHaveCount(1);
@@ -101,8 +101,13 @@ test("첫 호스트(이름·분야만): 목록과 상세에 '소개 준비 중',
   // 아직 지원·심사를 거치지 않았으므로 "심사 통과" 표시를 하지 않는다
   await expect(page.getByText("심사통과")).toHaveCount(0);
   await expect(page.getByLabel("운영팀 심사를 통과한 호스트")).toHaveCount(0);
-  await expect(page.getByTestId("host-programs")).toContainText("지금 모집 중인 프로그램이 없어요");
-  await expect(page.getByText("샘플", { exact: true })).toHaveCount(0);
+  // 예시 프로그램은 실제 이름이 붙으므로 반드시 "샘플" 표시, 신청 불가
+  const programs = page.getByTestId("host-programs");
+  await expect(programs.getByTestId("meetup-card")).toHaveCount(1);
+  await expect(programs.getByTestId("meetup-card")).toContainText("자기소개 스피치");
+  await expect(programs.getByTestId("meetup-card")).toContainText("샘플");
+  await programs.getByTestId("meetup-card").click();
+  await expect(page.getByRole("button", { name: "샘플 프로그램은 신청할 수 없어요" })).toBeDisabled();
 });
 
 test("프로그램 목록: 3대 분류 탭과 세부 분야", async ({ page }) => {
@@ -146,8 +151,10 @@ test("목록: 프로그램 카테고리 필터, 비공개·비활성 카테고�
   await expect(page).toHaveURL(/category=photo/);
   await expect(page.getByRole("heading", { level: 1, name: "사진·영상" })).toBeVisible();
   const photoCards = page.getByTestId("meetup-card").filter({ visible: true });
-  await expect(photoCards).toHaveCount(1);
-  await expect(photoCards).toContainText("필름 카메라");
+  // 사진·영상: 샘플 1개 + 첫 호스트(양승효) 예시 1개
+  await expect(photoCards).toHaveCount(2);
+  await expect(photoCards.filter({ hasText: "필름 카메라" })).toHaveCount(1);
+  await expect(photoCards.filter({ hasText: "골목 사진" })).toHaveCount(1);
 
   await page.goto("/meetups?category=wellness");
   await expect(page.getByTestId("empty-state")).toContainText("호스트로 신청");
