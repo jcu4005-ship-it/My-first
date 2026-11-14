@@ -313,3 +313,5 @@
   - 스테이징 샘플 삭제: `supabase/staging-remove-samples.sql` (seed_samples=yes 가 아닐 때, 한 묶음 실행, 감사 기록 `staging.remove_samples`). 샘플 계정 자체·동의 기록은 남김. 로컬·CI에는 자동 테스트용 샘플 유지
   - 테스트 호스트 숨김: `20261114000100_host_is_test.sql` (host_profiles.is_test, 앱에서 변경 불가) + `supabase/staging-hide-test-hosts.sql` (stg-…@example.com 계정, E2E 뒤 매번 실행, 감사 기록 `staging.hide_test_hosts`). 메인·프로그램 목록·호스트 목록·검색·저널에서 빠지고, 주소로는 그대로 열림. 기록은 모두 유지
 - 로컬 검증: 정리 SQL을 스테이징처럼 꾸민 DB에서 두 번씩 실행(두 번째는 변화 없음), pgTAP 21개 파일(신규 21_host_is_test) 통과(E2E 후 남은 데이터에서도), DB lint, 단위 40, 통합 28, E2E 36(신규: 첫 호스트 표시, 테스트 호스트 숨김) 통과, 번들 비밀키 검사 통과
+- 스테이징 #31 (커밋 102d8f0): **실패** — 샘플 정리(2-3d)·첫 호스트(2-3e)·테스트 호스트 숨김(5-4b)은 성공했으나, pgTAP 07의 "샘플 모임은 신청할 수 없다"가 DB에 이미 있는 샘플에 기대고 있어 샘플이 없어지자 실패(P0002). 배포(3단계)·E2E는 실행되지 않음
+  - 수정: 이 검사 안에서 샘플 모임을 직접 만들어 확인 (검사 기준은 그대로, ROLLBACK). 로컬에서 샘플을 지운 DB·새 DB 모두 pgTAP 402개 통과

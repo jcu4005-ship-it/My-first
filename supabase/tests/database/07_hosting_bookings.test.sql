@@ -116,9 +116,12 @@ select lives_ok(format($$ select public.cancel_booking((select id from public.bo
 select pg_temp.logout();
 select is((select reserved_count::int from public.meetup_sessions where id = current_setting('t.sid')::uuid), 1, '취소 후 자리 반환');
 
--- 샘플 모임 신청 불가
+-- 샘플 모임 신청 불가 (DB에 샘플이 없어도 검사되도록 이 검사 안에서 샘플 모임을 직접 만듦 — 끝나면 ROLLBACK)
+select pg_temp.create_member('smp07@test.local', 'sample07Host') as sh \gset
+select pg_temp.published_session(:'sh', 0, 6) as smp \gset
+update public.meetups set is_sample = true where id = (select meetup_id from public.meetup_sessions where id = :'smp');
 select pg_temp.login_as(:'q');
-select throws_ok($$ select public.book_session((select s.id from public.meetup_sessions s join public.meetups m on m.id = s.meetup_id where m.is_sample and m.status = 'published' and s.starts_at > now() and s.reserved_count < s.capacity limit 1), 1) $$,
+select throws_ok(format($$ select public.book_session(%L::uuid, 1) $$, :'smp'),
   'P0001', null, '샘플 모임은 신청할 수 없다');
 select pg_temp.logout();
 
