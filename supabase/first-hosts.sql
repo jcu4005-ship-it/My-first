@@ -7,6 +7,7 @@
 -- 예시 프로그램(대표 요청 2026-11-14): 3명의 분야에 맞춰 임의로 만든 예시. 실제 이름이 붙으므로
 --  반드시 is_sample = true ("샘플" 표시, 신청 불가). 본인이 실제 프로그램을 올리면 지우면 됨.
 --  다시 실행하면 이 3명의 예시 프로그램만 지우고 다시 넣음 (샘플은 신청 기록이 생길 수 없음)
+--  날짜는 모두 실행일 기준 7일 안 (메인 첫 화면 "이번 주" 카드는 7일 안의 프로그램만 보여 줌)
 -- ============================================================================
 do $$
 declare
@@ -94,7 +95,7 @@ begin
     '예시 프로그램이라 신청할 수 없어요. (샘플 문구)', 'published', true, now())
   returning id into m;
   insert into public.meetup_sessions (meetup_id, starts_at, ends_at, area, venue_name, address_detail, capacity) values
-    (m, base + interval '9 days 14 hours', base + interval '9 days 16 hours', '용산', '예시 장소', '서울 용산구 (샘플 주소)', 4);
+    (m, base + interval '5 days 14 hours', base + interval '5 days 16 hours', '용산', '예시 장소', '서울 용산구 (샘플 주소)', 4);
 
 end;
 $$;
