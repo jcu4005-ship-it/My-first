@@ -248,8 +248,10 @@ async function Hero() {
   return (
     <section className="pb-10" aria-labelledby="hero-title" data-testid="home-featured">
       <h1 id="hero-title" className="flex justify-center px-4 pt-10 pb-9 text-[#1f3a2b] sm:pt-16 sm:pb-12" data-testid="hero-logo">
-        <LogoStacked className="w-[min(64vw,300px)] drop-shadow-[0_1px_0_rgb(255_255_255/0.35)]" />
-        <span className="sr-only"> — {brand.tagline}</span>
+        <span className="flex flex-col items-center">
+          <LogoStacked className="w-[min(64vw,300px)] drop-shadow-[0_1px_0_rgb(255_255_255/0.35)]" />
+          <span className="mt-5 font-display text-[15px] tracking-[0.06em] text-[#2b3a30] sm:mt-6 sm:text-lg">{brand.tagline}</span>
+        </span>
       </h1>
       <p className="mx-auto max-w-6xl px-4 text-[11px] font-semibold tracking-[0.24em] text-muted-foreground sm:px-6">THIS WEEK · 이번 주 프로그램</p>
       {list.length ? (

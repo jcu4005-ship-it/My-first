@@ -1,7 +1,7 @@
 import { displayName } from "@/config/brand";
 import { cn } from "@/lib/utils";
 
-import { SYMBOL, TAGLINE, WORDMARK } from "./logo-paths";
+import { SYMBOL, WORDMARK } from "./logo-paths";
 
 type Shape = { viewBox: string; transform: string; paths: string[] };
 
@@ -39,13 +39,12 @@ export function LogoInline({ className }: { className?: string }) {
   );
 }
 
-/** 메인 첫 화면용 큰 로고: 심볼 → 이름 글자 → 영문 문구 */
+/** 메인 첫 화면용 큰 로고: 심볼 → 이름 글자 */
 export function LogoStacked({ className }: { className?: string }) {
   return (
     <span className={cn("flex flex-col items-center", className)}>
       <LogoSymbol className="w-[34%]" />
       <Svg shape={WORDMARK} className="mt-[9%] w-full" title={displayName()} />
-      <Svg shape={TAGLINE} className="mt-[8%] w-[68%] opacity-90" title="Make time together" />
     </span>
   );
 }
