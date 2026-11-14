@@ -110,11 +110,11 @@ jobs:
             if (!h.integrations?.supabase) p.push("Supabase 미연결");
             if (!h.integrations?.supabaseServer) p.push("서버 비밀키 미설정");
             if (p.length) { console.error("::error::" + p.join(", ")); process.exit(1); }' "$body"
-      - name: "5-3a. 스테이징에 샘플 모임이 있는지 확인 (공개 정보만 조회)"
+      - name: "5-3a. 스테이징에 샘플 호스트가 있는지 확인 (공개 정보만 조회 — 첫 호스트의 예시 프로그램은 제외)"
         if: github.event.inputs.run_e2e == 'yes'
         run: |
           n=$(curl -sS --fail -H "apikey: $STAGING_SUPABASE_PUBLISHABLE_KEY" \
-            "$STAGING_SUPABASE_URL/rest/v1/meetups?select=id&is_sample=eq.true&limit=1" | node -e 'let d="";process.stdin.on("data",c=>d+=c).on("end",()=>console.log(JSON.parse(d).length))')
+            "$STAGING_SUPABASE_URL/rest/v1/host_profiles?select=user_id&is_sample=eq.true&limit=1" | node -e 'let d="";process.stdin.on("data",c=>d+=c).on("end",()=>console.log(JSON.parse(d).length))')
           if [ "$n" -gt 0 ]; then echo "TEST_EXPECT_SAMPLES=yes" >> "$GITHUB_ENV"; echo "샘플 있음 → 샘플 화면 검사 포함"; else echo "샘플 없음 → 샘플 화면 검사 제외"; fi
       - name: "5-3. Playwright 브라우저 설치"
         if: github.event.inputs.run_e2e == 'yes'
