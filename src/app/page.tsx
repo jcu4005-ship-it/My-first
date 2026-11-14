@@ -257,7 +257,7 @@ async function Hero() {
       {list.length ? (
         <ul className="mt-3 flex snap-x snap-mandatory scroll-px-4 gap-3 overflow-x-auto px-4 pb-3 no-scrollbar sm:mx-auto sm:max-w-6xl sm:px-6">
           {list.map((m) => (
-            <li key={m.id} className="w-[84vw] max-w-[22rem] shrink-0 snap-start">
+            <li key={m.id} className="w-[44vw] max-w-[22rem] shrink-0 snap-start sm:w-[22rem]">
               <FeaturedCard meetup={m} categoryName={names[m.category_slug] ?? m.category_slug} pillar={pillarOf[m.category_slug]} />
             </li>
           ))}
@@ -277,23 +277,28 @@ function FeaturedCard({ meetup, categoryName, pillar }: { meetup: MeetupCardData
   const pillarLabel = PILLARS.find((p) => p.slug === pillar)?.label.toUpperCase();
   return (
     <Link href={`/meetups/${meetup.id}`} className="group flex h-full flex-col overflow-hidden rounded-[24px] bg-card shadow-[0_18px_34px_-22px_rgb(35_51_42/0.6)]" data-testid="featured-card">
-      <div className="relative aspect-[4/5] overflow-hidden bg-[linear-gradient(150deg,#e3e9da_0%,#c4cfb5_70%,#b2bfa2_100%)]">
+      <div className="relative aspect-square overflow-hidden bg-[linear-gradient(150deg,#e3e9da_0%,#c4cfb5_70%,#b2bfa2_100%)] sm:aspect-[4/5]">
         {meetup.cover_image_url ? (
           <Photo src={meetup.cover_image_url} alt={meetup.title} priority sizes="(min-width: 640px) 352px, 84vw" fallback={null} className="transition-transform duration-500 group-hover:scale-[1.03]" />
         ) : (
-          <div aria-hidden className="absolute inset-0 flex flex-col justify-end p-5">
-            {pillarLabel && <span className="text-[10px] tracking-[0.26em] text-[#44513f]">{pillarLabel}</span>}
-            <span className="mt-1 font-display text-3xl leading-tight font-bold text-[#2f3f34]">{categoryName}</span>
+          <div aria-hidden className="absolute inset-0 flex flex-col justify-end p-3 sm:p-5">
+            {pillarLabel && <span className="text-[9px] tracking-[0.22em] text-[#44513f] sm:text-[10px] sm:tracking-[0.26em]">{pillarLabel}</span>}
+            <span className="mt-0.5 font-display text-base leading-tight font-bold text-[#2f3f34] sm:mt-1 sm:text-3xl">{categoryName}</span>
           </div>
         )}
-        <span className="absolute top-3 left-3 rounded-full bg-white/90 px-3 py-1 text-[11px] font-semibold text-foreground">{categoryName}</span>
-        {meetup.is_sample && <SampleBadge className="absolute top-3 right-3" />}
+        {/* 사진이 없으면 아래 큰 분야 이름과 겹치므로 휴대폰에서는 숨김 */}
+        <span
+          className={`absolute top-2.5 left-2.5 rounded-full bg-white/90 px-2.5 py-1 text-[11px] font-semibold text-foreground ${meetup.cover_image_url ? "inline-block" : "hidden sm:inline-block"}`}
+        >
+          {categoryName}
+        </span>
+        {meetup.is_sample && <SampleBadge className="absolute top-2 right-2 sm:top-3 sm:right-3" />}
       </div>
-      <div className="flex flex-1 flex-col px-4 pt-3.5 pb-4">
-        <p className="text-xs text-muted-foreground">{formatShortDateTime(s.starts_at)} · {s.area}</p>
-        <h2 className="mt-1 font-display text-xl leading-snug font-bold break-keep">{meetup.title}</h2>
-        <p className="mt-1.5 line-clamp-2 text-sm leading-relaxed text-muted-foreground">{meetup.summary}</p>
-        <p className="mt-auto flex items-center justify-between gap-2 border-t border-border/70 pt-3 text-sm">
+      <div className="flex flex-1 flex-col px-3 pt-2.5 pb-3 sm:px-4 sm:pt-3.5 sm:pb-4">
+        <p className="truncate text-[11px] text-muted-foreground sm:text-xs">{formatShortDateTime(s.starts_at)} · {s.area}</p>
+        <h2 className="mt-0.5 line-clamp-2 font-display text-sm leading-snug font-bold break-keep sm:mt-1 sm:text-xl">{meetup.title}</h2>
+        <p className="mt-1 hidden text-sm leading-relaxed text-muted-foreground sm:mt-1.5 sm:line-clamp-2">{meetup.summary}</p>
+        <p className="mt-auto flex items-center justify-between gap-2 border-t border-border/70 pt-2 text-xs sm:pt-3 sm:text-sm">
           <span className={closed ? "text-muted-foreground" : left <= 2 ? "font-semibold text-clay" : "font-semibold text-forest"}>
             {closed ? "마감" : `${left}자리 남음`}
             <span className="font-normal text-muted-foreground"> · {meetup.host?.display_name}</span>
