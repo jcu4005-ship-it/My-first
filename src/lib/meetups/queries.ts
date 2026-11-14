@@ -16,7 +16,7 @@ export type Session = {
   status: "open" | "closed" | "cancelled" | "completed";
 };
 
-export type HostSummary = { user_id: string; slug: string | null; display_name: string; headline: string; is_sample: boolean };
+export type HostSummary = { user_id: string; slug: string | null; display_name: string; headline: string; is_sample: boolean; is_test?: boolean };
 
 export type MeetupCardData = {
   id: string;
@@ -75,7 +75,7 @@ const HOST_DETAIL_SELECT =
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 const CARD_SELECT =
-  "id, title, summary, price, category_slug, cover_image_url, cover_path, is_sample, status, host:host_profiles(user_id, slug, display_name, headline, is_sample), sessions:meetup_sessions(id, starts_at, ends_at, area, venue_name, capacity, reserved_count, status)";
+  "id, title, summary, price, category_slug, cover_image_url, cover_path, is_sample, status, host:host_profiles(user_id, slug, display_name, headline, is_sample, is_test), sessions:meetup_sessions(id, starts_at, ends_at, area, venue_name, capacity, reserved_count, status)";
 
 type Row = {
   id: string;
@@ -138,9 +138,12 @@ export async function listUpcomingMeetups(
   if (opts.hostIds) query = query.in("host_id", opts.hostIds);
   const { data, error } = await query.returns<Row[]>();
   if (error) throw new Error(`프로그램 목록 조회 실패: ${error.message}`);
+  // 특정 호스트 화면이 아니면, 자동 테스트 호스트의 프로그램은 메인·목록·검색에서 숨김
+  const listing = !opts.hostId && !opts.hostIds;
   const cards = (data ?? [])
     .map(toCard)
     .filter((c): c is MeetupCardData => c !== null)
+    .filter((c) => !listing || !c.host?.is_test)
     .sort((a, b) => a.nextSession.starts_at.localeCompare(b.nextSession.starts_at));
   return opts.limit ? cards.slice(0, opts.limit) : cards;
 }
@@ -190,6 +193,7 @@ export async function listFeaturedHosts(limit = 4): Promise<HostDetail[]> {
     .from("host_profiles")
     .select(HOST_DETAIL_SELECT)
     .eq("status", "approved")
+    .eq("is_test", false) // 자동 테스트 호스트는 목록에서 숨김
     // 운영팀 추천(featured) 먼저 — 팔로워 수 등 인기 지표는 순서에 쓰지 않음
     .order("is_featured", { ascending: false })
     .order("featured_order", { ascending: true, nullsFirst: false })

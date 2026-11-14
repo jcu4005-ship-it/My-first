@@ -87,7 +87,6 @@ test("호스트 목록: 옛 주소 연결, 운영팀 추천, 3대 분류 필터,
 });
 
 test("첫 호스트(이름·분야만): 목록과 상세에 '소개 준비 중', 샘플 표시 없음", async ({ page }) => {
-  test.skip(!samples, "샘플 데이터 없음");
   await page.goto("/hosts?q=" + encodeURIComponent("홍지완"));
   const card = page.getByTestId("host-card").filter({ visible: true });
   await expect(card).toHaveCount(1);

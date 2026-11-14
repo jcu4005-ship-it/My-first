@@ -306,3 +306,10 @@
 - 대표가 준 로고(동그랗게 놓인 의자 6개 + ROUNDI 글자)를 벡터로 바꿔 부품화 (`src/components/brand/logo.tsx`, `logo-paths.ts`)
 - 머리글: 의자 심볼 + ROUNDI 글자. 메인 첫 화면: 큰 로고 → "개인적인 것이 가장 창의적이다." → 이번 주 프로그램 카드 (대표 결정: 영문 MAKE TIME TOGETHER 대신 한글 철학 문구)
 - 스테이징 #30 (커밋 c3661e1): **성공**. DB 반영·pgTAP·DB 구조 검사·배포·배포 주소 E2E 32 통과·2 건너뜀·출력물 비밀 값 없음
+
+## 실제 첫 호스트 3명만 보이게 (2026-11-14, 대표 요청)
+- 첫 호스트: 홍지완(스피치 강사·전문성·실무), 양승효(사진작가·창작·표현), 주찬욱(보컬 트레이너·창작·표현) — 이름·하는 일·분야만 (`supabase/first-hosts.sql`, 로컬 seed + 스테이징 2-3e 단계). 임시 계정(로그인 불가), 샘플 아님, 소개를 쓰기 전까지 "소개 준비 중" 표시·"심사 통과" 표시 숨김
+- 대표 결정: 샘플은 삭제, 테스트 계정은 삭제하지 않고 숨김
+  - 스테이징 샘플 삭제: `supabase/staging-remove-samples.sql` (seed_samples=yes 가 아닐 때, 한 묶음 실행, 감사 기록 `staging.remove_samples`). 샘플 계정 자체·동의 기록은 남김. 로컬·CI에는 자동 테스트용 샘플 유지
+  - 테스트 호스트 숨김: `20261114000100_host_is_test.sql` (host_profiles.is_test, 앱에서 변경 불가) + `supabase/staging-hide-test-hosts.sql` (stg-…@example.com 계정, E2E 뒤 매번 실행, 감사 기록 `staging.hide_test_hosts`). 메인·프로그램 목록·호스트 목록·검색·저널에서 빠지고, 주소로는 그대로 열림. 기록은 모두 유지
+- 로컬 검증: 정리 SQL을 스테이징처럼 꾸민 DB에서 두 번씩 실행(두 번째는 변화 없음), pgTAP 21개 파일(신규 21_host_is_test) 통과(E2E 후 남은 데이터에서도), DB lint, 단위 40, 통합 28, E2E 36(신규: 첫 호스트 표시, 테스트 호스트 숨김) 통과, 번들 비밀키 검사 통과

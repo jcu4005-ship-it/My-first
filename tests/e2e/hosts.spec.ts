@@ -182,3 +182,24 @@ test("프로그램 대표 사진: 호스트가 올리면 상세 화면에 보이
   await page.goto(`/meetups/${m.id}`);
   await expect(page.locator(`img[src*="meetup-covers"]`).first()).toBeVisible();
 });
+
+test("자동 테스트 호스트 숨김: is_test 이면 목록·검색에서 빠지고, 주소로는 그대로 열린다 (기록 유지)", async ({ page }) => {
+  const m = await createMember("hidden");
+  const name = `숨김호스트${m.id.slice(0, 6)}`;
+  await makeApprovedHost(m.id, name);
+  const search = `/hosts?q=${encodeURIComponent(name)}`;
+
+  await page.goto(search);
+  await expect(page.getByTestId("host-card").filter({ visible: true })).toHaveCount(1);
+
+  const { error } = await adminApi().from("host_profiles").update({ is_test: true }).eq("user_id", m.id);
+  expect(error).toBeNull();
+
+  await page.goto(search);
+  await expect(page.getByTestId("empty-state")).toContainText("찾는 호스트가 없어요");
+  await page.goto(`/hosts/${m.id}`);
+  await expect(page.getByTestId("host-name")).toHaveText(name);
+  // 계정·프로필은 지워지지 않음
+  const { data } = await adminApi().from("host_profiles").select("user_id, status").eq("user_id", m.id).single();
+  expect(data?.status).toBe("approved");
+});

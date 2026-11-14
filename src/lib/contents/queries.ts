@@ -13,7 +13,7 @@ export type ContentCard = {
   cover_path: string | null;
   published_at: string | null;
   is_sample: boolean;
-  host: { user_id: string; slug: string | null; display_name: string; avatar_path: string | null } | null;
+  host: { user_id: string; slug: string | null; display_name: string; avatar_path: string | null; is_test?: boolean } | null;
 };
 
 export type ContentDetail = ContentCard & {
@@ -40,7 +40,7 @@ export type MyContent = {
   is_sample: boolean;
 };
 
-const CARD_SELECT = "id, slug, type, title, summary, cover_path, published_at, is_sample, host:host_profiles(user_id, slug, display_name, avatar_path)";
+const CARD_SELECT = "id, slug, type, title, summary, cover_path, published_at, is_sample, host:host_profiles(user_id, slug, display_name, avatar_path, is_test)";
 const MINE_SELECT =
   "id, slug, type, status, title, summary, body, cover_path, host_id, author_id, related_meetup_id, review_note, submitted_at, published_at, updated_at, is_sample";
 
@@ -50,10 +50,13 @@ export async function listPublishedContents(opts: { type?: ContentType; hostId?:
   let q = supabase.from("contents").select(CARD_SELECT).eq("status", "published").order("published_at", { ascending: false });
   if (opts.type) q = q.eq("type", opts.type);
   if (opts.hostId) q = q.eq("host_id", opts.hostId);
-  if (opts.limit) q = q.limit(opts.limit);
+  if (opts.limit && opts.hostId) q = q.limit(opts.limit);
   const { data, error } = await q.returns<ContentCard[]>();
   if (error) throw new Error(`콘텐츠 목록 조회 실패: ${error.message}`);
-  return data ?? [];
+  // 특정 호스트 화면이 아니면 자동 테스트 호스트의 글은 숨김
+  if (opts.hostId) return data ?? [];
+  const visible = (data ?? []).filter((c) => !c.host?.is_test);
+  return opts.limit ? visible.slice(0, opts.limit) : visible;
 }
 
 export async function getPublishedContent(slug: string): Promise<ContentDetail | null> {
