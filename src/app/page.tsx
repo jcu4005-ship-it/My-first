@@ -4,6 +4,7 @@ import { cache, Suspense } from "react";
 
 import { brand } from "@/config/brand";
 import { Seal } from "@/components/brand/seat-table";
+import { LogoStacked } from "@/components/brand/logo";
 import { ContentCard } from "@/components/contents/content-card";
 import { HostCard } from "@/components/hosts/host-card";
 import { SampleBadge } from "@/components/meetups/badges";
@@ -245,10 +246,14 @@ async function Hero() {
   const pillarOf = Object.fromEntries(categories.map((c) => [c.slug, c.pillar]));
   const { list } = pickThisWeek(meetups, 5);
   return (
-    <section className="pt-5 pb-10 sm:pt-8" aria-labelledby="hero-title" data-testid="home-featured">
-      <h1 id="hero-title" className="px-4 font-display text-[15px] text-[#2b3a30] sm:px-6 sm:text-center sm:text-lg">{brand.tagline}</h1>
+    <section className="pb-10" aria-labelledby="hero-title" data-testid="home-featured">
+      <h1 id="hero-title" className="flex justify-center px-4 pt-10 pb-9 text-[#1f3a2b] sm:pt-16 sm:pb-12" data-testid="hero-logo">
+        <LogoStacked className="w-[min(64vw,300px)] drop-shadow-[0_1px_0_rgb(255_255_255/0.35)]" />
+        <span className="sr-only"> — {brand.tagline}</span>
+      </h1>
+      <p className="mx-auto max-w-6xl px-4 text-[11px] font-semibold tracking-[0.24em] text-muted-foreground sm:px-6">THIS WEEK · 이번 주 프로그램</p>
       {list.length ? (
-        <ul className="mt-4 flex snap-x snap-mandatory scroll-px-4 gap-3 overflow-x-auto px-4 pb-3 no-scrollbar sm:mx-auto sm:max-w-6xl sm:px-6">
+        <ul className="mt-3 flex snap-x snap-mandatory scroll-px-4 gap-3 overflow-x-auto px-4 pb-3 no-scrollbar sm:mx-auto sm:max-w-6xl sm:px-6">
           {list.map((m) => (
             <li key={m.id} className="w-[84vw] max-w-[22rem] shrink-0 snap-start">
               <FeaturedCard meetup={m} categoryName={names[m.category_slug] ?? m.category_slug} pillar={pillarOf[m.category_slug]} />

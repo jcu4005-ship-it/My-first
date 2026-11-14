@@ -3,6 +3,7 @@ import { Mail, Search } from "lucide-react";
 import { Suspense } from "react";
 
 import { displayName } from "@/config/brand";
+import { LogoInline } from "@/components/brand/logo";
 import { Button } from "@/components/ui/button";
 import { getCurrentMember } from "@/lib/auth/session";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -87,9 +88,8 @@ export function SiteHeader({ tabBar = true }: { tabBar?: boolean }) {
       <header className="sticky top-0 z-30 border-b border-white/30 bg-[#c6d0b7]/85 backdrop-blur">
         <div className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between gap-3 px-4 sm:px-6">
           <div className="flex items-center gap-10 whitespace-nowrap">
-            <Link href="/" className="flex items-center gap-1.5 font-display text-[21px] font-bold tracking-[0.18em] text-foreground" aria-label={`${displayName()} 홈`}>
-              {displayName()}
-              <span aria-hidden className="inline-block size-[7px] rounded-full border-[1.6px] border-current" />
+            <Link href="/" className="flex items-center text-foreground" aria-label={`${displayName()} 홈`} data-testid="site-logo">
+              <LogoInline />
             </Link>
             <nav aria-label="주요 메뉴" className="hidden items-center gap-7 md:flex">
               {NAV.map((n) => (
