@@ -86,6 +86,26 @@ test("호스트 목록: 옛 주소 연결, 운영팀 추천, 3대 분류 필터,
   await expect(page.getByTestId("empty-state")).toContainText("찾는 호스트가 없어요");
 });
 
+test("첫 호스트(이름·분야만): 목록과 상세에 '소개 준비 중', 샘플 표시 없음", async ({ page }) => {
+  test.skip(!samples, "샘플 데이터 없음");
+  await page.goto("/hosts?q=" + encodeURIComponent("홍지완"));
+  const card = page.getByTestId("host-card").filter({ visible: true });
+  await expect(card).toHaveCount(1);
+  await expect(card).toContainText("스피치 강사");
+  await expect(card.getByTestId("host-pending")).toHaveText("소개 준비 중");
+  await expect(card).not.toContainText("샘플");
+
+  await page.goto("/hosts/hong-jiwan");
+  await expect(page.getByTestId("host-name")).toHaveText("홍지완");
+  await expect(page.getByTestId("host-occupation")).toHaveText("스피치 강사");
+  await expect(page.getByTestId("host-intro-pending")).toContainText("소개 준비 중");
+  // 아직 지원·심사를 거치지 않았으므로 "심사 통과" 표시를 하지 않는다
+  await expect(page.getByText("심사통과")).toHaveCount(0);
+  await expect(page.getByLabel("운영팀 심사를 통과한 호스트")).toHaveCount(0);
+  await expect(page.getByTestId("host-programs")).toContainText("지금 모집 중인 프로그램이 없어요");
+  await expect(page.getByText("샘플", { exact: true })).toHaveCount(0);
+});
+
 test("프로그램 목록: 3대 분류 탭과 세부 분야", async ({ page }) => {
   test.skip(!samples, "샘플 데이터 없음");
   await page.goto("/meetups");

@@ -39,6 +39,9 @@ export function HostCard({
             <span key={e} className="pill bg-linen text-foreground/80">{e}</span>
           ))}
           {host.is_sample && <span className="pill bg-linen text-muted-foreground">샘플 호스트</span>}
+          {!host.is_sample && !host.bio && !host.headline && (
+            <span className="pill bg-linen text-muted-foreground" data-testid="host-pending">소개 준비 중</span>
+          )}
         </span>
       </Link>
       {representative && (
