@@ -62,7 +62,7 @@ begin
     '예시 프로그램이라 신청할 수 없어요. (샘플 문구)', 'published', true, now())
   returning id into m;
   insert into public.meetup_sessions (meetup_id, starts_at, ends_at, area, venue_name, address_detail, capacity) values
-    (m, base + interval '4 days 19 hours 30 minutes', base + interval '4 days 21 hours 30 minutes', '성수', '예시 장소', '서울 성동구 (샘플 주소)', 6);
+    (m, base + interval '4 days 19 hours 30 minutes', base + interval '4 days 21 hours 30 minutes', '용산', '예시 장소', '서울 용산구 (샘플 주소)', 6);
 
   -- 양승효 · 사진
   insert into public.meetups (host_id, category_slug, meetup_type, title, summary, description, price, max_quantity_per_booking,
@@ -78,7 +78,7 @@ begin
     '예시 프로그램이라 신청할 수 없어요. (샘플 문구)', 'published', true, now())
   returning id into m;
   insert into public.meetup_sessions (meetup_id, starts_at, ends_at, area, venue_name, address_detail, capacity) values
-    (m, base + interval '6 days 15 hours', base + interval '6 days 17 hours', '서촌', '예시 장소', '서울 종로구 (샘플 주소)', 6);
+    (m, base + interval '6 days 15 hours', base + interval '6 days 17 hours', '용산', '예시 장소', '서울 용산구 (샘플 주소)', 6);
 
   -- 주찬욱 · 보컬
   insert into public.meetups (host_id, category_slug, meetup_type, title, summary, description, price, max_quantity_per_booking,
@@ -94,7 +94,7 @@ begin
     '예시 프로그램이라 신청할 수 없어요. (샘플 문구)', 'published', true, now())
   returning id into m;
   insert into public.meetup_sessions (meetup_id, starts_at, ends_at, area, venue_name, address_detail, capacity) values
-    (m, base + interval '9 days 14 hours', base + interval '9 days 16 hours', '합정', '예시 장소', '서울 마포구 (샘플 주소)', 4);
+    (m, base + interval '9 days 14 hours', base + interval '9 days 16 hours', '용산', '예시 장소', '서울 용산구 (샘플 주소)', 4);
 
 end;
 $$;
