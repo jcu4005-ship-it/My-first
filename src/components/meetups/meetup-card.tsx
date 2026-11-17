@@ -6,61 +6,103 @@ import { formatPrice, ticketDate } from "@/lib/format";
 import type { MeetupCardData } from "@/lib/meetups/queries";
 import { cn } from "@/lib/utils";
 
+import { SaveButton } from "@/components/saved";
+
 import { SampleBadge, seatsLeft } from "./badges";
 
 /**
- * 프로그램 카드 — 반복되는 동그라미 그림 없이 글자 중심(눈의 피로를 줄임).
- * 위: 대표 사진(없으면 분야 이름만 있는 세이지 면) / 아래: 날짜·동네, 제목, 남은 자리(글자), 호스트·참가비
- * 의자·테이블 그림은 상세 화면에서만 보여 준다.
+ * 프로그램 카드 (2026-11-17 시안): 위 사진(없으면 어두운 면 + 분야 이름) · 오른쪽 위 저장 · 아래 분야·제목·날짜와 장소·남은 자리·참가비.
+ * 남은 자리는 글자로만 (다른 참가자의 얼굴은 보여 주지 않음). 의자·테이블 그림은 상세 화면에서만.
  */
-export function MeetupCard({ meetup, categoryName, pillar }: { meetup: MeetupCardData; categoryName: string; pillar?: string }) {
+export function MeetupCard({
+  meetup,
+  categoryName,
+  pillar,
+}: {
+  meetup: MeetupCardData;
+  categoryName: string;
+  pillar?: string;
+}) {
   const s = meetup.nextSession;
   const d = ticketDate(s.starts_at);
   const left = seatsLeft(s);
   const closed = s.status !== "open" || left === 0;
   const more = meetup.upcomingSessions.length - 1;
-  const pillarLabel = PILLARS.find((p) => p.slug === pillar)?.label.toUpperCase();
+  const pillarLabel = PILLARS.find(
+    (p) => p.slug === pillar,
+  )?.label.toUpperCase();
+  const meta = `${d.md} ${d.time} · ${s.area}`;
   return (
-    <Link
-      href={`/meetups/${meetup.id}`}
-      className="group relative flex h-full flex-col overflow-hidden rounded-[20px] bg-card shadow-[0_12px_24px_-18px_rgb(35_51_42/0.55)] transition-transform hover:-translate-y-0.5"
-      data-testid="meetup-card"
-    >
-      <div className="relative aspect-[4/3] overflow-hidden bg-[linear-gradient(150deg,#e3e9da_0%,#c4cfb5_70%,#b2bfa2_100%)]">
-        {meetup.cover_image_url ? (
-          <Photo src={meetup.cover_image_url} alt={meetup.title} fallback={null} />
-        ) : (
-          <div aria-hidden className="absolute inset-0 flex flex-col justify-end p-3">
-            {pillarLabel && <span className="text-[9.5px] tracking-[0.24em] text-[#44513f]">{pillarLabel}</span>}
-            <span className="font-display text-lg leading-tight font-bold text-[#2f3f34]">{categoryName}</span>
+    <div className="relative h-full">
+      <Link
+        href={`/meetups/${meetup.id}`}
+        className="group relative flex h-full flex-col overflow-hidden rounded-[18px] bg-card shadow-[0_1px_0_rgb(31_33_30/0.04),0_16px_30px_-22px_rgb(31_33_30/0.55)] transition-transform hover:-translate-y-0.5"
+        data-testid="meetup-card"
+      >
+        <div className="relative aspect-[16/10] overflow-hidden bg-[linear-gradient(150deg,#3a332c_0%,#26221d_100%)]">
+          {meetup.cover_image_url ? (
+            <Photo
+              src={meetup.cover_image_url}
+              alt={meetup.title}
+              fallback={null}
+              className="transition-transform duration-500 group-hover:scale-[1.03]"
+            />
+          ) : (
+            <div aria-hidden className="absolute inset-0 flex items-end p-3.5">
+              <span className="font-display text-lg leading-tight font-bold text-[#efe8dc]/90">
+                {categoryName}
+              </span>
+            </div>
+          )}
+          {meetup.is_sample && (
+            <SampleBadge className="absolute top-2.5 left-2.5" />
+          )}
+        </div>
+        <div className="flex flex-1 flex-col px-3.5 pt-3 pb-3.5">
+          {pillarLabel && (
+            <p className="text-[10px] font-semibold tracking-[0.22em] text-muted-foreground">
+              {pillarLabel}
+            </p>
+          )}
+          <h3 className="mt-1 line-clamp-2 text-[14.5px] leading-snug font-bold break-keep group-hover:underline group-hover:underline-offset-4">
+            {meetup.title}
+          </h3>
+          <p className="mt-1.5 truncate text-[12px] text-muted-foreground">
+            {d.md} ({d.wd}) {d.time} · {s.area}
+            <span className="sr-only"> · {categoryName}</span>
+          </p>
+          <div className="mt-auto flex items-end justify-between gap-2 pt-3">
+            <p
+              className={cn(
+                "text-[12px] font-semibold",
+                closed
+                  ? "text-muted-foreground"
+                  : left <= 2
+                    ? "text-clay"
+                    : "text-forest",
+              )}
+              data-testid="card-seats"
+            >
+              {closed ? "마감" : `${left}자리 남음`}
+              <span className="font-normal text-muted-foreground">
+                {" "}
+                · 정원 {s.capacity}명
+              </span>
+              <span className="block truncate font-normal text-muted-foreground">
+                {meetup.host?.display_name}
+                {more > 0 && ` · 외 ${more}회`}
+              </span>
+            </p>
+            <b className="shrink-0 text-[14px]">{formatPrice(meetup.price)}</b>
           </div>
-        )}
-        {meetup.is_sample && <SampleBadge className="absolute top-2 right-2" />}
-      </div>
-      <div className="flex flex-1 flex-col px-3 pt-2.5 pb-3">
-        <p className="truncate text-[11px] tracking-[0.04em] text-muted-foreground">
-          {d.md} {d.wdEn} {d.time} · {s.area}
-          <span className="sr-only"> · {categoryName}</span>
-        </p>
-        <h3 className="mt-1 line-clamp-2 text-sm leading-snug font-bold break-keep group-hover:underline group-hover:underline-offset-4">
-          {meetup.title}
-        </h3>
-        <p
-          className={cn("mt-2 text-xs font-semibold", closed ? "text-muted-foreground" : left <= 2 ? "text-clay" : "text-forest")}
-          data-testid="card-seats"
-        >
-          {closed ? "마감" : `${left}자리 남음`}
-          <span className="font-normal text-muted-foreground"> · 정원 {s.capacity}명</span>
-        </p>
-        <p className="mt-auto flex items-baseline justify-between gap-2 border-t border-border/70 pt-2 text-xs">
-          <span className="truncate text-muted-foreground">
-            {meetup.host?.display_name}
-            {more > 0 && ` · 외 ${more}회`}
-          </span>
-          <b className="shrink-0 text-[13px]">{formatPrice(meetup.price)}</b>
-        </p>
-      </div>
-    </Link>
+        </div>
+      </Link>
+      {/* 저장 버튼은 링크 밖에 (링크 안의 버튼은 화면 읽기 도구에서 혼란) */}
+      <SaveButton
+        item={{ id: meetup.id, title: meetup.title, meta }}
+        className="absolute top-2 right-2"
+      />
+    </div>
   );
 }
 
@@ -74,9 +116,17 @@ export function MeetupGrid({
   pillarOf?: Record<string, string>;
 }) {
   return (
-    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4" data-testid="meetup-grid">
+    <div
+      className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4"
+      data-testid="meetup-grid"
+    >
       {meetups.map((m) => (
-        <MeetupCard key={m.id} meetup={m} categoryName={categoryNames[m.category_slug] ?? m.category_slug} pillar={pillarOf?.[m.category_slug]} />
+        <MeetupCard
+          key={m.id}
+          meetup={m}
+          categoryName={categoryNames[m.category_slug] ?? m.category_slug}
+          pillar={pillarOf?.[m.category_slug]}
+        />
       ))}
     </div>
   );

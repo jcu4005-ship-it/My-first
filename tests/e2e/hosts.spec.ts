@@ -196,7 +196,7 @@ test("자동 테스트 호스트 숨김: is_test 이면 목록·검색에서 빠
   expect(error).toBeNull();
 
   await page.goto(search);
-  await expect(page.getByTestId("empty-state")).toContainText("찾는 호스트가 없어요");
+  await expect(page.getByTestId("empty-state")).toContainText("찾는 크리에이터가 없어요");
   await page.goto(`/hosts/${m.id}`);
   await expect(page.getByTestId("host-name")).toHaveText(name);
   // 계정·프로필은 지워지지 않음

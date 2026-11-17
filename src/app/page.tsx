@@ -1,57 +1,55 @@
+import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, Check } from "lucide-react";
 import { cache, Suspense } from "react";
 
 import { brand } from "@/config/brand";
-import { Seal } from "@/components/brand/seat-table";
-import { LogoStacked } from "@/components/brand/logo";
+import { LogoSymbol } from "@/components/brand/logo";
 import { ContentCard } from "@/components/contents/content-card";
 import { CreatorTile } from "@/components/hosts/host-card";
-import { SampleBadge } from "@/components/meetups/badges";
 import { MeetupCard } from "@/components/meetups/meetup-card";
-import { Photo } from "@/components/media/photo";
-import { formatPrice, formatShortDateTime } from "@/lib/format";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
-import { Button } from "@/components/ui/button";
 import { PILLARS } from "@/config/pillars";
 import { listPublishedContents } from "@/lib/contents/queries";
 import { listCategories, listFeaturedHosts, listUpcomingMeetups, type MeetupCardData } from "@/lib/meetups/queries";
 
-/* ---------- 공통 조각 ---------- */
+/*
+ * 메인 (2026-11-17 대표 시안 "Creator Culture")
+ * 1 큰 사진 + 영문 세리프 문구 → 2 지금 가장 흥미로운 경험(프로그램) → 3 세 카테고리(사진 타일)
+ * → 4 만나 볼 사람들(크리에이터) → 5 이야기(저널) → 6 짙은 초록 띠(심사 기준 + 크리에이터 모집)
+ * 사진: 분위기 사진은 대표 시안에서 잘라 쓴 임시 이미지(public/images/home). 실제 루라운지 사진으로 교체 예정.
+ */
 
-/** 편집 스타일 제목: 세리프 제목 + 영문 작은 라벨 + 가는 선 */
+/** 섹션 제목: 작은 영문 라벨 + 제목 + 전체 보기 */
 function Label({ title, en, id, href }: { title: string; en: string; id: string; href?: string }) {
   return (
-    <div className="mx-4 mb-4 flex items-end justify-between gap-4 border-b border-[#d9ded2] pt-8 pb-2.5 sm:mx-6">
-      <h2 id={id} className="font-display text-[21px] font-bold break-keep sm:text-2xl">{title}</h2>
-      {href ? (
-        <Link href={href} className="flex shrink-0 items-center gap-1 text-[11px] tracking-[0.2em] text-muted-foreground hover:text-foreground">
-          {en}
+    <div className="mb-5 flex items-end justify-between gap-4 px-4 sm:px-6">
+      <div>
+        <p className="text-[10.5px] font-semibold tracking-[0.26em] text-muted-foreground">{en}</p>
+        <h2 id={id} className="mt-1.5 text-[21px] leading-snug font-semibold tracking-[-0.01em] break-keep sm:text-[26px]">{title}</h2>
+      </div>
+      {href && (
+        <Link href={href} className="flex shrink-0 items-center gap-1.5 pb-1 text-[13px] font-medium text-foreground/80 hover:text-foreground">
+          전체 보기
           <ArrowRight aria-hidden className="size-3.5" strokeWidth={1.6} />
-          <span className="sr-only"> 전체 보기</span>
         </Link>
-      ) : (
-        <span className="text-[10.5px] tracking-[0.24em] text-muted-foreground">{en}</span>
       )}
     </div>
   );
 }
 
-/** 세 테이블 한 줄 소개 */
-const PILLAR_LINE: Record<string, string> = {
-  knowledge: "자기만의 질문을 나눕니다.",
-  creators: "자기만의 작업을 같이 해 봅니다.",
-  experts: "현장에서 쌓은 방법을 나눕니다.",
+/** 세 카테고리 타일 (사진 + 한 줄) */
+const PILLAR_TILE: Record<string, { line: string; image: string }> = {
+  knowledge: { line: "지식을 넘어, 시각을 넓히는 시간", image: "/images/home/knowledge.jpg" },
+  creators: { line: "크리에이터와 함께, 새로운 영감을 발견하세요", image: "/images/home/creators.jpg" },
+  experts: { line: "분야의 전문가에게, 더 깊이 배우세요", image: "/images/home/experts.jpg" },
 };
 
 /** 휴대폰: 옆으로 넘기는 한 줄 (다음 카드가 살짝 보이게), 태블릿·PC: 격자 */
 const rail =
   "relative flex snap-x snap-mandatory scroll-px-4 gap-4 overflow-x-auto px-4 pb-2 no-scrollbar sm:grid sm:overflow-visible sm:pb-0 sm:snap-none sm:gap-5";
 const railItem = "w-[76vw] max-w-[20rem] shrink-0 snap-start sm:w-auto sm:max-w-none";
-
-/** 첫 화면 큰 카드 수 */
-const HERO_LIMIT = 5;
 
 /** 인기순: 예약률이 높은 순 (같으면 가까운 일정 순) */
 function byPopularity(a: MeetupCardData, b: MeetupCardData) {
@@ -68,9 +66,8 @@ function pickThisWeek(meetups: MeetupCardData[], limit = 6) {
   return week.length ? { thisWeek: true, list: week.slice(0, limit) } : { thisWeek: false, list: meetups.slice(0, limit) };
 }
 
-/* ---------- 2~5. 데이터가 필요한 섹션 ---------- */
+/* ---------- 데이터가 필요한 섹션 ---------- */
 
-/** 메인에서 같은 데이터를 두 번 읽지 않도록 (첫 화면·본문 공용) */
 const homeData = cache(() =>
   Promise.all([listCategories(), listUpcomingMeetups(), listFeaturedHosts(8), listPublishedContents({ limit: 3 })]),
 );
@@ -83,19 +80,69 @@ async function HomeSections() {
     const p = pillarOf[m.category_slug];
     return p ? { ...acc, [p]: (acc[p] ?? 0) + 1 } : acc;
   }, {});
-  // 첫 화면 큰 카드에 이미 나온 프로그램은 다시 보여 주지 않음 (같은 카드 두 번 금지)
-  const heroIds = new Set(pickThisWeek(meetups, HERO_LIMIT).list.map((m) => m.id));
-  const rest = meetups.filter((m) => !heroIds.has(m.id)).slice(0, 8);
-  const openSeats = meetups.reduce((sum, m) => sum + (m.nextSession.status === "open" ? Math.max(0, m.nextSession.capacity - m.nextSession.reserved_count) : 0), 0);
+  const { list: picks } = pickThisWeek(meetups, 8);
+  const hasSample = picks.some((m) => m.is_sample);
   const countOf = (hostId: string) => meetups.filter((m) => m.host?.user_id === hostId).length;
 
   return (
     <>
-      {/* 2. 만나 볼 사람들 — 크리에이터를 먼저 발견 */}
+      {/* 2. 지금, 가장 흥미로운 경험 */}
+      <section className="mx-auto mt-12 w-full max-w-6xl sm:mt-16" aria-labelledby="picks-title" data-testid="home-this-week">
+        <Label id="picks-title" title="지금, 가장 흥미로운 경험" en={`${brand.name.toUpperCase()} CLASS`} href="/meetups" />
+        {picks.length ? (
+          <ul className={`${rail} sm:grid-cols-3 sm:px-6 lg:grid-cols-4`} data-testid="meetup-grid">
+            {picks.map((m) => (
+              <li key={m.id} className="w-[64vw] max-w-[17rem] shrink-0 snap-start sm:w-auto sm:max-w-none">
+                <MeetupCard meetup={m} categoryName={names[m.category_slug] ?? m.category_slug} pillar={pillarOf[m.category_slug]} />
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="mx-4 rounded-2xl bg-card px-5 py-12 text-center text-muted-foreground sm:mx-6">곧 첫 프로그램이 열립니다.</p>
+        )}
+        {hasSample && (
+          <p className="mx-4 mt-4 rounded-xl bg-notice px-4 py-3 text-[13px] text-notice-foreground sm:mx-6" data-testid="sample-notice">
+            <strong>샘플</strong> 표시가 있는 프로그램은 서비스 준비 중 보여 드리는 예시예요. 아직 신청할 수 없어요.
+          </p>
+        )}
+      </section>
+
+      {/* 3. 세 카테고리 */}
+      <section className="mx-auto mt-14 w-full max-w-6xl sm:mt-20" aria-labelledby="fields-title" data-testid="home-pillars">
+        <Label id="fields-title" title="3가지 카테고리로, 더 깊은 경험을 만나보세요" en="OUR CATEGORIES" />
+        <ul className="grid gap-3 px-4 sm:grid-cols-3 sm:gap-5 sm:px-6">
+          {PILLARS.map((p) => (
+            <li key={p.slug}>
+              <Link
+                href={`/meetups?pillar=${p.slug}`}
+                className="group relative flex aspect-[16/9] flex-col justify-end overflow-hidden rounded-[18px] bg-forest-deep p-5 text-[#f3efe8] sm:aspect-[5/4]"
+                data-testid="pillar-tile"
+              >
+                <Image src={PILLAR_TILE[p.slug].image} alt="" fill sizes="(min-width: 640px) 33vw, 100vw" className="object-cover opacity-80 transition-transform duration-700 group-hover:scale-[1.04]" />
+                <span aria-hidden className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/25 to-transparent" />
+                <span className="relative text-[10.5px] font-semibold tracking-[0.26em]">{p.label.toUpperCase()}</span>
+                <span className="relative mt-1.5 flex items-end justify-between gap-3">
+                  <span className="text-[17px] leading-snug font-semibold break-keep">
+                    {PILLAR_TILE[p.slug].line}
+                    <span className="mt-1 block text-[12px] font-normal text-[#f3efe8]/75">
+                      {p.ko}
+                      {pillarCounts[p.slug] ? ` · ${pillarCounts[p.slug]}개 프로그램` : ""}
+                    </span>
+                  </span>
+                  <span className="flex size-9 shrink-0 items-center justify-center rounded-full border border-white/60 transition-colors group-hover:bg-white/15">
+                    <ArrowRight aria-hidden className="size-4" strokeWidth={1.6} />
+                  </span>
+                </span>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      {/* 4. 만나 볼 사람들 — 크리에이터를 발견 */}
       {hosts.length > 0 && (
-        <section className="mx-auto w-full max-w-6xl" aria-labelledby="hosts-title" data-testid="home-creators">
+        <section className="mx-auto mt-14 w-full max-w-6xl sm:mt-20" aria-labelledby="hosts-title" data-testid="home-creators">
           <Label title="만나 볼 사람들" id="hosts-title" en="CREATORS" href="/hosts" />
-          <p className="-mt-1 mb-4 px-4 text-sm text-muted-foreground sm:px-6">프로그램보다 사람을 먼저. 마음에 드는 사람의 세계로 들어가 보세요.</p>
           <ul className="flex snap-x snap-mandatory scroll-px-4 gap-3 overflow-x-auto px-4 pb-2 no-scrollbar sm:grid sm:grid-cols-4 sm:gap-5 sm:overflow-visible sm:px-6 lg:grid-cols-5">
             {[...hosts].sort((a, b) => countOf(b.user_id) - countOf(a.user_id)).map((h) => (
               <li key={h.user_id} className="w-[42vw] max-w-[13rem] shrink-0 snap-start sm:w-auto sm:max-w-none">
@@ -106,48 +153,9 @@ async function HomeSections() {
         </section>
       )}
 
-      {/* 3. 세 개의 분야 */}
-      <section className="mx-auto mt-6 w-full max-w-4xl" aria-labelledby="tables-title" data-testid="home-pillars">
-        <Label id="tables-title" title="세 개의 분야" en="THREE FIELDS" />
-        <ol>
-          {PILLARS.map((p, i) => (
-            <li key={p.slug} className="border-b border-dashed border-[#d2d9c8] last:border-0">
-              <Link href={`/meetups?pillar=${p.slug}`} className="group grid grid-cols-[3rem_1fr_auto] items-start gap-2 px-5 py-4 sm:px-6" data-testid="pillar-tile">
-                <span className="font-display text-2xl leading-none text-sage">{String(i + 1).padStart(2, "0")}</span>
-                <span>
-                  <span className="block text-[11px] font-bold tracking-[0.26em]">{p.label.toUpperCase()}</span>
-                  <span className="mt-1 block font-display text-[15.5px] leading-snug group-hover:underline group-hover:underline-offset-4">{PILLAR_LINE[p.slug]}</span>
-                  <span className="mt-1 block text-xs text-muted-foreground">{p.ko}{pillarCounts[p.slug] ? ` · ${pillarCounts[p.slug]}개 프로그램` : ""}</span>
-                </span>
-                <ArrowRight aria-hidden className="mt-1 size-4 text-muted-foreground" strokeWidth={1.6} />
-              </Link>
-            </li>
-          ))}
-        </ol>
-      </section>
-
-      {/* 4. 더 많은 프로그램 (첫 화면에 없던 것만) */}
-      {rest.length > 0 && (
-        <section className="mx-auto mt-6 w-full max-w-6xl" aria-labelledby="picks-title" data-testid="home-this-week">
-          <Label id="picks-title" title="곧 열리는 프로그램" en="ALL PROGRAMS" href="/meetups" />
-          <div className="px-4 sm:px-6">
-            {openSeats > 0 && (
-              <p className="mb-4 text-sm text-muted-foreground" data-testid="open-seats">
-                지금 신청할 수 있는 자리 <b className="font-display text-lg text-foreground">{openSeats}</b>개
-              </p>
-            )}
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4" data-testid="meetup-grid">
-              {rest.map((m) => (
-                <MeetupCard key={m.id} meetup={m} categoryName={names[m.category_slug] ?? m.category_slug} pillar={pillarOf[m.category_slug]} />
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* 5. 저널 */}
+      {/* 5. 이야기 */}
       {contents.length > 0 && (
-        <section className="mx-auto mt-6 w-full max-w-6xl" aria-labelledby="journal-title" data-testid="home-journal">
+        <section className="mx-auto mt-14 w-full max-w-6xl sm:mt-20" aria-labelledby="journal-title" data-testid="home-journal">
           <Label title="크리에이터의 이야기" id="journal-title" en="JOURNAL" href="/journal" />
           <ul className={`${rail} px-4 sm:grid-cols-3 sm:px-6`}>
             {contents.map((c) => (
@@ -164,9 +172,9 @@ async function HomeSections() {
 
 function SectionsSkeleton() {
   return (
-    <div className="mx-auto w-full max-w-6xl px-4 pt-8 sm:px-6">
-      <div className="h-40 w-full animate-pulse rounded-xl bg-muted" />
-      <div className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-4">
+    <div className="mx-auto mt-12 w-full max-w-6xl px-4 sm:px-6">
+      <div className="h-8 w-56 animate-pulse rounded bg-muted" />
+      <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
         {Array.from({ length: 4 }).map((_, i) => (
           <div key={i} className="aspect-[3/4] animate-pulse rounded-[18px] bg-muted" />
         ))}
@@ -175,133 +183,98 @@ function SectionsSkeleton() {
   );
 }
 
-/* ---------- 6. 믿을 수 있는 이유 (실제 운영 중인 절차만) + 크리에이터 지원 ---------- */
+/* ---------- 6. 짙은 초록 띠: 실제 운영 중인 심사 기준 + 크리에이터 모집 ---------- */
 
 const CURATION = [
-  { title: "호스트 심사", body: "경력·포트폴리오와 기획안을 운영팀이 직접 확인해요." },
+  { title: "크리에이터 심사", body: "작업과 기획안을 운영팀이 직접 확인해요." },
   { title: "공개 전 검수", body: "모든 프로그램과 글은 검수를 거친 뒤에만 공개돼요." },
-  { title: "작은 테이블", body: "한 사람 한 사람을 볼 수 있는 인원으로만 열어요." },
-  { title: "추천은 사람이", body: "팔로워 수가 아니라 운영팀이 직접 골라요." },
+  { title: "작은 정원", body: "한 사람 한 사람을 볼 수 있는 인원으로만 열어요." },
 ];
 
-function TrustAndJoin() {
+function JoinBand() {
   return (
-    <section className="mx-auto mt-10 w-full max-w-6xl px-4 sm:px-6" aria-labelledby="curation-title">
-      <div className="grid gap-4 lg:grid-cols-[1.4fr_1fr]">
-        <div className="relative rounded-[18px] border-[1.5px] border-dashed border-[#cfd6c4] p-5 sm:p-7" data-testid="home-curation">
-          <Seal className="absolute -top-3 right-4">심사<br />통과</Seal>
-          <h2 id="curation-title" className="font-display text-xl font-bold sm:text-2xl">아무나 차릴 수 없는 테이블</h2>
-          <p className="mt-2 flex flex-wrap items-center gap-1.5 text-[13px] font-semibold">
-            크리에이터 심사 <span className="text-sage">→</span> 프로그램 검수 <span className="text-sage">→</span> 공개
+    <section className="mx-auto mt-16 w-full max-w-6xl px-4 sm:mt-24 sm:px-6" aria-labelledby="join-title">
+      <div className="grid overflow-hidden rounded-[22px] bg-forest-deep text-[#f3efe8] lg:grid-cols-[1.1fr_1fr]">
+        <div className="p-7 sm:p-10">
+          <LogoSymbol className="w-10 text-[#f3efe8]" />
+          <p className="mt-5 text-[11px] font-semibold tracking-[0.3em] text-[#f3efe8]/70">CONNECT · LEARN · CREATE</p>
+          <h2 id="join-title" className="mt-2 font-editorial text-[30px] leading-[1.1] font-medium sm:text-[40px]">
+            A platform where
+            <br />
+            creators become brands.
+          </h2>
+          <p className="mt-3 text-sm leading-relaxed text-[#f3efe8]/80">
+            팔로워가 적어도 괜찮아요. 자기만의 작업과 전문성이 있다면 첫 프로그램은 함께 기획해요. 가입비 없이, 판매될 때만 나눠요.
           </p>
-          <ul className="mt-4 grid gap-3 sm:grid-cols-2">
+          <Link
+            href="/become-a-host/apply"
+            className="mt-6 inline-flex h-11 items-center gap-2 rounded-full bg-[#f3efe8] px-6 text-sm font-semibold text-forest-deep transition-colors hover:bg-white"
+          >
+            크리에이터로 지원하기
+            <ArrowRight aria-hidden className="size-4" strokeWidth={1.8} />
+          </Link>
+        </div>
+        <div className="border-t border-white/10 p-7 sm:p-10 lg:border-t-0 lg:border-l" data-testid="home-curation">
+          <p className="text-[11px] font-semibold tracking-[0.3em] text-[#f3efe8]/70">CURATION</p>
+          <h3 className="mt-2 text-lg font-semibold">아무나 열 수 없는 자리</h3>
+          <ul className="mt-5 flex flex-col gap-4">
             {CURATION.map((c) => (
-              <li key={c.title} className="flex gap-2.5">
-                <span className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-forest/10 text-forest">
+              <li key={c.title} className="flex gap-3">
+                <span className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-white/12 text-[#f3efe8]">
                   <Check aria-hidden className="size-3" strokeWidth={2.6} />
                 </span>
                 <span>
                   <span className="block text-sm font-semibold">{c.title}</span>
-                  <span className="mt-0.5 block text-[13px] leading-relaxed text-muted-foreground">{c.body}</span>
+                  <span className="mt-0.5 block text-[13px] leading-relaxed text-[#f3efe8]/70">{c.body}</span>
                 </span>
               </li>
             ))}
           </ul>
         </div>
-        <div className="flex flex-col gap-4">
-          <div id="host" className="flex flex-1 flex-col rounded-[18px] bg-forest p-6 text-cream sm:p-7">
-            <h2 className="font-display text-xl font-bold sm:text-2xl">당신의 세계를 프로그램으로</h2>
-            <p className="mt-2 text-sm leading-relaxed text-cream/80">팔로워가 적어도 괜찮아요. 자기만의 작업과 전문성이 있다면 첫 프로그램은 함께 기획해요. 가입비 없이, 판매될 때만 나눠요.</p>
-            <div className="mt-auto pt-5">
-              <Button asChild variant="secondary">
-                <Link href="/become-a-host/apply">
-                  호스트 지원하기
-                  <ArrowRight aria-hidden strokeWidth={1.8} />
-                </Link>
-              </Button>
-            </div>
+      </div>
+    </section>
+  );
+}
+
+/* ---------- 1. 첫 화면: 큰 사진 + 문구 ---------- */
+
+function Hero() {
+  return (
+    <section className="mx-auto w-full max-w-6xl px-3 pt-3 sm:px-6 sm:pt-6" aria-labelledby="hero-title">
+      <div className="relative isolate overflow-hidden rounded-[22px] bg-forest-deep text-[#f3efe8] sm:grid sm:min-h-[480px] sm:grid-cols-[1.15fr_1fr]">
+        {/* 사진: 휴대폰은 배경 전체, PC는 오른쪽 */}
+        <div className="absolute inset-0 -z-10 sm:relative sm:inset-auto sm:z-0 sm:order-2">
+          <Image src="/images/home/hero.jpg" alt="" fill priority sizes="(min-width: 640px) 50vw, 100vw" className="object-cover" />
+          <span aria-hidden className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/45 to-black/20 sm:bg-gradient-to-r sm:from-forest-deep sm:via-forest-deep/30 sm:to-transparent" />
+        </div>
+        <div className="flex min-h-[460px] flex-col justify-end p-6 sm:min-h-0 sm:justify-center sm:p-12">
+          <p className="text-[11px] font-semibold tracking-[0.32em] text-[#f3efe8]/75">{brand.name.toUpperCase()}</p>
+          <h1 id="hero-title" className="mt-3 font-editorial text-[38px] leading-[1.04] font-medium tracking-[-0.01em] sm:text-[60px]">
+            Make time
+            <br />
+            for what inspires you.
+          </h1>
+          <p className="mt-4 max-w-sm text-[15px] leading-relaxed text-[#f3efe8]/85">
+            취향이 맞는 사람들과,
+            <br />
+            새로운 경험이 시작되는 곳.
+          </p>
+          <div className="mt-7 flex flex-wrap items-center gap-3">
+            <Link
+              href="/meetups"
+              className="inline-flex h-11 items-center gap-2 rounded-full bg-[#f3efe8] px-6 text-sm font-semibold text-forest-deep transition-colors hover:bg-white"
+              data-testid="hero-cta"
+            >
+              지금 시작하기
+              <ArrowRight aria-hidden className="size-4" strokeWidth={1.8} />
+            </Link>
+            <Link href="/hosts" className="inline-flex h-11 items-center px-2 text-sm font-medium text-[#f3efe8]/85 underline-offset-4 hover:underline">
+              크리에이터 만나 보기
+            </Link>
           </div>
         </div>
       </div>
     </section>
-  );
-}
-
-/* ---------- 1. 첫 화면: 둥글게 놓인 빈 의자와 원목 테이블 ---------- */
-
-async function Hero() {
-  const [categories, meetups] = await homeData();
-  const names = Object.fromEntries(categories.map((c) => [c.slug, c.name]));
-  const pillarOf = Object.fromEntries(categories.map((c) => [c.slug, c.pillar]));
-  const { list } = pickThisWeek(meetups, HERO_LIMIT);
-  const hasSample = list.some((m) => m.is_sample);
-  return (
-    <section className="pb-10" aria-labelledby="hero-title" data-testid="home-featured">
-      <h1 id="hero-title" className="flex justify-center px-4 pt-10 pb-9 text-[#1f3a2b] sm:pt-16 sm:pb-12" data-testid="hero-logo">
-        <span className="flex flex-col items-center">
-          <LogoStacked className="w-[min(64vw,300px)] drop-shadow-[0_1px_0_rgb(255_255_255/0.35)]" />
-          <span className="mt-5 font-display text-[15px] tracking-[0.06em] text-[#2b3a30] sm:mt-6 sm:text-lg">{brand.tagline}</span>
-        </span>
-      </h1>
-      <p className="mx-auto max-w-6xl px-4 text-[11px] font-semibold tracking-[0.24em] text-muted-foreground sm:px-6">THIS WEEK · 이번 주 프로그램</p>
-      {list.length ? (
-        <ul className="mt-3 flex snap-x snap-mandatory scroll-px-4 gap-3 overflow-x-auto px-4 pb-3 no-scrollbar sm:mx-auto sm:max-w-6xl sm:px-6">
-          {list.map((m) => (
-            <li key={m.id} className="w-[44vw] max-w-[22rem] shrink-0 snap-start sm:w-[22rem]">
-              <FeaturedCard meetup={m} categoryName={names[m.category_slug] ?? m.category_slug} pillar={pillarOf[m.category_slug]} />
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <p className="mx-4 mt-4 rounded-2xl bg-card/70 px-5 py-12 text-center text-muted-foreground">곧 첫 프로그램이 열립니다.</p>
-      )}
-      {hasSample && (
-        <p className="mx-4 mt-2 rounded-xl bg-notice px-4 py-3 text-[13px] text-notice-foreground sm:mx-auto sm:max-w-6xl" data-testid="sample-notice">
-          <strong>샘플</strong> 표시가 있는 프로그램은 서비스 준비 중 보여 드리는 예시예요. 아직 신청할 수 없어요.
-        </p>
-      )}
-    </section>
-  );
-}
-
-/** 첫 화면 큰 카드: 호스트가 올린 사진 → 날짜·동네 → 제목 → 한 줄 소개 → 남은 자리·참가비 */
-function FeaturedCard({ meetup, categoryName, pillar }: { meetup: MeetupCardData; categoryName: string; pillar?: string }) {
-  const s = meetup.nextSession;
-  const left = Math.max(0, s.capacity - s.reserved_count);
-  const closed = s.status !== "open" || left === 0;
-  const pillarLabel = PILLARS.find((p) => p.slug === pillar)?.label.toUpperCase();
-  return (
-    <Link href={`/meetups/${meetup.id}`} className="group flex h-full flex-col overflow-hidden rounded-[24px] bg-card shadow-[0_18px_34px_-22px_rgb(35_51_42/0.6)]" data-testid="featured-card">
-      <div className="relative aspect-square overflow-hidden bg-[linear-gradient(150deg,#e3e9da_0%,#c4cfb5_70%,#b2bfa2_100%)] sm:aspect-[4/5]">
-        {meetup.cover_image_url ? (
-          <Photo src={meetup.cover_image_url} alt={meetup.title} priority sizes="(min-width: 640px) 352px, 84vw" fallback={null} className="transition-transform duration-500 group-hover:scale-[1.03]" />
-        ) : (
-          <div aria-hidden className="absolute inset-0 flex flex-col justify-end p-3 sm:p-5">
-            {pillarLabel && <span className="text-[9px] tracking-[0.22em] text-[#44513f] sm:text-[10px] sm:tracking-[0.26em]">{pillarLabel}</span>}
-            <span className="mt-0.5 font-display text-base leading-tight font-bold text-[#2f3f34] sm:mt-1 sm:text-3xl">{categoryName}</span>
-          </div>
-        )}
-        {/* 사진이 없으면 아래 큰 분야 이름과 겹치므로 휴대폰에서는 숨김 */}
-        <span
-          className={`absolute top-2.5 left-2.5 rounded-full bg-white/90 px-2.5 py-1 text-[11px] font-semibold text-foreground ${meetup.cover_image_url ? "inline-block" : "hidden sm:inline-block"}`}
-        >
-          {categoryName}
-        </span>
-        {meetup.is_sample && <SampleBadge className="absolute top-2 right-2 sm:top-3 sm:right-3" />}
-      </div>
-      <div className="flex flex-1 flex-col px-3 pt-2.5 pb-3 sm:px-4 sm:pt-3.5 sm:pb-4">
-        <p className="truncate text-[11px] text-muted-foreground sm:text-xs">{formatShortDateTime(s.starts_at)} · {s.area}</p>
-        <h2 className="mt-0.5 line-clamp-2 font-display text-sm leading-snug font-bold break-keep sm:mt-1 sm:text-xl">{meetup.title}</h2>
-        <p className="mt-1 hidden text-sm leading-relaxed text-muted-foreground sm:mt-1.5 sm:line-clamp-2">{meetup.summary}</p>
-        <p className="mt-auto flex items-center justify-between gap-2 border-t border-border/70 pt-2 text-xs sm:pt-3 sm:text-sm">
-          <span className={closed ? "text-muted-foreground" : left <= 2 ? "font-semibold text-clay" : "font-semibold text-forest"}>
-            {closed ? "마감" : `${left}자리 남음`}
-            <span className="font-normal text-muted-foreground"> · {meetup.host?.display_name}</span>
-          </span>
-          <b className="shrink-0">{formatPrice(meetup.price)}</b>
-        </p>
-      </div>
-    </Link>
   );
 }
 
@@ -309,16 +282,12 @@ export default function Home() {
   return (
     <>
       <SiteHeader />
-      <main className="flex-1">
-        <Suspense fallback={<div className="h-[560px]" />}>
-          <Hero />
+      <main className="flex-1 pb-16">
+        <Hero />
+        <Suspense fallback={<SectionsSkeleton />}>
+          <HomeSections />
         </Suspense>
-        <div className="paper rounded-t-[28px] pb-14 shadow-[0_-18px_40px_-30px_rgb(35_51_42/0.6)]">
-          <Suspense fallback={<SectionsSkeleton />}>
-            <HomeSections />
-          </Suspense>
-          <TrustAndJoin />
-        </div>
+        <JoinBand />
       </main>
       <SiteFooter />
     </>

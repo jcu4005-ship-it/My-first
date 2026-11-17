@@ -2,16 +2,16 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Compass, House, Ticket, UserRound, Users } from "lucide-react";
+import { Bookmark, Compass, House, UserRound, Users } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 
 const TABS = [
   { href: "/", label: "홈", icon: House, match: (p: string) => p === "/" },
   { href: "/meetups", label: "탐색", icon: Compass, match: (p: string) => p.startsWith("/meetups") },
-  { href: "/hosts", label: "호스트", icon: Users, match: (p: string) => p.startsWith("/hosts") || p.startsWith("/become-a-host") },
-  { href: "/me/bookings", label: "예약", icon: Ticket, match: (p: string) => p.startsWith("/me/bookings") || p.startsWith("/checkout") },
-  { href: "/me", label: "마이", icon: UserRound, match: (p: string) => p.startsWith("/me") && !p.startsWith("/me/bookings") },
+  { href: "/hosts", label: "크리에이터", icon: Users, match: (p: string) => p.startsWith("/hosts") || p.startsWith("/become-a-host") },
+  { href: "/saved", label: "저장", icon: Bookmark, match: (p: string) => p.startsWith("/saved") },
+  { href: "/me", label: "마이", icon: UserRound, match: (p: string) => p.startsWith("/me") || p.startsWith("/checkout") },
 ];
 
 /** 휴대폰 전용 아래 탭 막대. 실제로 있는 화면으로만 연결합니다. */

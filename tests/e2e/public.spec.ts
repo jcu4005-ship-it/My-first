@@ -7,22 +7,21 @@ test.beforeAll(requireTestEnv);
 // 샘플 데이터가 필요한 검사: 로컬·CI는 항상, 스테이징은 샘플을 넣은 경우(TEST_EXPECT_SAMPLES=yes)만
 const samples = !isStaging || process.env.TEST_EXPECT_SAMPLES === "yes";
 
-test("메인: 첫 화면 카드, 만나 볼 사람들(크리에이터 먼저), 세 분야, 나머지 프로그램(중복 없음), 저널, 큐레이션 기준", async ({ page }) => {
+test("메인: 큰 사진 문구, 지금 가장 흥미로운 경험, 세 카테고리, 만나 볼 사람들, 저널, 심사 기준", async ({ page }) => {
   test.skip(!samples, "샘플 데이터 없음");
   await page.goto("/");
-  await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+  await expect(page.getByRole("heading", { level: 1 })).toContainText("Make time");
+  await expect(page.getByTestId("hero-cta")).toHaveAttribute("href", "/meetups");
   await expect(page.getByTestId("home-pillars").getByTestId("pillar-tile")).toHaveCount(3);
   await expect(page.getByTestId("sample-notice")).toBeVisible();
-  // 크리에이터를 프로그램 목록보다 먼저, 크게
+  const cards = page.getByTestId("home-this-week").getByTestId("meetup-card");
+  await expect(cards.first()).toBeVisible();
+  expect(await cards.count()).toBeLessThanOrEqual(8);
+  // 다른 참가자의 얼굴은 보여 주지 않고 남은 자리는 글자로
+  await expect(cards.first().getByTestId("card-seats")).toContainText(/(\d+자리 남음|마감)/);
   const creators = page.getByTestId("home-creators").getByTestId("creator-tile");
   await expect(creators.first()).toBeVisible();
   expect(await creators.count()).toBeLessThanOrEqual(8);
-  // 첫 화면 카드와 아래 목록에 같은 프로그램이 두 번 나오지 않음
-  const heroTitles = await page.getByTestId("featured-card").getByRole("heading").allTextContents();
-  const restTitles = await page.getByTestId("home-this-week").getByTestId("meetup-card").getByRole("heading").allTextContents();
-  expect(heroTitles.length).toBeGreaterThan(0);
-  expect(restTitles.filter((t) => heroTitles.includes(t))).toEqual([]);
-  expect(restTitles.length).toBeLessThanOrEqual(8);
   await expect(page.getByTestId("home-journal").getByTestId("content-card").first()).toBeVisible();
   await expect(page.getByTestId("home-curation")).toContainText("공개 전 검수");
   // 아직 없는 기능(멤버십)은 메인에 보이지 않음
@@ -49,7 +48,7 @@ test("메인 추천 카드: 남은 자리(글자)·참가비가 보이고, 누�
 test("호스트 안내: 정책·과정·약속·로드맵, 지원하기 연결, 메뉴에서 진입", async ({ page }) => {
   await page.goto("/");
   await page.getByRole("navigation", { name: "주요 메뉴" }).or(page.getByRole("navigation", { name: "주요 메뉴 (모바일)" }))
-    .getByRole("link", { name: "호스트 지원", exact: true }).filter({ visible: true }).first().click();
+    .getByRole("link", { name: "크리에이터 지원", exact: true }).filter({ visible: true }).first().click();
   await expect(page).toHaveURL(/\/become-a-host$/);
   const main = page.getByTestId("for-hosts");
   await expect(main.getByRole("heading", { level: 1 })).toBeVisible();
@@ -79,14 +78,28 @@ test("호스트 목록: 옛 주소 연결, 운영팀 추천, 3대 분류 필터,
   await expect(cards.filter({ hasText: "기타 선생 민재" })).toHaveCount(0);
 
   await page.goto("/hosts");
-  await page.getByTestId("host-search").getByRole("textbox", { name: "호스트 검색" }).fill("기타");
+  await page.getByTestId("host-search").getByRole("textbox", { name: "크리에이터 검색" }).fill("기타");
   await page.getByTestId("host-search").getByRole("button", { name: "검색" }).click();
   await expect(page).toHaveURL(/q=/);
   await expect(page.getByTestId("host-card").filter({ visible: true })).toHaveCount(1);
   await expect(page.getByTestId("host-card").filter({ visible: true })).toContainText("기타 선생 민재");
 
   await page.goto("/hosts?q=" + encodeURIComponent("없는호스트이름xyz"));
-  await expect(page.getByTestId("empty-state")).toContainText("찾는 호스트가 없어요");
+  await expect(page.getByTestId("empty-state")).toContainText("찾는 크리에이터가 없어요");
+});
+
+test("저장: 카드의 북마크를 누르면 저장 화면에 모이고, 다시 누르면 빠진다 (이 기기에만 저장)", async ({ page }) => {
+  await page.goto("/meetups");
+  const card = page.getByTestId("meetup-card").first();
+  const title = (await card.getByRole("heading").textContent())!.trim();
+  const save = page.getByTestId("save-button").first();
+  await expect(save).toHaveAttribute("aria-pressed", "false");
+  await save.click();
+  await expect(save).toHaveAttribute("aria-pressed", "true");
+  await page.goto("/saved");
+  await expect(page.getByTestId("saved-list")).toContainText(title);
+  await page.getByTestId("saved-list").getByTestId("save-button").first().click();
+  await expect(page.getByTestId("saved-empty")).toBeVisible();
 });
 
 test("첫 호스트(이름·분야만): 목록과 상세에 '소개 준비 중', 호스트에 샘플 표시 없음, 예시 프로그램은 샘플·신청 불가", async ({ page }) => {

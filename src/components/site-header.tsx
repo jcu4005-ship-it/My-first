@@ -11,7 +11,7 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { MobileTabBar } from "./mobile-tab-bar";
 
 const iconButton =
-  "relative inline-flex size-10 items-center justify-center rounded-full border-[1.5px] border-foreground/80 text-foreground transition-colors hover:bg-card";
+  "relative inline-flex size-10 items-center justify-center rounded-full text-foreground transition-colors hover:bg-linen";
 
 async function AccountNav() {
   const member = await getCurrentMember().catch(() => null);
@@ -72,9 +72,9 @@ async function UnreadBadge({ userId }: { userId: string }) {
 
 const NAV = [
   { href: "/meetups", label: "프로그램" },
-  { href: "/hosts", label: "호스트" },
+  { href: "/hosts", label: "크리에이터" },
   { href: "/journal", label: "저널" },
-  { href: "/become-a-host", label: "호스트 지원" },
+  { href: "/become-a-host", label: "크리에이터 지원" },
 ];
 
 /**
@@ -85,7 +85,7 @@ const NAV = [
 export function SiteHeader({ tabBar = true }: { tabBar?: boolean }) {
   return (
     <>
-      <header className="sticky top-0 z-30 border-b border-white/30 bg-[#c6d0b7]/85 backdrop-blur">
+      <header className="sticky top-0 z-30 border-b border-border/70 bg-background/92 backdrop-blur">
         <div className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between gap-3 px-4 sm:px-6">
           <div className="flex items-center gap-10 whitespace-nowrap">
             <Link href="/" className="flex items-center text-foreground" aria-label={`${displayName()} 홈`} data-testid="site-logo">
@@ -93,7 +93,7 @@ export function SiteHeader({ tabBar = true }: { tabBar?: boolean }) {
             </Link>
             <nav aria-label="주요 메뉴" className="hidden items-center gap-7 md:flex">
               {NAV.map((n) => (
-                <Link key={n.href} href={n.href} className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground">
+                <Link key={n.href} href={n.href} className="text-[13.5px] font-medium tracking-[0.02em] text-foreground/75 transition-colors hover:text-foreground">
                   {n.label}
                 </Link>
               ))}

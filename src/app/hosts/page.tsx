@@ -11,7 +11,7 @@ import { PILLARS, isPillar, pillarInfo } from "@/config/pillars";
 import { listHosts } from "@/lib/meetups/queries";
 
 export const instant = false;
-export const metadata: Metadata = { title: "호스트", description: "자기만의 작업과 전문성을 가진 크리에이터를 소개합니다." };
+export const metadata: Metadata = { title: "크리에이터", description: "자기만의 작업과 전문성을 가진 크리에이터를 소개합니다." };
 
 type Search = { pillar?: string; q?: string };
 
@@ -49,7 +49,7 @@ async function HostList({ pillar, q }: { pillar?: "knowledge" | "creators" | "ex
     <>
       {featured.length > 0 && (
         <section className="mb-12" aria-labelledby="featured-title" data-testid="featured-hosts">
-          <SectionTitle id="featured-title" description="추천은 운영팀이 직접 고릅니다. 팔로워 수와는 관계없어요.">이번에 소개하는 호스트</SectionTitle>
+          <SectionTitle id="featured-title" description="추천은 운영팀이 직접 고릅니다. 팔로워 수와는 관계없어요.">이번에 소개하는 크리에이터</SectionTitle>
           <div className="relative -mx-4 flex snap-x snap-mandatory scroll-px-4 gap-4 overflow-x-auto px-4 pb-2 no-scrollbar sm:mx-0 sm:grid sm:grid-cols-3 sm:gap-5 sm:overflow-visible sm:px-0 sm:pb-0 lg:grid-cols-4">
             {featured.map((h) => (
               <HostCard key={h.user_id} host={h} representative={h.representative} className="w-[76vw] max-w-[20rem] shrink-0 snap-start sm:w-auto sm:max-w-none" />
@@ -59,7 +59,7 @@ async function HostList({ pillar, q }: { pillar?: "knowledge" | "creators" | "ex
       )}
       <section aria-labelledby="all-hosts-title">
         <h2 id="all-hosts-title" className="mb-5 font-display text-2xl font-bold text-forest" data-testid="host-count">
-          {q ? `"${q}" 검색 결과 ${hosts.length}명` : `${pillarInfo(pillar)?.ko ?? "모든"} 호스트 ${hosts.length}명`}
+          {q ? `"${q}" 검색 결과 ${hosts.length}명` : `${pillarInfo(pillar)?.ko ?? "모든"} 크리에이터 ${hosts.length}명`}
         </h2>
         {hosts.length ? (
           <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3">
@@ -71,12 +71,12 @@ async function HostList({ pillar, q }: { pillar?: "knowledge" | "creators" | "ex
           </ul>
         ) : (
           <div className="rounded-3xl border border-dashed border-border px-6 py-16 text-center" data-testid="empty-state">
-            <p className="font-display text-xl font-bold text-forest">{q ? "찾는 호스트가 없어요" : "아직 이 분류의 호스트가 없어요"}</p>
+            <p className="font-display text-xl font-bold text-forest">{q ? "찾는 크리에이터가 없어요" : "아직 이 분류의 크리에이터가 없어요"}</p>
             <p className="mt-3 text-sm text-muted-foreground">
-              {q ? "다른 이름이나 분야로 검색해 보세요." : "이 분야의 전문가라면 호스트로 함께해 주세요."}
+              {q ? "다른 이름이나 분야로 검색해 보세요." : "이 분야의 전문가라면 크리에이터로 함께해 주세요."}
             </p>
             <Link href={q ? "/hosts" : "/become-a-host"} className="mt-5 inline-block text-sm font-semibold text-forest underline-offset-4 hover:underline">
-              {q ? "전체 호스트 보기" : "호스트 지원 안내"}
+              {q ? "전체 크리에이터 보기" : "크리에이터 지원 안내"}
             </Link>
           </div>
         )}
@@ -100,7 +100,7 @@ export default async function HostsPage({ searchParams }: PageProps<"/hosts">) {
         >
           <form action="/hosts" method="get" role="search" className="mt-6 flex max-w-md gap-2" data-testid="host-search">
             {pillar && <input type="hidden" name="pillar" value={pillar} />}
-            <label htmlFor="host-q" className="sr-only">호스트 검색</label>
+            <label htmlFor="host-q" className="sr-only">크리에이터 검색</label>
             <input
               id="host-q"
               name="q"
