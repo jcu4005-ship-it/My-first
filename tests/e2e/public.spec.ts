@@ -7,10 +7,11 @@ test.beforeAll(requireTestEnv);
 // 샘플 데이터가 필요한 검사: 로컬·CI는 항상, 스테이징은 샘플을 넣은 경우(TEST_EXPECT_SAMPLES=yes)만
 const samples = !isStaging || process.env.TEST_EXPECT_SAMPLES === "yes";
 
-test("메인: 큰 사진 문구, 지금 가장 흥미로운 경험, 세 카테고리, 만나 볼 사람들, 저널, 심사 기준", async ({ page }) => {
+test("메인: 큰 사진 문구(한글만), 지금 가장 흥미로운 경험, 세 카테고리, 만나 볼 사람들, 저널, 심사 기준", async ({ page }) => {
   test.skip(!samples, "샘플 데이터 없음");
   await page.goto("/");
-  await expect(page.getByRole("heading", { level: 1 })).toContainText("Make time");
+  await expect(page.getByRole("heading", { level: 1 })).toContainText("새로운 경험이 시작되는 곳");
+  await expect(page.getByText("Make time")).toHaveCount(0);
   await expect(page.getByTestId("hero-cta")).toHaveAttribute("href", "/meetups");
   await expect(page.getByTestId("home-pillars").getByTestId("pillar-tile")).toHaveCount(3);
   await expect(page.getByTestId("sample-notice")).toBeVisible();

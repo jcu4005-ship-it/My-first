@@ -248,17 +248,12 @@ function Hero() {
           <span aria-hidden className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/45 to-black/20 sm:bg-gradient-to-r sm:from-forest-deep sm:via-forest-deep/30 sm:to-transparent" />
         </div>
         <div className="flex min-h-[460px] flex-col justify-end p-6 sm:min-h-0 sm:justify-center sm:p-12">
-          <p className="text-[11px] font-semibold tracking-[0.32em] text-[#f3efe8]/75">{brand.name.toUpperCase()}</p>
-          <h1 id="hero-title" className="mt-3 font-editorial text-[38px] leading-[1.04] font-medium tracking-[-0.01em] sm:text-[60px]">
-            Make time
-            <br />
-            for what inspires you.
-          </h1>
-          <p className="mt-4 max-w-sm text-[15px] leading-relaxed text-[#f3efe8]/85">
+          <p className="mb-3 text-[11px] font-semibold tracking-[0.32em] text-[#f3efe8]/75">{brand.name.toUpperCase()}</p>
+          <h1 id="hero-title" className="text-[30px] leading-[1.3] font-semibold tracking-[-0.02em] break-keep sm:text-[44px]">
             취향이 맞는 사람들과,
             <br />
             새로운 경험이 시작되는 곳.
-          </p>
+          </h1>
           <div className="mt-7 flex flex-wrap items-center gap-3">
             <Link
               href="/meetups"
