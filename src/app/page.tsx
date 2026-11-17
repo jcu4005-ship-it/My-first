@@ -5,7 +5,8 @@ import { cache, Suspense } from "react";
 
 import { brand } from "@/config/brand";
 import { ISSUE } from "@/config/issue";
-import { LogoSymbol, LogoWordmark } from "@/components/brand/logo";
+import { LogoSymbol, LogoWordmarkChair } from "@/components/brand/logo";
+import { CoverRotator } from "@/components/home/cover-rotator";
 import { ContentCard } from "@/components/contents/content-card";
 import { Photo } from "@/components/media/photo";
 import { MeetupRow } from "@/components/meetups/meetup-card";
@@ -88,13 +89,15 @@ function firstProgramOf(meetups: MeetupCardData[], hostId: string) {
 
 async function Cover() {
   const { meetups, people } = await homeData();
-  const cover = people[0];
-  const coverPhoto = cover ? creatorPhoto(cover) : null;
+  const slides = people.flatMap((h) => {
+    const photo = creatorPhoto(h);
+    return photo ? [{ href: hostHref(h), name: h.display_name, role: h.occupation || h.headline || pillarInfo(h.primary_pillar)?.ko || "", photo }] : [];
+  });
   const index = people.slice(0, 3);
   return (
     <section aria-labelledby="hero-title">
       <div className="mx-auto w-full max-w-6xl px-4 pt-1 sm:px-6">
-        <LogoWordmark className="w-full text-foreground" />
+        <LogoWordmarkChair className="w-full text-foreground" />
         <div className="mt-3 flex justify-between border-y border-foreground py-2 text-[9.5px] font-bold tracking-[0.16em] sm:mt-4 sm:border-t-2 sm:text-[11.5px] sm:tracking-[0.18em]">
           <span>
             ISSUE No.{String(ISSUE.no).padStart(2, "0")} — {ISSUE.season}
@@ -106,16 +109,8 @@ async function Cover() {
 
       <div className="mx-auto grid w-full max-w-6xl gap-6 px-4 pt-4 sm:px-6 sm:pt-8 lg:grid-cols-[5fr_4.2fr_2.8fr] lg:gap-9">
         {/* 표지 사진 (휴대폰에서는 맨 위) */}
-        {cover && coverPhoto && (
-          <Link href={hostHref(cover)} className="group relative block aspect-[4/5] overflow-hidden rounded-[2px] bg-linen lg:order-2" data-testid="cover-story">
-            <Photo src={coverPhoto} alt={`${cover.display_name} 사진`} priority sizes="(min-width: 1024px) 34vw, 100vw" fallback={null} className="object-[50%_14%] transition-transform duration-700 group-hover:scale-[1.02]" />
-            <span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-4 pt-14 pb-4 text-white sm:px-5">
-              <span className="block text-[10.5px] font-bold tracking-[0.26em] uppercase opacity-85">Cover story</span>
-              <span className="mt-1 block text-[22px] font-extrabold tracking-[-0.02em] sm:text-[26px]">{cover.display_name}</span>
-              <span className="block text-[13px] opacity-90">{cover.occupation || cover.headline || pillarInfo(cover.primary_pillar)?.ko}</span>
-            </span>
-          </Link>
-        )}
+        {/* 표지 사진 (휴대폰에서는 맨 위) — 사진이 있는 크리에이터를 2초마다 돌아가며 */}
+        <CoverRotator slides={slides} />
 
         <div className="flex flex-col justify-end lg:order-1 lg:pb-1">
           <p className="text-[10.5px] font-bold tracking-[0.26em] text-ember uppercase">{brand.name}</p>

@@ -7,6 +7,21 @@ test.beforeAll(requireTestEnv);
 // 샘플 데이터가 필요한 검사: 로컬·CI는 항상, 스테이징은 샘플을 넣은 경우(TEST_EXPECT_SAMPLES=yes)만
 const samples = !isStaging || process.env.TEST_EXPECT_SAMPLES === "yes";
 
+test("메인 제호와 표지: O 자리에 의자 로고, 크리에이터 사진이 2초마다 바뀌고 점으로 넘길 수 있다", async ({ page }) => {
+  await page.goto("/");
+  await expect(page.getByTestId("wordmark-chair")).toBeVisible();
+  const cover = page.getByTestId("cover-story");
+  await expect(cover).toHaveAttribute("href", /^\/hosts\//);
+  const dots = page.getByTestId("cover-dots").getByRole("button");
+  test.skip((await dots.count()) < 2, "사진 있는 크리에이터가 1명 이하");
+  const first = await cover.getAttribute("href");
+  // 저절로 바뀜 (2초 간격, 여유 4초)
+  await expect(cover).not.toHaveAttribute("href", first!, { timeout: 4000 });
+  // 점을 누르면 그 사람으로
+  await dots.first().click();
+  await expect(cover).toHaveAttribute("href", first!);
+});
+
 test("메인(잡지 표지): 카피·표지, 이번 호의 사람들, 그 사람을 만나는 방법, 세 분야, 저널, 심사 기준", async ({ page }) => {
   test.skip(!samples, "샘플 데이터 없음");
   await page.goto("/");
