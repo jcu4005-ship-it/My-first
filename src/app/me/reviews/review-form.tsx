@@ -20,6 +20,7 @@ export function ReviewForm({ bookingId, title }: { bookingId: string; title: str
   }
   return (
     <form
+      action={action}
       // 직접 제출: 기본 form action은 제출 뒤 입력을 비워서, 검사 오류가 나면 별점·글이 사라져요
       onSubmit={(e) => {
         e.preventDefault();

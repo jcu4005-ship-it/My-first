@@ -1,5 +1,6 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 
@@ -63,4 +64,27 @@ export async function previewCouponAction(input: { sessionId: string; quantity: 
   const row = Array.isArray(data) ? data[0] : null;
   if (error || !row) return { ok: false, message: rpcErrorMessage(error) || "사용할 수 없는 쿠폰이에요" };
   return { ok: true, code: parsed.data.code, percent: row.percent_off, discount: row.discount, total: row.total };
+}
+
+const waitlistSchema = z.object({ meetupId: z.uuid(), sessionId: z.uuid(), op: z.enum(["join", "leave"]) });
+
+/** 대기 신청·취소 — 마감 여부·본인 확인은 DB 함수가 다시 확인 */
+export async function waitlistAction(_prev: FormState, formData: FormData): Promise<FormState> {
+  const member = await getCurrentMember();
+  if (!member || member.status !== "active") return { status: "error", message: "로그인이 필요합니다." };
+  const parsed = waitlistSchema.safeParse({
+    meetupId: formValue(formData, "meetupId"),
+    sessionId: formValue(formData, "sessionId"),
+    op: formValue(formData, "op"),
+  });
+  if (!parsed.success) return { status: "error", message: "잘못된 요청입니다." };
+  const supabase = await createSupabaseServerClient();
+  const { error } = await supabase.rpc(parsed.data.op === "join" ? "join_waitlist" : "leave_waitlist", { p_session_id: parsed.data.sessionId });
+  if (error) return { status: "error", message: rpcErrorMessage(error) };
+  revalidatePath(`/meetups/${parsed.data.meetupId}`);
+  revalidatePath("/me/bookings");
+  return {
+    status: "success",
+    message: parsed.data.op === "join" ? "대기 신청했어요. 자리가 나면 알림으로 알려 드려요." : "대기를 취소했어요.",
+  };
 }

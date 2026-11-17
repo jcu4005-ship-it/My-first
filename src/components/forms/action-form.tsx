@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { startTransition, useActionState, useEffect, useRef } from "react";
 
 import { FormMessage } from "@/components/forms/field";
 import { Button } from "@/components/ui/button";
@@ -33,13 +33,23 @@ export function ActionForm({
   className?: string;
 }) {
   const [state, formAction, pending] = useActionState(action, initialFormState);
+  const formRef = useRef<HTMLFormElement>(null);
+  // 성공하면 입력칸을 비우고, 오류면 쓴 내용을 그대로 둠
+  useEffect(() => {
+    if (state.status === "success") formRef.current?.reset();
+  }, [state]);
   return (
     <form
+      ref={formRef}
       action={formAction}
       data-testid={testId}
       className={cn("flex flex-col gap-2", className)}
       onSubmit={(e) => {
-        if (confirmText && !window.confirm(confirmText)) e.preventDefault();
+        // 화면 준비 후에는 직접 제출(기본 제출은 입력을 비움). 준비 전에는 기본 제출(action)로 동작
+        e.preventDefault();
+        if (confirmText && !window.confirm(confirmText)) return;
+        const fd = new FormData(e.currentTarget);
+        startTransition(() => formAction(fd));
       }}
     >
       {Object.entries(hidden).map(([k, v]) => (

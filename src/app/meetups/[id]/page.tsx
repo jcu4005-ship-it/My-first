@@ -25,6 +25,8 @@ import { getAppSettings } from "@/lib/settings/queries";
 import { CLASS_LEVEL_LABEL } from "@/lib/validation/meetup";
 
 import { BookingForm } from "./booking-form";
+import { WaitlistPanel } from "./waitlist-panel";
+import { listMyWaitlist } from "@/lib/bookings/waitlist";
 import { creatorPhoto, hostHref } from "@/lib/hosting/avatar";
 
 export const instant = false;
@@ -65,12 +67,14 @@ export default async function MeetupDetailPage({ params }: PageProps<"/meetups/[
   const { id } = await params;
   const [meetup, categories, member, settings] = await Promise.all([getMeetup(id), listCategories(), getCurrentMember(), getAppSettings()]);
   if (!meetup) notFound();
-  const [mine, follow, reviews, reviewSummary] = await Promise.all([
+  const [mine, follow, reviews, reviewSummary, myWaitlist] = await Promise.all([
     member ? myConfirmedSessionIds(member.id, meetup.upcomingSessions.map((s) => s.id)) : Promise.resolve(new Set<string>()),
     meetup.host ? getFollowState(meetup.host.user_id, member?.id ?? null) : Promise.resolve(null),
     listPublicReviews({ meetupId: meetup.id }),
     getReviewSummary({ meetupId: meetup.id }),
+    member ? listMyWaitlist() : Promise.resolve([]),
   ]);
+  const waiting = new Set(myWaitlist.map((w) => w.session_id));
   // 비공개 베타: 유료 프로그램 신청 막음 (DB도 한 번 더 막음)
   const betaPaid = meetup.price > 0 && !settings.paid_bookings_enabled;
   const viewerState = meetup.is_sample ? "sample" : betaPaid ? "beta_paid" : !member ? "guest" : meetup.host?.user_id === member.id ? "own" : "ok";
@@ -226,6 +230,14 @@ export default async function MeetupDetailPage({ params }: PageProps<"/meetups/[
                     />
                   ) : (
                     <p className="text-center text-sm text-muted-foreground">예정된 일정이 없습니다.</p>
+                  )}
+                  {(viewerState === "ok" || viewerState === "guest") && (
+                    <WaitlistPanel
+                      meetupId={meetup.id}
+                      sessions={bookingSessions.filter((s) => s.open && s.left === 0 && !s.mine)}
+                      waiting={waiting}
+                      loggedIn={viewerState === "ok"}
+                    />
                   )}
                 </div>
               </div>

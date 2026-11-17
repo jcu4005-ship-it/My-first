@@ -9,7 +9,7 @@ import { brand } from "@/config/brand";
 import { Button } from "@/components/ui/button";
 import { requireRole } from "@/lib/auth/guards";
 import { formatDate, formatPrice, formatTime, isFuture } from "@/lib/format";
-import { MEETUP_STATUS_LABEL, getHostSessionsAndParticipants, getMyMeetup, listMySessionNotices } from "@/lib/hosting/queries";
+import { MEETUP_STATUS_LABEL, getHostSessionsAndParticipants, getMyMeetup, getWaitlistCounts, listMySessionNotices } from "@/lib/hosting/queries";
 
 import {
   couponConsentAction,
@@ -33,7 +33,11 @@ export default async function ManageMeetupPage({ params, searchParams }: PagePro
   const member = await requireRole("host", `/host/meetups/${id}`);
   const meetup = await getMyMeetup(member.id, id);
   if (!meetup) notFound();
-  const [{ sessions, participants }, notices] = await Promise.all([getHostSessionsAndParticipants(meetup.id), listMySessionNotices(meetup.id)]);
+  const [{ sessions, participants }, notices, waitCounts] = await Promise.all([
+    getHostSessionsAndParticipants(meetup.id),
+    listMySessionNotices(meetup.id),
+    getWaitlistCounts(meetup.id),
+  ]);
   const editable = ["draft", "pending_review", "rejected", "published"].includes(meetup.status);
 
   return (
@@ -133,6 +137,9 @@ export default async function ManageMeetupPage({ params, searchParams }: PagePro
                     <div className="text-right">
                       <StatusPill tone={s.status === "open" ? "ok" : "muted"}>{SESSION_LABEL[s.status]}</StatusPill>
                       <p className="mt-1 text-sm" data-testid="session-seats">신청 {s.reserved_count} / {s.capacity}명</p>
+                      {(waitCounts[s.id] ?? 0) > 0 && (
+                        <p className="text-xs text-clay" data-testid="session-waitlist">대기 {waitCounts[s.id]}명 · 정원을 늘리면 알림이 가요</p>
+                      )}
                     </div>
                   </div>
 

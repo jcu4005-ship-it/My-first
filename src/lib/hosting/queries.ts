@@ -184,3 +184,10 @@ export async function listMeetupsByStatus(status: MeetupStatus): Promise<ReviewM
   if (error) throw new Error(`프로그램 조회 실패: ${error.message}`);
   return (data ?? []) as unknown as ReviewMeetup[];
 }
+
+/** 일정별 대기 인원 수 (누가 기다리는지는 보이지 않음) */
+export async function getWaitlistCounts(meetupId: string): Promise<Record<string, number>> {
+  const supabase = await createSupabaseServerClient();
+  const { data } = await supabase.rpc("host_waitlist_counts", { p_meetup_id: meetupId });
+  return Object.fromEntries(((data as { session_id: string; waiting: number }[] | null) ?? []).map((r) => [r.session_id, r.waiting]));
+}

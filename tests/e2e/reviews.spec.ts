@@ -74,9 +74,11 @@ test("다가오는 일정: 공유하기·캘린더 파일(상세 주소 없음),
   await notice.getByRole("textbox").fill("짧");
   await notice.getByRole("button", { name: "공지 보내기" }).click();
   await expect(notice.getByText("공지는 5자 이상 적어 주세요.")).toBeVisible();
+  await expect(notice.getByRole("textbox")).toHaveValue("짧"); // 오류가 나도 쓴 내용은 그대로
   await notice.getByRole("textbox").fill("입구는 건물 뒤편이에요. 5분 일찍 와 주세요.");
   await notice.getByRole("button", { name: "공지 보내기" }).click();
   await expect(notice.getByText("참가자 1명에게 공지를 보냈어요.")).toBeVisible();
+  await expect(notice.getByRole("textbox")).toHaveValue(""); // 보내고 나면 비움
 
   const part = await loginPage(browser, p.email);
   await part.goto("/me/notifications");

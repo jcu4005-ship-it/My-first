@@ -9,7 +9,8 @@ import { SiteHeader } from "@/components/site-header";
 import { Button } from "@/components/ui/button";
 import { requireMember } from "@/lib/auth/guards";
 import { listMyBookings, type MyBooking } from "@/lib/bookings/queries";
-import { formatDate, formatPrice, formatTime, isFuture } from "@/lib/format";
+import { listMyWaitlist } from "@/lib/bookings/waitlist";
+import { formatDate, formatPrice, formatTime, isFuture, formatShortDateTime } from "@/lib/format";
 
 import { cancelBookingAction } from "./actions";
 
@@ -67,7 +68,7 @@ function BookingCard({ b, highlight }: { b: MyBooking; highlight: boolean }) {
 export default async function MyBookingsPage({ searchParams }: PageProps<"/me/bookings">) {
   await requireMember("/me/bookings");
   const { booked } = (await searchParams) as { booked?: string };
-  const bookings = await listMyBookings();
+  const [bookings, waitlist] = await Promise.all([listMyBookings(), listMyWaitlist()]);
   const upcoming = bookings.filter((b) => (b.status === "confirmed" || b.status === "pending_payment") && isFuture(b.starts_at))
     .sort((a, b) => a.starts_at.localeCompare(b.starts_at));
   const past = bookings.filter((b) => !upcoming.includes(b));
@@ -93,6 +94,24 @@ export default async function MyBookingsPage({ searchParams }: PageProps<"/me/bo
             </div>
           )}
         </section>
+        {waitlist.length > 0 && (
+          <section className="mt-10" data-testid="my-waitlist">
+            <h2 className="mb-3 text-lg font-bold">대기 중인 일정 <span className="text-muted-foreground">{waitlist.length}</span></h2>
+            <ul className="flex flex-col gap-2">
+              {waitlist.map((w) => (
+                <li key={w.session_id} className="flex flex-wrap items-center justify-between gap-2 rounded-2xl bg-card px-4 py-3">
+                  <Link href={`/meetups/${w.meetup_id}`} className="min-w-0">
+                    <span className="block truncate font-semibold hover:underline">{w.title}</span>
+                    <span className="block text-xs text-muted-foreground">{formatShortDateTime(w.starts_at)}</span>
+                  </Link>
+                  <span className={w.left_seats > 0 ? "text-sm font-semibold text-clay" : "text-sm text-muted-foreground"}>
+                    {w.left_seats > 0 ? `자리 ${w.left_seats}개 생김 · 지금 신청하기` : "자리가 나면 알려 드려요"}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
         {past.length > 0 && (
           <section className="mt-10">
             <div className="mb-3 flex items-end justify-between">
