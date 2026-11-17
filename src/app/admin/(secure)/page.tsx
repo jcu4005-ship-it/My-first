@@ -7,6 +7,17 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 import { purgeStalePiiAction } from "./actions";
 
+type Overview = {
+  members_total: number;
+  members_new_7d: number;
+  bookings_7d: number;
+  bookings_upcoming: number;
+  hosts_approved: number;
+  reviews_7d: number;
+  avg_rating: number | string | null;
+  reviews_hidden: number;
+};
+
 export const metadata: Metadata = { title: "관리자" };
 
 // 권한 확인이 끝나기 전에는 응답을 시작하지 않음 → 권한 없으면 HTTP 403
@@ -23,6 +34,14 @@ export default async function Page() {
     supabase.rpc("admin_count_stale_pii"),
     supabase.from("support_tickets").select("id", { count: "exact", head: true }).eq("status", "open"),
   ]);
+  const { data: ov } = await supabase.rpc("admin_overview");
+  const o = (ov as Overview[] | null)?.[0];
+  const numbers = [
+    { label: "회원", value: o?.members_total ?? 0, sub: `최근 7일 +${o?.members_new_7d ?? 0}` },
+    { label: "최근 7일 확정 신청", value: o?.bookings_7d ?? 0, sub: `다가오는 참가 ${o?.bookings_upcoming ?? 0}건`, href: "/admin/bookings" },
+    { label: "활동 중인 크리에이터", value: o?.hosts_approved ?? 0, sub: "테스트·샘플 제외" },
+    { label: "평균 별점", value: o?.avg_rating != null ? Number(o.avg_rating).toFixed(1) : "–", sub: `최근 7일 후기 ${o?.reviews_7d ?? 0} · 가림 ${o?.reviews_hidden ?? 0}`, href: "/admin/reviews" },
+  ];
   const staleCount = typeof stale.data === "number" ? stale.data : 0;
   const cards = [
     { href: "/admin/meetups", label: "검수 대기 프로그램", value: meetups.count ?? 0 },
@@ -34,7 +53,24 @@ export default async function Page() {
     <div data-testid="admin-dashboard">
       <h1 className="font-display text-3xl font-bold">관리자 대시보드</h1>
       <p className="mt-3 text-muted-foreground">{admin.nickname}님 · 2단계 인증 완료</p>
-      <ul className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <ul className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-4" data-testid="admin-overview">
+        {numbers.map((c) => {
+          const inner = (
+            <>
+              <p className="text-sm text-muted-foreground">{c.label}</p>
+              <p className="mt-1 text-3xl font-bold tabular-nums">{c.value}</p>
+              <p className="mt-0.5 text-xs text-muted-foreground">{c.sub}</p>
+            </>
+          );
+          return (
+            <li key={c.label} className="rounded-xl border bg-card">
+              {c.href ? <Link href={c.href} className="block p-5 hover:border-foreground">{inner}</Link> : <div className="p-5">{inner}</div>}
+            </li>
+          );
+        })}
+      </ul>
+      <h2 className="mt-8 text-sm font-semibold text-muted-foreground">처리할 일</h2>
+      <ul className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {cards.map((c) => (
           <li key={c.href}>
             <Link href={c.href} className="block rounded-xl border p-5 hover:border-foreground">

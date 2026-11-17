@@ -405,3 +405,27 @@ export async function setSupportStatusAction(_prev: FormState, formData: FormDat
   revalidatePath(`/admin/support/${parsed.data.ticketId}`);
   return { status: "success", message: "상태를 바꿨어요." };
 }
+
+const reviewHiddenSchema = z.object({ reviewId: z.uuid(), hidden: z.enum(["true", "false"]), reason: adminReasonSchema });
+
+/** 후기 숨김·다시 보이기 — 사유 필수, DB가 2단계 인증을 다시 확인하고 감사 기록을 남김 */
+export async function setReviewHiddenAction(_prev: FormState, formData: FormData): Promise<FormState> {
+  if (!(await checkAdminForAction())) return FORBIDDEN;
+  const parsed = reviewHiddenSchema.safeParse({
+    reviewId: formValue(formData, "reviewId"),
+    hidden: formValue(formData, "hidden"),
+    reason: formValue(formData, "reason"),
+  });
+  if (!parsed.success) return { status: "error", message: parsed.error.issues.find((i) => i.path[0] === "reason")?.message ?? "잘못된 요청입니다." };
+  const supabase = await createSupabaseServerClient();
+  const { error } = await supabase.rpc("admin_set_review_hidden", {
+    p_review_id: parsed.data.reviewId,
+    p_hidden: parsed.data.hidden === "true",
+    p_reason: parsed.data.reason,
+  });
+  if (error) return { status: "error", message: dbMessage(error) };
+  revalidatePath("/admin/reviews");
+  revalidatePath("/meetups", "layout");
+  revalidatePath("/hosts", "layout");
+  return { status: "success", message: parsed.data.hidden === "true" ? "후기를 가렸어요." : "후기를 다시 보이게 했어요." };
+}

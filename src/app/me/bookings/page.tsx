@@ -95,7 +95,10 @@ export default async function MyBookingsPage({ searchParams }: PageProps<"/me/bo
         </section>
         {past.length > 0 && (
           <section className="mt-10">
-            <h2 className="mb-3 text-lg font-bold">지난·취소한 신청</h2>
+            <div className="mb-3 flex items-end justify-between">
+              <h2 className="text-lg font-bold">지난·취소한 신청</h2>
+              <Link href="/me/reviews" className="text-sm font-semibold text-forest underline-offset-4 hover:underline" data-testid="write-review-link">후기 남기기</Link>
+            </div>
             <ul className="flex flex-col gap-3">{past.map((b) => <BookingCard key={b.booking_id} b={b} highlight={false} />)}</ul>
           </section>
         )}

@@ -9,9 +9,17 @@ import { brand } from "@/config/brand";
 import { Button } from "@/components/ui/button";
 import { requireRole } from "@/lib/auth/guards";
 import { formatDate, formatPrice, formatTime, isFuture } from "@/lib/format";
-import { MEETUP_STATUS_LABEL, getHostSessionsAndParticipants, getMyMeetup } from "@/lib/hosting/queries";
+import { MEETUP_STATUS_LABEL, getHostSessionsAndParticipants, getMyMeetup, listMySessionNotices } from "@/lib/hosting/queries";
 
-import { couponConsentAction, hostCancelMeetupAction, hostCancelSessionAction, meetupStatusAction, sessionStatusAction } from "../../actions";
+import {
+  couponConsentAction,
+  hostCancelMeetupAction,
+  hostCancelSessionAction,
+  markAttendanceAction,
+  meetupStatusAction,
+  sendSessionNoticeAction,
+  sessionStatusAction,
+} from "../../actions";
 import { AddSessionForm, CapacityForm } from "./session-forms";
 
 export const metadata: Metadata = { title: "프로그램 관리" };
@@ -25,7 +33,7 @@ export default async function ManageMeetupPage({ params, searchParams }: PagePro
   const member = await requireRole("host", `/host/meetups/${id}`);
   const meetup = await getMyMeetup(member.id, id);
   if (!meetup) notFound();
-  const { sessions, participants } = await getHostSessionsAndParticipants(meetup.id);
+  const [{ sessions, participants }, notices] = await Promise.all([getHostSessionsAndParticipants(meetup.id), listMySessionNotices(meetup.id)]);
   const editable = ["draft", "pending_review", "rejected", "published"].includes(meetup.status);
 
   return (
@@ -129,15 +137,54 @@ export default async function ManageMeetupPage({ params, searchParams }: PagePro
                   </div>
 
                   {people.length > 0 ? (
-                    <ul className="mt-4 flex flex-wrap gap-2" data-testid="participant-list">
-                      {people.map((p) => (
-                        <li key={p.booking_id} className="rounded-full bg-secondary px-3 py-1 text-sm">
-                          {p.nickname}{p.quantity > 1 ? ` 외 ${p.quantity - 1}명` : ""}
-                        </li>
-                      ))}
-                    </ul>
+                    future ? (
+                      <ul className="mt-4 flex flex-wrap gap-2" data-testid="participant-list">
+                        {people.map((p) => (
+                          <li key={p.booking_id} className="rounded-full bg-secondary px-3 py-1 text-sm">
+                            {p.nickname}{p.quantity > 1 ? ` 외 ${p.quantity - 1}명` : ""}
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      // 시작된 일정: 출석 체크 (불참으로 체크한 신청은 후기를 쓸 수 없어요)
+                      <ul className="mt-4 flex flex-col divide-y rounded-xl border" data-testid="participant-list">
+                        {people.map((p) => (
+                          <li key={p.booking_id} className="flex flex-wrap items-center justify-between gap-2 px-3 py-2.5" data-testid="attendance-row">
+                            <span className="text-sm">
+                              {p.nickname}{p.quantity > 1 ? ` 외 ${p.quantity - 1}명` : ""}
+                              <span className="ml-2 text-xs text-muted-foreground" data-testid="attendance-state">
+                                {p.attended === true ? "참석" : p.attended === false ? "불참" : "출석 체크 전"}
+                              </span>
+                            </span>
+                            <span className="flex gap-1.5">
+                              <ActionForm action={markAttendanceAction} hidden={{ meetupId: meetup.id, bookingId: p.booking_id, attended: "true" }}
+                                label="참석" variant={p.attended === true ? "default" : "outline"} testId="mark-attended" />
+                              <ActionForm action={markAttendanceAction} hidden={{ meetupId: meetup.id, bookingId: p.booking_id, attended: "false" }}
+                                label="불참" variant={p.attended === false ? "default" : "ghost"} testId="mark-absent" />
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+                    )
                   ) : (
                     <p className="mt-4 text-sm text-muted-foreground">아직 신청자가 없어요.</p>
+                  )}
+
+                  {people.length > 0 && s.status !== "cancelled" && (
+                    <div className="mt-4 border-t pt-4" data-testid="session-notice">
+                      <p className="mb-2 text-sm font-semibold">참가자에게 공지 보내기 <span className="font-normal text-muted-foreground">(확정 참가자 모두에게 알림, 일정당 10번까지)</span></p>
+                      <ActionForm action={sendSessionNoticeAction} hidden={{ meetupId: meetup.id, sessionId: s.id }} label="공지 보내기"
+                        note={{ name: "body", placeholder: "예: 입구는 건물 뒤편이에요. 5분 일찍 와 주세요." }} testId="notice-form" />
+                      {notices.filter((n) => n.session_id === s.id).length > 0 && (
+                        <ul className="mt-3 flex flex-col gap-1.5 text-xs text-muted-foreground" data-testid="notice-history">
+                          {notices.filter((n) => n.session_id === s.id).map((n) => (
+                            <li key={n.id}>
+                              {formatDate(n.created_at)} {formatTime(n.created_at)} · {n.recipients}명 · <span className="text-foreground">{n.body}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
                   )}
 
                   {editable && future && s.status !== "cancelled" && (

@@ -108,6 +108,6 @@ describe("참가 신청 동시성", () => {
     const { data, error } = await host.client.rpc("host_meetup_participants", { p_meetup_id: meetupId });
     expect(error).toBeNull();
     expect(data!.length).toBeGreaterThan(0);
-    expect(Object.keys(data![0]).sort()).toEqual(["booking_id", "created_at", "nickname", "quantity", "session_id", "status"]);
+    expect(Object.keys(data![0]).sort()).toEqual(["attended", "booking_id", "created_at", "nickname", "quantity", "session_id", "status"]);
   });
 });

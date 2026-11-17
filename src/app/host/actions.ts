@@ -280,3 +280,68 @@ export async function couponConsentAction(_prev: FormState, formData: FormData):
   revalidatePath(`/meetups/${parsed.data.meetupId}`);
   return { status: "success", message: parsed.data.accept === "true" ? "쿠폰 허용에 동의했어요." : "쿠폰 허용을 철회했어요. 이미 받은 신청은 그대로예요." };
 }
+
+const attendanceSchema = z.object({ meetupId: z.uuid(), bookingId: z.uuid(), attended: z.enum(["true", "false"]) });
+
+/** 출석 체크 (참석/불참) — 프로그램이 시작된 뒤, 담당 호스트만 (DB가 다시 확인) */
+export async function markAttendanceAction(_prev: FormState, formData: FormData): Promise<FormState> {
+  const member = await activeMember();
+  if (!member) return LOGIN_REQUIRED;
+  if (!member.roles.includes("host")) return NOT_HOST;
+  const parsed = attendanceSchema.safeParse({
+    meetupId: formValue(formData, "meetupId"),
+    bookingId: formValue(formData, "bookingId"),
+    attended: formValue(formData, "attended"),
+  });
+  if (!parsed.success) return { status: "error", message: "잘못된 요청입니다." };
+  const supabase = await createSupabaseServerClient();
+  const { error } = await supabase.rpc("host_mark_attendance", { p_booking_id: parsed.data.bookingId, p_attended: parsed.data.attended === "true" });
+  if (error) return { status: "error", message: rpcErrorMessage(error) };
+  revalidatePath(`/host/meetups/${parsed.data.meetupId}`);
+  return { status: "success", message: parsed.data.attended === "true" ? "참석으로 체크했어요." : "불참으로 체크했어요." };
+}
+
+const noticeSchema = z.object({
+  meetupId: z.uuid(),
+  sessionId: z.uuid(),
+  body: z.string().trim().min(5, "공지는 5자 이상 적어 주세요.").max(300, "공지는 300자 이내로 적어 주세요."),
+});
+
+/** 참가자에게 공지 — 확정 참가자 모두에게 알림으로 전달 */
+export async function sendSessionNoticeAction(_prev: FormState, formData: FormData): Promise<FormState> {
+  const member = await activeMember();
+  if (!member) return LOGIN_REQUIRED;
+  if (!member.roles.includes("host")) return NOT_HOST;
+  const parsed = noticeSchema.safeParse({
+    meetupId: formValue(formData, "meetupId"),
+    sessionId: formValue(formData, "sessionId"),
+    body: formValue(formData, "body"),
+  });
+  if (!parsed.success) return { status: "error", message: parsed.error.issues.find((i) => i.path[0] === "body")?.message ?? "잘못된 요청입니다." };
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase.rpc("host_send_session_notice", { p_session_id: parsed.data.sessionId, p_body: parsed.data.body });
+  if (error) return { status: "error", message: rpcErrorMessage(error) };
+  revalidatePath(`/host/meetups/${parsed.data.meetupId}`);
+  return { status: "success", message: `참가자 ${data ?? 0}명에게 공지를 보냈어요.` };
+}
+
+const replySchema = z.object({
+  reviewId: z.uuid(),
+  reply: z.string().trim().min(2, "답글은 2자 이상 적어 주세요.").max(500, "답글은 500자 이내로 적어 주세요."),
+});
+
+/** 후기에 답글 (수정 가능) */
+export async function replyReviewAction(_prev: FormState, formData: FormData): Promise<FormState> {
+  const member = await activeMember();
+  if (!member) return LOGIN_REQUIRED;
+  if (!member.roles.includes("host")) return NOT_HOST;
+  const parsed = replySchema.safeParse({ reviewId: formValue(formData, "reviewId"), reply: formValue(formData, "reply") });
+  if (!parsed.success) return { status: "error", message: parsed.error.issues.find((i) => i.path[0] === "reply")?.message ?? "잘못된 요청입니다." };
+  const supabase = await createSupabaseServerClient();
+  const { error } = await supabase.rpc("host_reply_review", { p_review_id: parsed.data.reviewId, p_reply: parsed.data.reply });
+  if (error) return { status: "error", message: rpcErrorMessage(error) };
+  revalidatePath("/host/reviews");
+  revalidatePath("/meetups", "layout");
+  revalidatePath("/hosts", "layout");
+  return { status: "success", message: "답글을 남겼어요. 후기를 쓴 분께 알림이 가요." };
+}

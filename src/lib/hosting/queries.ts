@@ -122,6 +122,7 @@ export type Participant = {
   quantity: number;
   status: "confirmed" | "cancelled_by_user" | "cancelled_by_host";
   created_at: string;
+  attended: boolean | null;
 };
 
 export async function getHostSessionsAndParticipants(meetupId: string) {
@@ -133,6 +134,15 @@ export async function getHostSessionsAndParticipants(meetupId: string) {
   if (sessions.error) throw new Error(`일정 조회 실패: ${sessions.error.message}`);
   if (participants.error) throw new Error(`참가자 조회 실패: ${participants.error.message}`);
   return { sessions: (sessions.data ?? []) as HostSession[], participants: (participants.data ?? []) as Participant[] };
+}
+
+export type SessionNotice = { id: string; session_id: string; body: string; recipients: number; created_at: string };
+
+/** 내가 참가자에게 보낸 공지 기록 */
+export async function listMySessionNotices(meetupId: string): Promise<SessionNotice[]> {
+  const supabase = await createSupabaseServerClient();
+  const { data } = await supabase.rpc("host_session_notices", { p_meetup_id: meetupId });
+  return (data as SessionNotice[] | null) ?? [];
 }
 
 /* ---------- 관리자 ---------- */

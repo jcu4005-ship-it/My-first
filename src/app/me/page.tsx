@@ -228,6 +228,7 @@ async function MyPage({ member }: { member: Awaited<ReturnType<typeof requireMem
           <button type="submit" className="hover:text-foreground hover:underline">로그아웃</button>
         </form>
         <span className="flex gap-4">
+          <Link href="/me/reviews" className="hover:text-foreground hover:underline" data-testid="my-reviews-link">내 후기</Link>
           <Link href="/help" className="hover:text-foreground hover:underline">고객센터</Link>
           <Link href="/me/withdraw" className="hover:text-foreground hover:underline">회원 탈퇴하기</Link>
         </span>

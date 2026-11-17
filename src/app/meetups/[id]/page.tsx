@@ -10,6 +10,9 @@ import { Photo } from "@/components/media/photo";
 import { RecordRecentlyViewed } from "@/components/recently-viewed";
 import { categoryStyle } from "@/components/meetups/category-style";
 import { EditorialCover } from "@/components/meetups/editorial-cover";
+import { ShareBar } from "@/components/meetups/share-bar";
+import { ReviewSection } from "@/components/reviews/review-list";
+import { getReviewSummary, listPublicReviews } from "@/lib/reviews/queries";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { Button } from "@/components/ui/button";
@@ -62,9 +65,11 @@ export default async function MeetupDetailPage({ params }: PageProps<"/meetups/[
   const { id } = await params;
   const [meetup, categories, member, settings] = await Promise.all([getMeetup(id), listCategories(), getCurrentMember(), getAppSettings()]);
   if (!meetup) notFound();
-  const [mine, follow] = await Promise.all([
+  const [mine, follow, reviews, reviewSummary] = await Promise.all([
     member ? myConfirmedSessionIds(member.id, meetup.upcomingSessions.map((s) => s.id)) : Promise.resolve(new Set<string>()),
     meetup.host ? getFollowState(meetup.host.user_id, member?.id ?? null) : Promise.resolve(null),
+    listPublicReviews({ meetupId: meetup.id }),
+    getReviewSummary({ meetupId: meetup.id }),
   ]);
   // 비공개 베타: 유료 프로그램 신청 막음 (DB도 한 번 더 막음)
   const betaPaid = meetup.price > 0 && !settings.paid_bookings_enabled;
@@ -225,6 +230,12 @@ export default async function MeetupDetailPage({ params }: PageProps<"/meetups/[
                 </div>
               </div>
 
+              <ShareBar
+                title={meetup.title}
+                path={`/meetups/${meetup.id}`}
+                calendarHref={next && !meetup.is_sample ? `/meetups/${meetup.id}/calendar?session=${next.id}` : undefined}
+              />
+
               {/* 호스트의 편지 = 프로그램 소개 */}
               <section className="ticket relative mt-8 px-5 pt-6 pb-5" aria-labelledby="letter-title">
                 {!meetup.is_sample && <Seal className="absolute -top-3.5 right-4">심사<br />통과</Seal>}
@@ -281,7 +292,8 @@ export default async function MeetupDetailPage({ params }: PageProps<"/meetups/[
                 </Block>
               )}
 
-              {/* 참가자 후기 — 후기 기능이 생기면 이 자리에 실제 후기만 표시합니다 (지금은 숨김) */}
+              {/* 참가 후기 — 실제 참가자가 쓴 후기만 (샘플 프로그램은 후기 자리 없음) */}
+              {!meetup.is_sample && <ReviewSection reviews={reviews} summary={reviewSummary} />}
 
               {meetup.refund_policy_text && (
                 <Block title="취소 및 환불">
