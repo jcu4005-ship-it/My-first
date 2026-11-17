@@ -19,9 +19,12 @@ export default async function MeetupsPage({ searchParams }: PageProps<"/meetups"
   // 세부 분야를 고르면 그 분야의 대분류가 자동으로 선택됨
   const pillar = active?.pillar ?? (isPillar(sp.pillar) ? sp.pillar : undefined);
   const pillarCategories = pillar ? categories.filter((c) => c.pillar === pillar) : categories;
-  const meetups = await listUpcomingMeetups(
-    active ? { category: active.slug } : pillar ? { categories: pillarCategories.map((c) => c.slug) } : {},
-  );
+  // 한 번만 읽고 화면에서 나눔: 세부 분야 칩에 개수를 보여 주고, 프로그램이 없는 분야는 숨기기 위해
+  const all = await listUpcomingMeetups();
+  const pillarSlugs = new Set(pillarCategories.map((c) => c.slug));
+  const meetups = all.filter((m) => (active ? m.category_slug === active.slug : pillar ? pillarSlugs.has(m.category_slug) : true));
+  const counts = all.reduce<Record<string, number>>((acc, m) => ({ ...acc, [m.category_slug]: (acc[m.category_slug] ?? 0) + 1 }), {});
+  const chipCategories = pillarCategories.filter((c) => counts[c.slug] || c.slug === active?.slug);
   const info = pillarInfo(pillar);
   const names = Object.fromEntries(categories.map((c) => [c.slug, c.name]));
 
@@ -50,7 +53,7 @@ export default async function MeetupsPage({ searchParams }: PageProps<"/meetups"
         </PageHero>
         <div className="sticky top-16 z-20 border-b border-border/60 bg-background/95 backdrop-blur">
           <div className="mx-auto w-full max-w-6xl px-4 sm:px-6">
-            <CategoryChips categories={pillarCategories} active={active?.slug} allHref={pillar ? `/meetups?pillar=${pillar}` : "/meetups"} />
+            <CategoryChips categories={chipCategories} counts={counts} active={active?.slug} allHref={pillar ? `/meetups?pillar=${pillar}` : "/meetups"} />
           </div>
         </div>
         <div className="mx-auto w-full max-w-6xl px-4 pt-6 sm:px-6 sm:pt-8">

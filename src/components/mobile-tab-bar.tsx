@@ -10,7 +10,7 @@ const TABS = [
   { href: "/", label: "홈", icon: House, match: (p: string) => p === "/" },
   { href: "/meetups", label: "탐색", icon: Compass, match: (p: string) => p.startsWith("/meetups") },
   { href: "/hosts", label: "호스트", icon: Users, match: (p: string) => p.startsWith("/hosts") || p.startsWith("/become-a-host") },
-  { href: "/me/bookings", label: "초대장", icon: Ticket, match: (p: string) => p.startsWith("/me/bookings") || p.startsWith("/checkout") },
+  { href: "/me/bookings", label: "예약", icon: Ticket, match: (p: string) => p.startsWith("/me/bookings") || p.startsWith("/checkout") },
   { href: "/me", label: "마이", icon: UserRound, match: (p: string) => p.startsWith("/me") && !p.startsWith("/me/bookings") },
 ];
 

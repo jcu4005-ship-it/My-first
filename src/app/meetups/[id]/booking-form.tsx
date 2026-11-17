@@ -167,7 +167,7 @@ export function BookingForm({
 
       {viewerState === "guest" ? (
         <Button asChild size="lg" className="w-full">
-          <Link href={`/login?next=/meetups/${meetupId}`}>로그인하고 초대 수락하기</Link>
+          <Link href={`/login?next=/meetups/${meetupId}`}>로그인하고 신청하기</Link>
         </Button>
       ) : viewerState === "beta_paid" ? (
         <div className="flex flex-col gap-2" data-testid="beta-paid-notice">
@@ -180,7 +180,7 @@ export function BookingForm({
         <Button size="lg" className="w-full" disabled>내가 연 프로그램이에요</Button>
       ) : firstAvailable ? (
         <Button type="submit" size="lg" className="w-full" disabled={pending || !sessionId} data-testid="book-submit">
-          {pending ? "보내는 중…" : `초대 수락하기 · ${formatPrice(applied ? applied.total : price * quantity)}`}
+          {pending ? "보내는 중…" : `신청하기 · ${formatPrice(applied ? applied.total : price * quantity)}`}
         </Button>
       ) : (
         <Button size="lg" className="w-full" disabled>신청 가능한 일정이 없어요</Button>

@@ -6,7 +6,7 @@ import { brand } from "@/config/brand";
 import { Seal } from "@/components/brand/seat-table";
 import { LogoStacked } from "@/components/brand/logo";
 import { ContentCard } from "@/components/contents/content-card";
-import { HostCard } from "@/components/hosts/host-card";
+import { CreatorTile } from "@/components/hosts/host-card";
 import { SampleBadge } from "@/components/meetups/badges";
 import { MeetupCard } from "@/components/meetups/meetup-card";
 import { Photo } from "@/components/media/photo";
@@ -50,6 +50,9 @@ const rail =
   "relative flex snap-x snap-mandatory scroll-px-4 gap-4 overflow-x-auto px-4 pb-2 no-scrollbar sm:grid sm:overflow-visible sm:pb-0 sm:snap-none sm:gap-5";
 const railItem = "w-[76vw] max-w-[20rem] shrink-0 snap-start sm:w-auto sm:max-w-none";
 
+/** 첫 화면 큰 카드 수 */
+const HERO_LIMIT = 5;
+
 /** 인기순: 예약률이 높은 순 (같으면 가까운 일정 순) */
 function byPopularity(a: MeetupCardData, b: MeetupCardData) {
   const rate = (m: MeetupCardData) => m.nextSession.reserved_count / Math.max(1, m.nextSession.capacity);
@@ -69,7 +72,7 @@ function pickThisWeek(meetups: MeetupCardData[], limit = 6) {
 
 /** 메인에서 같은 데이터를 두 번 읽지 않도록 (첫 화면·본문 공용) */
 const homeData = cache(() =>
-  Promise.all([listCategories(), listUpcomingMeetups(), listFeaturedHosts(4), listPublishedContents({ limit: 3 })]),
+  Promise.all([listCategories(), listUpcomingMeetups(), listFeaturedHosts(8), listPublishedContents({ limit: 3 })]),
 );
 
 async function HomeSections() {
@@ -80,16 +83,32 @@ async function HomeSections() {
     const p = pillarOf[m.category_slug];
     return p ? { ...acc, [p]: (acc[p] ?? 0) + 1 } : acc;
   }, {});
-  const { thisWeek, list: picks } = pickThisWeek(meetups);
-  const openSeats = picks.reduce((sum, m) => sum + (m.nextSession.status === "open" ? Math.max(0, m.nextSession.capacity - m.nextSession.reserved_count) : 0), 0);
-  const hasSample = picks.some((m) => m.is_sample);
-  const firstClassOf = (hostId: string) => meetups.find((m) => m.host?.user_id === hostId);
+  // 첫 화면 큰 카드에 이미 나온 프로그램은 다시 보여 주지 않음 (같은 카드 두 번 금지)
+  const heroIds = new Set(pickThisWeek(meetups, HERO_LIMIT).list.map((m) => m.id));
+  const rest = meetups.filter((m) => !heroIds.has(m.id)).slice(0, 8);
+  const openSeats = meetups.reduce((sum, m) => sum + (m.nextSession.status === "open" ? Math.max(0, m.nextSession.capacity - m.nextSession.reserved_count) : 0), 0);
+  const countOf = (hostId: string) => meetups.filter((m) => m.host?.user_id === hostId).length;
 
   return (
     <>
-      {/* 2. 세 개의 테이블 */}
-      <section className="mx-auto w-full max-w-4xl" aria-labelledby="tables-title" data-testid="home-pillars">
-        <Label id="tables-title" title="세 개의 테이블" en="THREE TABLES" />
+      {/* 2. 만나 볼 사람들 — 크리에이터를 먼저 발견 */}
+      {hosts.length > 0 && (
+        <section className="mx-auto w-full max-w-6xl" aria-labelledby="hosts-title" data-testid="home-creators">
+          <Label title="만나 볼 사람들" id="hosts-title" en="CREATORS" href="/hosts" />
+          <p className="-mt-1 mb-4 px-4 text-sm text-muted-foreground sm:px-6">프로그램보다 사람을 먼저. 마음에 드는 사람의 세계로 들어가 보세요.</p>
+          <ul className="flex snap-x snap-mandatory scroll-px-4 gap-3 overflow-x-auto px-4 pb-2 no-scrollbar sm:grid sm:grid-cols-4 sm:gap-5 sm:overflow-visible sm:px-6 lg:grid-cols-5">
+            {[...hosts].sort((a, b) => countOf(b.user_id) - countOf(a.user_id)).map((h) => (
+              <li key={h.user_id} className="w-[42vw] max-w-[13rem] shrink-0 snap-start sm:w-auto sm:max-w-none">
+                <CreatorTile host={h} programCount={countOf(h.user_id)} />
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      {/* 3. 세 개의 분야 */}
+      <section className="mx-auto mt-6 w-full max-w-4xl" aria-labelledby="tables-title" data-testid="home-pillars">
+        <Label id="tables-title" title="세 개의 분야" en="THREE FIELDS" />
         <ol>
           {PILLARS.map((p, i) => (
             <li key={p.slug} className="border-b border-dashed border-[#d2d9c8] last:border-0">
@@ -107,50 +126,29 @@ async function HomeSections() {
         </ol>
       </section>
 
-      {/* 3. 이번 주 자리 */}
-      <section className="mx-auto mt-6 w-full max-w-6xl" aria-labelledby="picks-title" data-testid="home-this-week">
-        <Label id="picks-title" title={thisWeek ? "이번 주 자리" : "곧 열리는 자리"} en={thisWeek ? "THIS WEEK" : "COMING UP"} href="/meetups" />
-        <div className="px-4 sm:px-6">
-          {openSeats > 0 && (
-            <p className="mb-4 text-sm text-muted-foreground" data-testid="open-seats">
-              {thisWeek ? "이번 주" : "곧 열리는 자리"} 남은 자리 <b className="font-display text-lg text-foreground">{openSeats}</b>개
-            </p>
-          )}
-          {hasSample && (
-            <p className="mb-4 rounded-xl bg-notice px-4 py-3 text-sm text-notice-foreground" data-testid="sample-notice">
-              지금 보이는 프로그램은 서비스 준비 중 보여 드리는 <strong>샘플</strong>입니다. 실제로 신청할 수 없어요.
-            </p>
-          )}
-          {picks.length ? (
+      {/* 4. 더 많은 프로그램 (첫 화면에 없던 것만) */}
+      {rest.length > 0 && (
+        <section className="mx-auto mt-6 w-full max-w-6xl" aria-labelledby="picks-title" data-testid="home-this-week">
+          <Label id="picks-title" title="곧 열리는 프로그램" en="ALL PROGRAMS" href="/meetups" />
+          <div className="px-4 sm:px-6">
+            {openSeats > 0 && (
+              <p className="mb-4 text-sm text-muted-foreground" data-testid="open-seats">
+                지금 신청할 수 있는 자리 <b className="font-display text-lg text-foreground">{openSeats}</b>개
+              </p>
+            )}
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4" data-testid="meetup-grid">
-              {picks.map((m) => (
+              {rest.map((m) => (
                 <MeetupCard key={m.id} meetup={m} categoryName={names[m.category_slug] ?? m.category_slug} pillar={pillarOf[m.category_slug]} />
               ))}
             </div>
-          ) : (
-            <p className="rounded-2xl border border-dashed border-border py-12 text-center text-muted-foreground">곧 첫 자리가 열립니다.</p>
-          )}
-        </div>
-      </section>
-
-      {/* 4. 호스트 */}
-      {hosts.length > 0 && (
-        <section className="mx-auto mt-6 w-full max-w-6xl" aria-labelledby="hosts-title">
-          <Label title="프로그램을 여는 사람들" id="hosts-title" en="PEOPLE" href="/hosts" />
-          <ul className={`${rail} px-4 sm:grid-cols-2 sm:px-6 lg:grid-cols-4`}>
-            {hosts.map((h) => (
-              <li key={h.user_id} className={railItem}>
-                <HostCard host={h} representative={firstClassOf(h.user_id)} />
-              </li>
-            ))}
-          </ul>
+          </div>
         </section>
       )}
 
       {/* 5. 저널 */}
       {contents.length > 0 && (
         <section className="mx-auto mt-6 w-full max-w-6xl" aria-labelledby="journal-title" data-testid="home-journal">
-          <Label title="호스트의 이야기" id="journal-title" en="JOURNAL" href="/journal" />
+          <Label title="크리에이터의 이야기" id="journal-title" en="JOURNAL" href="/journal" />
           <ul className={`${rail} px-4 sm:grid-cols-3 sm:px-6`}>
             {contents.map((c) => (
               <li key={c.id} className={railItem}>
@@ -177,7 +175,7 @@ function SectionsSkeleton() {
   );
 }
 
-/* ---------- 6. 믿을 수 있는 이유 (실제 운영 중인 절차만) + 멤버십(준비 중) + 호스트 지원 ---------- */
+/* ---------- 6. 믿을 수 있는 이유 (실제 운영 중인 절차만) + 크리에이터 지원 ---------- */
 
 const CURATION = [
   { title: "호스트 심사", body: "경력·포트폴리오와 기획안을 운영팀이 직접 확인해요." },
@@ -194,7 +192,7 @@ function TrustAndJoin() {
           <Seal className="absolute -top-3 right-4">심사<br />통과</Seal>
           <h2 id="curation-title" className="font-display text-xl font-bold sm:text-2xl">아무나 차릴 수 없는 테이블</h2>
           <p className="mt-2 flex flex-wrap items-center gap-1.5 text-[13px] font-semibold">
-            호스트 심사 <span className="text-sage">→</span> 프로그램 검수 <span className="text-sage">→</span> 초대장 발송
+            크리에이터 심사 <span className="text-sage">→</span> 프로그램 검수 <span className="text-sage">→</span> 공개
           </p>
           <ul className="mt-4 grid gap-3 sm:grid-cols-2">
             {CURATION.map((c) => (
@@ -212,8 +210,8 @@ function TrustAndJoin() {
         </div>
         <div className="flex flex-col gap-4">
           <div id="host" className="flex flex-1 flex-col rounded-[18px] bg-forest p-6 text-cream sm:p-7">
-            <h2 className="font-display text-xl font-bold sm:text-2xl">당신의 테이블을 차려 보세요</h2>
-            <p className="mt-2 text-sm leading-relaxed text-cream/80">입장료 없이, 프로그램이 판매될 때만 함께 나눠요.</p>
+            <h2 className="font-display text-xl font-bold sm:text-2xl">당신의 세계를 프로그램으로</h2>
+            <p className="mt-2 text-sm leading-relaxed text-cream/80">팔로워가 적어도 괜찮아요. 자기만의 작업과 전문성이 있다면 첫 프로그램은 함께 기획해요. 가입비 없이, 판매될 때만 나눠요.</p>
             <div className="mt-auto pt-5">
               <Button asChild variant="secondary">
                 <Link href="/become-a-host/apply">
@@ -222,15 +220,6 @@ function TrustAndJoin() {
                 </Link>
               </Button>
             </div>
-          </div>
-          <div className="ticket p-5" data-testid="membership-soon">
-            <p className="flex items-center gap-2 text-sm font-semibold">
-              {brand.name} 멤버십
-              <span className="pill bg-linen text-muted-foreground">준비 중</span>
-            </p>
-            <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-              프로그램에 참여한 회원을 위한 멤버십을 준비하고 있어요. 지금은 가입하거나 결제할 수 없어요.
-            </p>
           </div>
         </div>
       </div>
@@ -244,7 +233,8 @@ async function Hero() {
   const [categories, meetups] = await homeData();
   const names = Object.fromEntries(categories.map((c) => [c.slug, c.name]));
   const pillarOf = Object.fromEntries(categories.map((c) => [c.slug, c.pillar]));
-  const { list } = pickThisWeek(meetups, 5);
+  const { list } = pickThisWeek(meetups, HERO_LIMIT);
+  const hasSample = list.some((m) => m.is_sample);
   return (
     <section className="pb-10" aria-labelledby="hero-title" data-testid="home-featured">
       <h1 id="hero-title" className="flex justify-center px-4 pt-10 pb-9 text-[#1f3a2b] sm:pt-16 sm:pb-12" data-testid="hero-logo">
@@ -263,7 +253,12 @@ async function Hero() {
           ))}
         </ul>
       ) : (
-        <p className="mx-4 mt-4 rounded-2xl bg-card/70 px-5 py-12 text-center text-muted-foreground">곧 첫 자리가 열립니다.</p>
+        <p className="mx-4 mt-4 rounded-2xl bg-card/70 px-5 py-12 text-center text-muted-foreground">곧 첫 프로그램이 열립니다.</p>
+      )}
+      {hasSample && (
+        <p className="mx-4 mt-2 rounded-xl bg-notice px-4 py-3 text-[13px] text-notice-foreground sm:mx-auto sm:max-w-6xl" data-testid="sample-notice">
+          <strong>샘플</strong> 표시가 있는 프로그램은 서비스 준비 중 보여 드리는 예시예요. 아직 신청할 수 없어요.
+        </p>
       )}
     </section>
   );

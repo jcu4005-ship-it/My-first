@@ -54,7 +54,7 @@ async function MyPage({ member }: { member: Awaited<ReturnType<typeof requireMem
   const joined = profile?.created_at ? new Date(profile.created_at) : null;
 
   const tiles = [
-    { href: "/me/bookings", label: "내 초대장", sub: `${upcoming.length}장`, icon: Ticket },
+    { href: "/me/bookings", label: "내 예약", sub: `${upcoming.length}건`, icon: Ticket },
     { href: "/me/notifications", label: "알림", sub: unread ? `새 알림 ${unread}` : "새 알림 없음", icon: Mail, dot: Boolean(unread) },
     isHost
       ? { href: "/host", label: "호스트 공간", sub: "프로그램 관리", icon: LayoutDashboard }
@@ -88,14 +88,14 @@ async function MyPage({ member }: { member: Awaited<ReturnType<typeof requireMem
         </p>
       )}
 
-      {/* 2. 다가오는 초대장 */}
+      {/* 2. 다가오는 예약 */}
       <section data-testid="me-upcoming">
-        <Heading href="/me/bookings" linkLabel="전체 보기">다가오는 초대장</Heading>
+        <Heading href="/me/bookings" linkLabel="전체 보기">다가오는 예약</Heading>
         {upcoming.length === 0 ? (
           <div className="rounded-[18px] border-[1.5px] border-dashed border-[#cfc6b5] bg-card/60 px-5 py-6 text-center text-sm text-muted-foreground">
-            아직 받은 초대장이 없어요.
+            아직 예약한 프로그램이 없어요.
             <Link href="/meetups" className="mt-2 block font-semibold text-forest underline-offset-4 hover:underline">
-              이번 주 테이블 둘러보기
+              프로그램 둘러보기
             </Link>
           </div>
         ) : (
@@ -159,7 +159,7 @@ async function MyPage({ member }: { member: Awaited<ReturnType<typeof requireMem
         </Heading>
         {followed.length === 0 ? (
           <div className="rounded-[18px] border-[1.5px] border-dashed border-[#cfc6b5] bg-card/60 px-5 py-6 text-sm text-muted-foreground">
-            아직 팔로우한 호스트가 없어요. 마음에 드는 호스트를 팔로우하면 새 테이블을 여기서 바로 볼 수 있어요.
+            아직 팔로우한 호스트가 없어요. 마음에 드는 호스트를 팔로우하면 새 프로그램을 여기서 바로 볼 수 있어요.
             <Link href="/hosts" className="mt-2 block font-semibold text-forest underline-offset-4 hover:underline">
               호스트 둘러보기
             </Link>

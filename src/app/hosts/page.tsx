@@ -11,7 +11,7 @@ import { PILLARS, isPillar, pillarInfo } from "@/config/pillars";
 import { listHosts } from "@/lib/meetups/queries";
 
 export const instant = false;
-export const metadata: Metadata = { title: "호스트", description: "운영팀이 경력과 포트폴리오를 확인한 호스트를 소개합니다." };
+export const metadata: Metadata = { title: "호스트", description: "자기만의 작업과 전문성을 가진 크리에이터를 소개합니다." };
 
 type Search = { pillar?: string; q?: string };
 
@@ -96,7 +96,7 @@ export default async function HostsPage({ searchParams }: PageProps<"/hosts">) {
       <main className="flex-1">
         <PageHero
           title={info ? info.ko : "프로그램을 여는 사람들"}
-          description={info ? info.description : "운영팀이 경력과 포트폴리오를 확인한 호스트만 소개합니다."}
+          description={info ? info.description : "자기만의 작업과 시선을 가진 사람들. 마음에 드는 사람을 팔로우하면 새 프로그램 소식을 받아요."}
         >
           <form action="/hosts" method="get" role="search" className="mt-6 flex max-w-md gap-2" data-testid="host-search">
             {pillar && <input type="hidden" name="pillar" value={pillar} />}

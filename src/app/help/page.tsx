@@ -17,14 +17,14 @@ const FAQ: { group: string; items: { q: string; a: React.ReactNode }[] }[] = [
     group: "신청·결제",
     items: [
       { q: "신청하면 바로 확정되나요?", a: "무료 프로그램은 신청하는 순간 확정돼요. 유료 프로그램은 결제가 끝나면 확정돼요. 지금은 실제 청구가 없는 테스트 결제만 운영하고 있어요." },
-      { q: "상세 주소는 언제 알 수 있나요?", a: <>참가가 확정되면 <Link href="/me/bookings" className="underline underline-offset-4">내 초대장</Link>에서 바로 볼 수 있어요. 확정 전에는 동네까지만 보여요.</> },
+      { q: "상세 주소는 언제 알 수 있나요?", a: <>참가가 확정되면 <Link href="/me/bookings" className="underline underline-offset-4">내 예약</Link>에서 바로 볼 수 있어요. 확정 전에는 동네까지만 보여요.</> },
       { q: "할인 쿠폰은 어디에 쓰나요?", a: "호스트가 쿠폰 사용에 동의한 유료 프로그램의 신청 화면에서 쓸 수 있어요. 할인은 최대 10%예요." },
     ],
   },
   {
     group: "취소·환불",
     items: [
-      { q: "신청을 취소하고 싶어요.", a: <>일정이 시작되기 전이라면 <Link href="/me/bookings" className="underline underline-offset-4">내 초대장</Link>에서 직접 취소할 수 있어요. 프로그램마다 적힌 &lsquo;취소 및 환불&rsquo; 안내도 함께 확인해 주세요.</> },
+      { q: "신청을 취소하고 싶어요.", a: <>일정이 시작되기 전이라면 <Link href="/me/bookings" className="underline underline-offset-4">내 예약</Link>에서 직접 취소할 수 있어요. 프로그램마다 적힌 &lsquo;취소 및 환불&rsquo; 안내도 함께 확인해 주세요.</> },
       { q: "호스트가 일정을 취소하면요?", a: "호스트 사정으로 취소되면 결제 금액은 전액 환불되고, 알림으로 알려 드려요." },
     ],
   },

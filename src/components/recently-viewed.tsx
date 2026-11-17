@@ -87,7 +87,7 @@ export function RecentlyViewedList() {
           {items.map((x) => (
             <li key={x.href} className="flex items-center justify-between gap-3 py-3.5" data-testid="recent-item">
               <Link href={x.href} className="min-w-0 truncate hover:underline">{x.title}</Link>
-              <span className="shrink-0 text-xs text-muted-foreground">{x.kind === "program" ? "테이블" : "저널"}</span>
+              <span className="shrink-0 text-xs text-muted-foreground">{x.kind === "program" ? "프로그램" : "저널"}</span>
             </li>
           ))}
         </ul>

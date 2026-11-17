@@ -11,7 +11,18 @@ export function chipClass(isActive: boolean) {
   );
 }
 
-export function CategoryChips({ categories, active, allHref = "/meetups" }: { categories: Category[]; active?: string; allHref?: string }) {
+export function CategoryChips({
+  categories,
+  active,
+  allHref = "/meetups",
+  counts,
+}: {
+  categories: Category[];
+  active?: string;
+  allHref?: string;
+  /** 분야별 프로그램 수 (있으면 칩 옆에 작게 표시) */
+  counts?: Record<string, number>;
+}) {
   return (
     <nav aria-label="카테고리" className="-mx-4 overflow-x-auto px-4 no-scrollbar sm:mx-0 sm:px-0">
       <ul className="flex w-max gap-2 py-3">
@@ -24,6 +35,11 @@ export function CategoryChips({ categories, active, allHref = "/meetups" }: { ca
           <li key={c.slug}>
             <Link href={`/meetups?category=${c.slug}`} className={chipClass(active === c.slug)} aria-current={active === c.slug ? "page" : undefined}>
               {c.name}
+              {counts?.[c.slug] ? (
+                <span aria-hidden className="ml-1.5 text-xs opacity-60">
+                  {counts[c.slug]}
+                </span>
+              ) : null}
             </Link>
           </li>
         ))}

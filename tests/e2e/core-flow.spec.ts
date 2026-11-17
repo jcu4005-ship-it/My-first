@@ -114,8 +114,8 @@ test("호스트 지원서(임시 저장·수정 요청·재제출) → 승인 �
   await host.getByLabel("카테고리").selectOption("writing");
   await host.getByLabel("난이도").selectOption("beginner");
   await host.getByLabel("한 줄 요약").fill("에세이 한 편을 구조부터 퇴고까지 완성해요");
-  await host.getByLabel("프로그램 소개").fill("좋은 에세이의 구조를 배우고, 각자 한 편을 써서 현장에서 첨삭받습니다.");
-  await host.getByLabel("수업이 끝나면 할 수 있는 것").fill("에세이 한 편을 도입-전개-마무리 구조로 쓸 수 있어요.\n내 문장을 스스로 퇴고할 수 있어요.");
+  await host.getByLabel("프로그램 이야기").fill("좋은 에세이의 구조를 배우고, 각자 한 편을 써서 현장에서 첨삭받습니다.");
+  await host.getByLabel("참가자가 얻는 것").fill("에세이 한 편을 도입-전개-마무리 구조로 쓸 수 있어요.\n내 문장을 스스로 퇴고할 수 있어요.");
   await host.getByLabel("재료·도구 제공 안내 (선택)").fill("첨삭 양식 제공, 노트북 필요");
   await host.getByLabel("참가비 (원)").fill("15,000");
   await host.getByLabel("가격 근거 (유료 프로그램은 필수)").fill("2시간 첨삭 포함, 4명 정원, 첨삭 양식 제공");
@@ -157,7 +157,7 @@ test("호스트 지원서(임시 저장·수정 요청·재제출) → 승인 �
   // 5. 참가자: 목록에서 찾아 신청 (비로그인은 로그인 유도)
   await guest.goto("/meetups?category=writing");
   await guest.getByText(title).first().click();
-  await expect(guest.getByRole("link", { name: "로그인하고 초대 수락하기" })).toBeVisible();
+  await expect(guest.getByRole("link", { name: "로그인하고 신청하기" })).toBeVisible();
   const meetupUrl = guest.url();
 
   const p = await loginPage(browser, participant.email);

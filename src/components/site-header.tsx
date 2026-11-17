@@ -41,7 +41,7 @@ async function AccountNav() {
         </Link>
       )}
       <Link href="/me/bookings" className={link}>
-        내 초대장
+        내 예약
       </Link>
       <UnreadBadge userId={member.id} />
       <Link href="/me" className="hidden max-w-28 truncate px-2 py-2 font-medium md:inline" data-testid="nav-nickname">
@@ -79,7 +79,7 @@ const NAV = [
 
 /**
  * 사이트 머리글: 이름 + 큰 메뉴 4개(PC) + 검색·알림 아이콘.
- * 휴대폰에서는 위쪽 메뉴 대신 아래 탭 막대(홈·탐색·호스트·초대장·마이)를 씁니다.
+ * 휴대폰에서는 위쪽 메뉴 대신 아래 탭 막대(홈·탐색·호스트·예약·마이)를 씁니다.
  * tabBar=false: 아래쪽에 자체 고정 버튼이 있는 화면(프로그램 상세)에서 탭 막대를 숨김.
  */
 export function SiteHeader({ tabBar = true }: { tabBar?: boolean }) {

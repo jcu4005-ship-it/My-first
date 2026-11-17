@@ -87,7 +87,12 @@ export default async function MeetupDetailPage({ params }: PageProps<"/meetups/[
   const outcomes = lines(meetup.learning_outcomes);
   const audience = lines(meetup.target_audience);
   const avatar = meetup.host ? hostAvatarUrl(meetup.host.avatar_path) : null;
-  const cta = anyOpen ? `초대 수락하기 · ${formatPrice(meetup.price)}` : "모집 마감 · 일정 보기";
+  // 신청할 수 없는 프로그램(샘플·베타 유료)은 버튼이 신청되는 것처럼 보이지 않게
+  const cannotBook = viewerState === "sample" || viewerState === "beta_paid";
+  const ctaShort = cannotBook ? (viewerState === "sample" ? "예시 프로그램 · 신청 불가" : "지금은 신청 불가 · 일정 보기") : anyOpen ? "신청하기" : "일정 보기";
+  const cta = cannotBook ? ctaShort : anyOpen ? `신청하기 · ${formatPrice(meetup.price)}` : "모집 마감 · 일정 보기";
+  // 소개를 아직 쓰지 않은 호스트(이름·분야만 등록)에게는 "심사 통과" 표시를 붙이지 않음
+  const hostVerified = Boolean(meetup.host && (meetup.host.bio || meetup.host.headline));
   const d = next ? ticketDate(next.starts_at) : null;
   const more = meetup.upcomingSessions.length - 1;
 
@@ -136,7 +141,7 @@ export default async function MeetupDetailPage({ params }: PageProps<"/meetups/[
                     <span className="min-w-0">
                       <span className="flex items-center gap-1 font-semibold group-hover:underline group-hover:underline-offset-4">
                         <span className="truncate">{meetup.host.display_name}</span>
-                        <BadgeCheck aria-label="운영팀 심사를 통과한 호스트" className="size-4 shrink-0 text-forest" strokeWidth={2} />
+                        {hostVerified && <BadgeCheck aria-label="운영팀 심사를 통과한 호스트" className="size-4 shrink-0 text-forest" strokeWidth={2} />}
                       </span>
                       <span className="block truncate text-[12.5px] text-muted-foreground">
                         {meetup.host.occupation || meetup.host.headline}
@@ -202,7 +207,7 @@ export default async function MeetupDetailPage({ params }: PageProps<"/meetups/[
                   )}
                   {mine.size > 0 && (
                     <p className="mb-4 rounded-xl bg-notice px-4 py-3 text-sm text-notice-foreground" data-testid="already-booked">
-                      이 프로그램에 신청한 일정이 있어요. <Link href="/me/bookings" className="underline underline-offset-4">내 초대장 보기</Link>
+                      이 프로그램에 신청한 일정이 있어요. <Link href="/me/bookings" className="underline underline-offset-4">내 예약 보기</Link>
                     </p>
                   )}
                   {bookingSessions.length ? (
@@ -222,20 +227,20 @@ export default async function MeetupDetailPage({ params }: PageProps<"/meetups/[
 
               {/* 호스트의 편지 = 프로그램 소개 */}
               <section className="ticket relative mt-8 px-5 pt-6 pb-5" aria-labelledby="letter-title">
-                <Seal className="absolute -top-3.5 right-4">심사<br />통과</Seal>
-                <h2 id="letter-title" className="font-display text-lg font-bold">호스트의 편지</h2>
+                {!meetup.is_sample && <Seal className="absolute -top-3.5 right-4">심사<br />통과</Seal>}
+                <h2 id="letter-title" className="font-display text-lg font-bold">크리에이터가 들려주는 이야기</h2>
                 <p className="mt-3 font-display text-[15px] leading-[1.9] whitespace-pre-line text-[#2b3b32]">{meetup.description}</p>
                 {meetup.host && <p className="sign mt-3 text-right text-sm">— {meetup.host.display_name} 드림</p>}
               </section>
 
               {audience.length > 0 && (
-                <Block title="이런 분을 초대해요">
+                <Block title="이런 분께 추천해요">
                   <CheckList items={audience} />
                 </Block>
               )}
 
               {(outcomes.length > 0 || meetup.materials_note) && (
-                <Block title="수업이 끝나면 이렇게 할 수 있어요">
+                <Block title="이 프로그램에서 얻는 것">
                   {outcomes.length > 0 && <CheckList items={outcomes} testId="learning-outcomes" />}
                   {meetup.materials_note && (
                     <p className="mt-4 rounded-xl bg-linen/70 px-4 py-3 text-sm leading-relaxed">
@@ -315,8 +320,8 @@ export default async function MeetupDetailPage({ params }: PageProps<"/meetups/[
             <p className="shrink-0 text-xs text-muted-foreground">
               1인<b className="block text-base text-foreground">{formatPrice(meetup.price)}</b>
             </p>
-            <Button asChild size="lg" className="flex-1">
-              <a href="#booking">{anyOpen ? "초대 수락하기" : "일정 보기"}</a>
+            <Button asChild size="lg" variant={cannotBook ? "outline" : "default"} className="flex-1">
+              <a href="#booking">{ctaShort}</a>
             </Button>
           </div>
         </div>

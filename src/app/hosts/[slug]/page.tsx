@@ -185,7 +185,7 @@ export default async function HostPage({ params }: PageProps<"/hosts/[slug]">) {
             <dl className="mt-4 grid grid-cols-3 border-t-[1.5px] border-dashed border-[#cfc6b5] pt-3.5 text-center">
               <div className="flex flex-col-reverse">
                 <dt className="text-[11.5px] text-muted-foreground">
-                  열린 테이블
+                  프로그램
                 </dt>
                 <dd className="font-display text-xl font-bold">
                   {meetups.length}
@@ -198,7 +198,7 @@ export default async function HostPage({ params }: PageProps<"/hosts/[slug]">) {
                 </dd>
               </div>
               <div className="flex flex-col-reverse">
-                <dt className="text-[11.5px] text-muted-foreground">쓴 글</dt>
+                <dt className="text-[11.5px] text-muted-foreground">글</dt>
                 <dd className="font-display text-xl font-bold">
                   {contents.length}
                 </dd>
@@ -244,7 +244,7 @@ export default async function HostPage({ params }: PageProps<"/hosts/[slug]">) {
           className="mt-10 max-w-3xl sm:mt-12"
           data-testid="host-programs"
         >
-          <SectionTitle>{host.display_name}의 테이블</SectionTitle>
+          <SectionTitle>{host.display_name}의 프로그램</SectionTitle>
           {meetups.length === 0 ? (
             <div className="rounded-[18px] border-[1.5px] border-dashed border-[#cfc6b5] bg-card/60 px-5 py-8 text-center">
               <p className="text-muted-foreground">
@@ -254,7 +254,7 @@ export default async function HostPage({ params }: PageProps<"/hosts/[slug]">) {
                 href="/meetups"
                 className="mt-3 inline-block text-sm font-semibold text-forest underline-offset-4 hover:underline"
               >
-                다른 테이블 둘러보기
+                다른 프로그램 둘러보기
               </Link>
             </div>
           ) : (
@@ -277,7 +277,7 @@ export default async function HostPage({ params }: PageProps<"/hosts/[slug]">) {
                 <div data-testid="host-programs-later">
                   {soon.length > 0 && (
                     <h3 className="mb-2 text-sm font-semibold text-muted-foreground">
-                      예정된 테이블
+                      예정된 프로그램
                     </h3>
                   )}
                   <MeetupGrid
@@ -293,7 +293,7 @@ export default async function HostPage({ params }: PageProps<"/hosts/[slug]">) {
 
         {/* 3. 호스트의 편지: 작업 철학 + 소개 + 서명 */}
         <Section className="max-w-3xl">
-          <SectionTitle>{host.display_name}의 편지</SectionTitle>
+          <SectionTitle>{host.display_name}의 이야기</SectionTitle>
           {introPending ? (
             <div
               className="rounded-[18px] border-[1.5px] border-dashed border-[#cfc6b5] bg-card/60 px-5 py-8 text-center"

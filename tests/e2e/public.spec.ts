@@ -7,23 +7,26 @@ test.beforeAll(requireTestEnv);
 // 샘플 데이터가 필요한 검사: 로컬·CI는 항상, 스테이징은 샘플을 넣은 경우(TEST_EXPECT_SAMPLES=yes)만
 const samples = !isStaging || process.env.TEST_EXPECT_SAMPLES === "yes";
 
-test("메인: 세 갈래 분류, 이번 주 프로그램, 호스트, 저널, 큐레이션 기준, 멤버십 준비 중", async ({ page }) => {
+test("메인: 첫 화면 카드, 만나 볼 사람들(크리에이터 먼저), 세 분야, 나머지 프로그램(중복 없음), 저널, 큐레이션 기준", async ({ page }) => {
   test.skip(!samples, "샘플 데이터 없음");
   await page.goto("/");
   await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
   await expect(page.getByTestId("home-pillars").getByTestId("pillar-tile")).toHaveCount(3);
   await expect(page.getByTestId("sample-notice")).toBeVisible();
-  const cards = page.getByTestId("home-this-week").getByTestId("meetup-card");
-  await expect(cards.first()).toBeVisible();
-  expect(await cards.count()).toBeLessThanOrEqual(6);
-  await expect(page.getByRole("heading", { name: "프로그램을 여는 사람들" })).toBeVisible();
+  // 크리에이터를 프로그램 목록보다 먼저, 크게
+  const creators = page.getByTestId("home-creators").getByTestId("creator-tile");
+  await expect(creators.first()).toBeVisible();
+  expect(await creators.count()).toBeLessThanOrEqual(8);
+  // 첫 화면 카드와 아래 목록에 같은 프로그램이 두 번 나오지 않음
+  const heroTitles = await page.getByTestId("featured-card").getByRole("heading").allTextContents();
+  const restTitles = await page.getByTestId("home-this-week").getByTestId("meetup-card").getByRole("heading").allTextContents();
+  expect(heroTitles.length).toBeGreaterThan(0);
+  expect(restTitles.filter((t) => heroTitles.includes(t))).toEqual([]);
+  expect(restTitles.length).toBeLessThanOrEqual(8);
   await expect(page.getByTestId("home-journal").getByTestId("content-card").first()).toBeVisible();
   await expect(page.getByTestId("home-curation")).toContainText("공개 전 검수");
-  // 멤버십은 준비 중 표시만 — 가입·결제 버튼 없음
-  const membership = page.getByTestId("membership-soon");
-  await expect(membership).toContainText("준비 중");
-  await expect(membership.getByRole("button")).toHaveCount(0);
-  await expect(membership.getByRole("link")).toHaveCount(0);
+  // 아직 없는 기능(멤버십)은 메인에 보이지 않음
+  await expect(page.getByText("멤버십")).toHaveCount(0);
 
   await page.getByTestId("home-pillars").getByTestId("pillar-tile").filter({ hasText: "Knowledge" }).click();
   await expect(page).toHaveURL(/\/meetups\?pillar=knowledge$/);
