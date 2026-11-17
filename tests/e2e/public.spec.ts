@@ -72,7 +72,8 @@ test("호스트 안내: 정책·과정·약속·로드맵, 지원하기 연결, 
   await expect(main.getByRole("heading", { level: 1 })).toBeVisible();
   await expect(main.getByRole("heading", { name: "입장료는 없습니다" })).toBeVisible();
   await expect(main.getByRole("heading", { name: "프로그램이 판매될 때만" })).toBeVisible();
-  await expect(main.getByTestId("commission-note")).toContainText("정식 오픈 전");
+  await expect(main.getByTestId("commission-note")).toContainText("결제로만 받아요");
+  await expect(main.getByTestId("commission-note")).toContainText("수수료 20% 제외");
   await expect(main.getByTestId("roadmap")).toContainText("앞으로의 계획");
   await main.getByRole("link", { name: "호스트 지원하기" }).first().click();
   await expect(page).toHaveURL(/\/login\?next=%2Fbecome-a-host%2Fapply/); // 비로그인은 로그인으로

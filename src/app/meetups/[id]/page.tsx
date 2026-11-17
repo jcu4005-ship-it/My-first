@@ -4,6 +4,7 @@ import { BadgeCheck, Check, Clock, MapPin, Package } from "lucide-react";
 import { notFound } from "next/navigation";
 
 import { Seal } from "@/components/brand/seat-table";
+import { brand } from "@/config/brand";
 import { FollowButton } from "@/components/hosts/follow-button";
 import { SampleBadge, seatsLeft } from "@/components/meetups/badges";
 import { Photo } from "@/components/media/photo";
@@ -238,6 +239,12 @@ export default async function MeetupDetailPage({ params }: PageProps<"/meetups/[
                       waiting={waiting}
                       loggedIn={viewerState === "ok"}
                     />
+                  )}
+                  {!meetup.is_sample && meetup.price > 0 && (
+                    <p className="mt-4 text-center text-xs leading-relaxed text-muted-foreground" data-testid="payment-safety">
+                      참가비는 {brand.name}에서만 결제해요. 계좌 송금이나 현장 결제를 요청받으면{" "}
+                      <Link href="/help/contact" className="underline underline-offset-4">고객센터</Link>로 알려 주세요.
+                    </p>
                   )}
                 </div>
               </div>

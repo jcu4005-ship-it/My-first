@@ -429,3 +429,44 @@ export async function setReviewHiddenAction(_prev: FormState, formData: FormData
   revalidatePath("/hosts", "layout");
   return { status: "success", message: parsed.data.hidden === "true" ? "후기를 가렸어요." : "후기를 다시 보이게 했어요." };
 }
+
+const settlementSchema = z.object({ id: z.uuid(), action: z.enum(["confirm", "paid"]), memo: adminReasonSchema });
+
+/** 정산 확정·지급 완료 기록 — 실제 송금은 시스템 밖에서. DB가 2단계 인증·순서·7일 경과를 다시 확인하고 감사 기록 */
+export async function advanceSettlementAction(_prev: FormState, formData: FormData): Promise<FormState> {
+  if (!(await checkAdminForAction())) return FORBIDDEN;
+  const parsed = settlementSchema.safeParse({ id: formValue(formData, "id"), action: formValue(formData, "action"), memo: formValue(formData, "memo") });
+  if (!parsed.success) return { status: "error", message: parsed.error.issues.find((i) => i.path[0] === "memo")?.message ?? "잘못된 요청입니다." };
+  const supabase = await createSupabaseServerClient();
+  const { error } = await supabase.rpc("admin_advance_settlement", { p_id: parsed.data.id, p_action: parsed.data.action, p_memo: parsed.data.memo });
+  if (error) return { status: "error", message: dbMessage(error) };
+  revalidatePath("/admin/settlements");
+  return { status: "success", message: parsed.data.action === "confirm" ? "정산을 확정했어요." : "지급 완료로 기록했어요. 호스트에게 알림이 가요." };
+}
+
+const commissionSchema = z.object({
+  ratePercent: z.coerce.number("수수료율을 숫자로 입력해 주세요.").min(0, "0~50% 사이로 입력해 주세요.").max(50, "0~50% 사이로 입력해 주세요."),
+  freeMonths: z.coerce.number("기간을 숫자로 입력해 주세요.").int("개월 수는 정수로 입력해 주세요.").min(0, "0~24개월 사이로 입력해 주세요.").max(24, "0~24개월 사이로 입력해 주세요."),
+  reason: adminReasonSchema,
+});
+
+/** 수수료율·0% 기간 변경 — 앞으로의 결제에만 적용(지난 결제는 결제 시점 비율로 고정) */
+export async function setCommissionAction(_prev: FormState, formData: FormData): Promise<FormState> {
+  if (!(await checkAdminForAction())) return FORBIDDEN;
+  const parsed = commissionSchema.safeParse({
+    ratePercent: formValue(formData, "ratePercent"),
+    freeMonths: formValue(formData, "freeMonths"),
+    reason: formValue(formData, "reason"),
+  });
+  if (!parsed.success) return { status: "error", message: parsed.error.issues[0]?.message ?? "입력값을 확인해 주세요." };
+  const supabase = await createSupabaseServerClient();
+  const { error } = await supabase.rpc("admin_set_commission", {
+    p_rate_bp: Math.round(parsed.data.ratePercent * 100),
+    p_free_months: parsed.data.freeMonths,
+    p_reason: parsed.data.reason,
+  });
+  if (error) return { status: "error", message: dbMessage(error) };
+  revalidatePath("/admin/settlements");
+  revalidatePath("/become-a-host");
+  return { status: "success", message: "수수료 설정을 바꿨어요. 앞으로 결제되는 신청부터 적용돼요." };
+}

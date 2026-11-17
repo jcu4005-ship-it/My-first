@@ -1,7 +1,10 @@
 import { z } from "zod";
 
+import { OFF_PLATFORM_MESSAGE, hasOffPlatformPayment } from "./off-platform";
+
+/** 모든 글 입력칸: 길이 제한 + 플랫폼 밖 결제·연락 안내 금지 */
 const text = (max: number, label: string) =>
-  z.string().trim().max(max, `${label}은(는) ${max}자 이내로 입력해 주세요.`);
+  z.string().trim().max(max, `${label}은(는) ${max}자 이내로 입력해 주세요.`).refine((v) => !hasOffPlatformPayment(v), OFF_PLATFORM_MESSAGE);
 
 export const MEETUP_TYPES = [
   { value: "class", label: "실습형 (실내)" },
@@ -70,15 +73,15 @@ export function agendaToText(agenda: { time: string; title: string }[]): string 
 }
 
 export const meetupFormSchema = z.object({
-  title: z.string().trim().min(5, "제목은 5자 이상이에요.").max(60, "제목은 60자 이내로 입력해 주세요."),
+  title: z.string().trim().min(5, "제목은 5자 이상이에요.").max(60, "제목은 60자 이내로 입력해 주세요.").refine((v) => !hasOffPlatformPayment(v), OFF_PLATFORM_MESSAGE),
   categorySlug: z.string().regex(/^[a-z][a-z0-9-]{1,30}$/, "카테고리를 선택해 주세요."),
   meetupType: z.enum(["general", "class", "outdoor"], "수업 방식을 선택해 주세요."),
   level: z.enum(["all", "beginner", "intermediate", "advanced"], "난이도를 선택해 주세요."),
   learningOutcomes: text(500, "수업 후 할 수 있는 것").min(10, "수업이 끝나면 무엇을 할 수 있게 되는지 10자 이상 적어 주세요."),
   materialsNote: text(300, "재료·도구 안내"),
   priceRationale: text(500, "가격 근거"),
-  summary: z.string().trim().min(10, "한 줄 요약은 10자 이상이에요.").max(120, "한 줄 요약은 120자 이내로 입력해 주세요."),
-  description: z.string().trim().min(20, "소개는 20자 이상 입력해 주세요.").max(5000, "소개는 5000자 이내로 입력해 주세요."),
+  summary: z.string().trim().min(10, "한 줄 요약은 10자 이상이에요.").max(120, "한 줄 요약은 120자 이내로 입력해 주세요.").refine((v) => !hasOffPlatformPayment(v), OFF_PLATFORM_MESSAGE),
+  description: z.string().trim().min(20, "소개는 20자 이상 입력해 주세요.").max(5000, "소개는 5000자 이내로 입력해 주세요.").refine((v) => !hasOffPlatformPayment(v), OFF_PLATFORM_MESSAGE),
   price: z
     .string()
     .transform((v) => v.replace(/[,\s원]/g, ""))
@@ -89,7 +92,7 @@ export const meetupFormSchema = z.object({
   targetAudience: text(500, "추천 대상"),
   requirements: text(500, "참여 조건"),
   whatToBring: text(500, "준비물"),
-  agenda: z.string().max(3000).transform(parseAgenda),
+  agenda: z.string().max(3000).refine((v) => !hasOffPlatformPayment(v), OFF_PLATFORM_MESSAGE).transform(parseAgenda),
   refundPolicyText: text(1000, "취소·환불 안내"),
 });
 export type MeetupFormInput = z.infer<typeof meetupFormSchema>;

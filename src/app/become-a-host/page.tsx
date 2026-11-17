@@ -2,7 +2,10 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight, Check } from "lucide-react";
 
+import { Suspense } from "react";
+
 import { brand } from "@/config/brand";
+import { getAppSettings, percentLabel } from "@/lib/settings/queries";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { Card, PageHero, Section, SectionTitle } from "@/components/layout/page-parts";
@@ -15,14 +18,46 @@ export const metadata: Metadata = {
 
 /*
  * 호스트 정책 안내 (사업 계획 v1.1 기준).
- * - 확정된 정책: 입장료 없음, 첫 1년 수수료 0(대신 호스트 동의 시 최대 10% 참가자 쿠폰, 호스트 부담), 이후 판매 시 수수료, 경력 심사, 신청·결제는 플랫폼에서
- * - 숫자(수수료율 등)는 정식 오픈 전 확정 → 화면에 확정된 것처럼 쓰지 않는다
+ * - 확정된 정책(2026-11-17 대표 결정): 입장료 없음, 신청·결제는 플랫폼에서만, 판매 금액에서 수수료를 뺀 금액 정산,
+ *   호스트 승인일부터 일정 기간 수수료 0%(대신 호스트 동의 시 최대 10% 참가자 쿠폰, 호스트 부담), 경력 심사
+ * - 수수료율·0% 기간 숫자는 운영 설정(DB)에서 읽어 표시 — 관리자가 바꾸면 화면도 같이 바뀜
  * - 앞으로의 계획은 "준비 중"으로 표시
  */
 
-const PRINCIPLES = [
+/** 운영 설정(DB)의 수수료율·0% 기간을 읽는 부분만 따로 — 나머지 화면은 미리 만들어 둠 */
+async function CommissionPrincipleText() {
+  const st = await getAppSettings();
+  return (
+    <>
+      참가비는 {brand.name}에서 결제되고, 수수료 {percentLabel(st.commission_rate_bp)}를 뺀 금액을 정산해 드립니다.
+      {st.commission_free_months > 0 && <> 호스트 승인일부터 {st.commission_free_months}개월은 수수료 0%입니다.</>} 판매가 없으면 수수료도 없습니다.
+    </>
+  );
+}
+
+async function CommissionNote() {
+  const st = await getAppSettings();
+  const rate = percentLabel(st.commission_rate_bp);
+  return (
+    <p className="mt-4 rounded-xl bg-notice px-4 py-3 text-sm leading-relaxed text-notice-foreground" data-testid="commission-note">
+      예) 참가비 30,000원 → 수수료 {rate} 제외 → 호스트 정산 {Math.round(30000 * (1 - st.commission_rate_bp / 10000)).toLocaleString("ko-KR")}원. 수수료율은 결제되는 순간의 비율로 고정되고, 프로그램이 끝나고 7일 뒤 정산이 확정됩니다.
+      {st.commission_free_months > 0 && <> 수수료 0% 기간({st.commission_free_months}개월) 동안에는 호스트가 프로그램마다 동의하면 {brand.name} 참가자 할인 쿠폰(최대 10%, 호스트 부담)을 쓸 수 있습니다.</>}{" "}
+      참가비는 반드시 {brand.name} 결제로만 받아요. 계좌 송금·현장 결제 안내는 할 수 없어요. 지금은 테스트 결제만 운영 중이며 실제 청구·지급은 없습니다.
+    </p>
+  );
+}
+
+const PRINCIPLES: { no: string; title: string; body: React.ReactNode }[] = [
   { no: "01", title: "입장료는 없습니다", body: "호스트가 되는 데 드는 비용은 없습니다. 돈을 낸다고 호스트가 되지도 않습니다. 심사로만 함께합니다." },
-  { no: "02", title: "프로그램이 판매될 때만", body: "정식 오픈 후 첫 1년은 수수료가 없습니다. 참가비는 호스트가 그대로 받습니다. 그 뒤에도 프로그램이 판매되었을 때만 수수료가 생깁니다." },
+  {
+    no: "02",
+    title: "프로그램이 판매될 때만",
+    body: (
+      <Suspense fallback={<>참가비는 {brand.name}에서 결제되고, 수수료를 뺀 금액을 정산해 드립니다.</>}>
+        <CommissionPrincipleText />
+      </Suspense>
+    ),
+  },
   { no: "03", title: "직접 데려온 손님은 덜", body: "호스트 전용 추천 링크로 들어온 신청과 다시 찾아온 단골의 재수강에는 더 낮은 수수료를 적용할 예정입니다." },
 ];
 
@@ -50,7 +85,7 @@ const HOST_TYPES = [
 
 const ROADMAP: { phase: string; title: string; items: string[]; status: "now" | "next" | "later" }[] = [
   { phase: "Now", title: "첫 호스트와 함께", status: "now", items: ["호스트 지원·심사", "프로그램 만들기·검수·공개", "신청·취소·환불 관리", "참가자 확인과 알림"] },
-  { phase: "Next", title: "정식 오픈 준비", status: "next", items: ["실제 결제와 수수료 정산", "출석 체크와 참석자 후기", "호스트 전용 추천 링크", "호스트 유형 배지"] },
+  { phase: "Next", title: "정식 오픈 준비", status: "next", items: ["실제 결제 연결(정산 계산은 준비됨)", "호스트 전용 추천 링크", "호스트 유형 배지"] },
   { phase: "Later", title: "함께 넓혀 갈 것", status: "later", items: ["멤버십과 멤버 우선 좌석", `${brand.name} Originals`, "참가자에서 호스트로 성장하는 과정", "프로그램 기획 지원 서비스", "문화·예술 분야로 확장"] },
 ];
 
@@ -90,9 +125,9 @@ export default function ForHostsPage() {
               </li>
             ))}
           </ol>
-          <p className="mt-4 rounded-xl bg-notice px-4 py-3 text-sm leading-relaxed text-notice-foreground" data-testid="commission-note">
-            수수료가 없는 첫 1년 동안, 호스트가 프로그램마다 동의하면 {brand.name} 참가자 할인 쿠폰(최대 10%, 호스트 부담)을 쓸 수 있습니다. 1년 이후의 수수료율과 정산 조건은 정식 오픈 전에 확정해 호스트 계약에 명시합니다. 지금은 테스트 결제만 운영 중이며 실제 청구는 없습니다.
-          </p>
+          <Suspense fallback={<p className="mt-4 h-24 rounded-xl bg-notice" data-testid="commission-note" />}>
+            <CommissionNote />
+          </Suspense>
         </Section>
 
         {/* 호스트 유형 */}

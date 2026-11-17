@@ -52,6 +52,7 @@ export default async function HostDashboard() {
               <Link href="/host/profile" className="underline underline-offset-4" data-testid="edit-profile-link">프로필 관리</Link>
               <Link href="/host/contents" className="underline underline-offset-4" data-testid="host-contents-link">내 콘텐츠</Link>
               <Link href="/host/reviews" className="underline underline-offset-4" data-testid="host-reviews-link">받은 후기</Link>
+              <Link href="/host/settlements" className="underline underline-offset-4" data-testid="host-settlements-link">정산</Link>
             </span>
           </div>
           <Button asChild>

@@ -21,7 +21,7 @@ export default async function AdminCouponsPage() {
       <div>
         <h1 className="font-display text-3xl font-bold">참가자 할인 쿠폰</h1>
         <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
-          첫 1년 동안 수수료 대신 쓰는 할인이에요. 할인은 호스트가 부담하고, 호스트가 프로그램마다 동의해야 적용돼요. 할인율은 최대 10%예요.
+          호스트의 수수료 0% 기간에 쓰는 할인이에요. 할인은 호스트가 부담하고, 호스트가 프로그램마다 동의해야 적용돼요. 할인율은 최대 10%예요.
         </p>
       </div>
       <CouponForm />
