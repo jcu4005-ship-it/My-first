@@ -49,15 +49,20 @@ test("다가오는 일정: 공유하기·캘린더 파일(상세 주소 없음),
   await expect(page.getByTestId("share-button")).toBeVisible();
   const cal = page.getByTestId("calendar-link");
   await expect(cal).toHaveAttribute("href", `/meetups/${meetupId}/calendar?session=${sessionId}`);
-  const res = await page.request.get(`/meetups/${meetupId}/calendar?session=${sessionId}`);
-  expect(res.status()).toBe(200);
-  expect(res.headers()["content-type"]).toContain("text/calendar");
-  const ics = await res.text();
-  expect(ics).toContain("BEGIN:VEVENT");
-  expect(ics).toContain("후기 시험 장소");
-  expect(ics).not.toContain("시험 주소"); // 상세 주소는 참가 확정자에게만
+  // 브라우저 안에서 받음 (스테이징 접근 보호 우회 값이 브라우저 요청에만 붙기 때문)
+  const fetchIn = (url: string) =>
+    page.evaluate(async (u) => {
+      const r = await fetch(u);
+      return { status: r.status, type: r.headers.get("content-type") ?? "", text: await r.text() };
+    }, url);
+  const res = await fetchIn(`/meetups/${meetupId}/calendar?session=${sessionId}`);
+  expect(res.status).toBe(200);
+  expect(res.type).toContain("text/calendar");
+  expect(res.text).toContain("BEGIN:VEVENT");
+  expect(res.text).toContain("후기 시험 장소");
+  expect(res.text).not.toContain("시험 주소"); // 상세 주소는 참가 확정자에게만
   // 없는 일정은 404
-  expect((await page.request.get(`/meetups/${meetupId}/calendar?session=00000000-0000-0000-0000-000000000000`)).status()).toBe(404);
+  expect((await fetchIn(`/meetups/${meetupId}/calendar?session=00000000-0000-0000-0000-000000000000`)).status).toBe(404);
   // 아직 후기 없음 표시 (지어낸 후기 없음)
   await expect(page.getByTestId("reviews-empty")).toBeVisible();
 
