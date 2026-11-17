@@ -7,6 +7,7 @@ import type { MeetupCardData } from "@/lib/meetups/queries";
 import { cn } from "@/lib/utils";
 
 import { SaveButton } from "@/components/saved";
+import { creatorPhoto } from "@/lib/hosting/avatar";
 
 import { SampleBadge, seatsLeft } from "./badges";
 
@@ -128,6 +129,63 @@ export function MeetupGrid({
           pillar={pillarOf?.[m.category_slug]}
         />
       ))}
+    </div>
+  );
+}
+
+/**
+ * 프로그램 한 줄 (메인 "그 사람을 만나는 방법"): 번호 · 크리에이터 얼굴(없으면 프로그램 사진) · with 이름 · 제목 · 일정과 남은 자리 · 참가비.
+ * 사람 → 프로그램 순서로 읽히도록. 남은 자리는 글자로만.
+ */
+export function MeetupRow({ meetup, index, categoryName }: { meetup: MeetupCardData; index: number; categoryName: string }) {
+  const s = meetup.nextSession;
+  const d = ticketDate(s.starts_at);
+  const left = seatsLeft(s);
+  const closed = s.status !== "open" || left === 0;
+  const face = (meetup.host && creatorPhoto(meetup.host)) || meetup.cover_image_url;
+  const meta = `${d.md} ${d.time} · ${s.area}`;
+  return (
+    <div className="relative border-b border-border last:border-0">
+      <Link
+        href={`/meetups/${meetup.id}`}
+        className="group grid grid-cols-[72px_1fr] items-center gap-4 py-5 pr-11 sm:grid-cols-[56px_84px_1fr_200px_110px] sm:gap-6 sm:py-6"
+        data-testid="meetup-card"
+      >
+        <span className="hidden font-light text-[40px] leading-none tracking-[-0.03em] text-ember sm:block">{String(index + 1).padStart(2, "0")}</span>
+        <span className="relative block h-[90px] w-[72px] overflow-hidden rounded-[2px] bg-[linear-gradient(150deg,#3a3630,#1f1d1a)] sm:h-[104px] sm:w-[84px]">
+          <Photo src={face} alt="" sizes="84px" fallback={<span aria-hidden className="absolute inset-0 flex items-center justify-center font-display text-2xl text-cream/80">{meetup.host?.display_name.slice(0, 1)}</span>} />
+          <span aria-hidden className="absolute top-0 left-0 bg-ember px-1.5 py-0.5 text-[10.5px] font-extrabold text-white sm:hidden">{String(index + 1).padStart(2, "0")}</span>
+        </span>
+        <span className="min-w-0">
+          <span className="flex flex-wrap items-center gap-1.5 text-[12px] text-fog">
+            with <b className="text-foreground">{meetup.host?.display_name}</b>
+            {meetup.host?.occupation && <span>· {meetup.host.occupation}</span>}
+            {meetup.is_sample && <SampleBadge />}
+            <span className="sr-only"> · {categoryName}</span>
+          </span>
+          <h3 className="mt-1 text-[18px] leading-snug font-extrabold tracking-[-0.03em] break-keep group-hover:underline group-hover:underline-offset-4 sm:text-[24px]">
+            {meetup.title}
+          </h3>
+          <span className="mt-1.5 flex items-baseline justify-between gap-2 text-[12.5px] text-muted-foreground sm:hidden">
+            <span>
+              {d.md} ({d.wd}) {d.time} · {s.area}
+            </span>
+            <b className="text-[15px] text-foreground">{formatPrice(meetup.price)}</b>
+          </span>
+        </span>
+        <span className="col-start-2 -mt-2 text-[13px] leading-relaxed text-muted-foreground sm:col-start-auto sm:mt-0">
+          <span className="hidden sm:inline">
+            {d.md} ({d.wd}) {d.time} · {s.area}
+            <br />
+          </span>
+          <span className={cn("font-semibold", closed ? "text-muted-foreground" : left <= 2 ? "text-ember" : "text-forest")} data-testid="card-seats">
+            {closed ? "마감" : `${left}자리 남음`}
+            <span className="font-normal text-muted-foreground"> · 정원 {s.capacity}명</span>
+          </span>
+        </span>
+        <b className="hidden text-right text-[19px] font-extrabold sm:block">{formatPrice(meetup.price)}</b>
+      </Link>
+      <SaveButton item={{ id: meetup.id, title: meetup.title, meta }} tone="light" className="absolute top-1/2 right-0 -translate-y-1/2 border border-border" />
     </div>
   );
 }

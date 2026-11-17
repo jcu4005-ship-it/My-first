@@ -45,6 +45,13 @@ begin
     ('b0000000-0000-4000-8000-000000000003', '주찬욱', '보컬 트레이너', array['보컬'],   'creators', 'joo-chanwook',  'approved', false)
   on conflict (user_id) do nothing;
 
+  -- 메인 "이번 호" 표지·특집 순서 (운영팀 추천). 관리자가 이미 정했으면 건드리지 않음
+  update public.host_profiles h set is_featured = true, featured_order = v.ord
+  from (values ('b0000000-0000-4000-8000-000000000003'::uuid, 1),
+               ('b0000000-0000-4000-8000-000000000001'::uuid, 2),
+               ('b0000000-0000-4000-8000-000000000002'::uuid, 3)) as v(id, ord)
+  where h.user_id = v.id and h.featured_order is null;
+
   -- 예시 프로그램 (샘플) ------------------------------------------------------------
   delete from public.meetup_sessions where meetup_id in (select id from public.meetups where is_sample and host_id in (p1, p2, p3));
   delete from public.meetups where is_sample and host_id in (p1, p2, p3);

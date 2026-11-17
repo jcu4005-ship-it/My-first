@@ -48,3 +48,8 @@ export function LogoStacked({ className }: { className?: string }) {
     </span>
   );
 }
+
+/** 큰 제호(잡지 이름처럼): 메인 첫 화면 맨 위 */
+export function LogoWordmark({ className }: { className?: string }) {
+  return <Svg shape={WORDMARK} className={className} title={displayName()} />;
+}

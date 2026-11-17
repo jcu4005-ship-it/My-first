@@ -12,7 +12,7 @@ import { brand } from "@/config/brand";
 import { getPublishedContent, listPublishedContents } from "@/lib/contents/queries";
 import { contentCoverUrl, contentTypeInfo } from "@/lib/contents/types";
 import { formatYmd } from "@/lib/format";
-import { hostAvatarUrl, hostHref } from "@/lib/hosting/avatar";
+import { creatorPhoto, hostHref } from "@/lib/hosting/avatar";
 
 export const instant = false;
 
@@ -29,7 +29,7 @@ export default async function JournalArticlePage({ params }: PageProps<"/journal
   const more = c.host ? (await listPublishedContents({ hostId: c.host.user_id, limit: 4 })).filter((x) => x.id !== c.id).slice(0, 3) : [];
   const cover = contentCoverUrl(c.cover_path);
   const type = contentTypeInfo(c.type);
-  const avatar = hostAvatarUrl(c.host?.avatar_path);
+  const avatar = c.host ? creatorPhoto(c.host) : null;
   // 본문: 일반 텍스트. 빈 줄로 문단을 나누고, 그 안의 줄바꿈은 그대로
   const paragraphs = c.body.split(/\n\s*\n/).map((p) => p.trim()).filter(Boolean);
 

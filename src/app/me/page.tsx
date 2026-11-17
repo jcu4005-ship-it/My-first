@@ -10,7 +10,7 @@ import { requireMember } from "@/lib/auth/guards";
 import { listMyBookings } from "@/lib/bookings/queries";
 import { formatPrice, formatShortDateTime, formatTime, isFuture, ticketDate } from "@/lib/format";
 import { APPLICATION_STATUS_LABEL, getMyApplication } from "@/lib/hosting/applications";
-import { hostAvatarUrl, hostHref } from "@/lib/hosting/avatar";
+import { creatorPhoto, hostHref } from "@/lib/hosting/avatar";
 import { listMyFollowedHosts } from "@/lib/hosting/follows";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
@@ -167,7 +167,7 @@ async function MyPage({ member }: { member: Awaited<ReturnType<typeof requireMem
         ) : (
           <ul className={`flex gap-2 overflow-x-auto p-3 no-scrollbar ${sheet}`}>
             {followed.map(({ host, next }) => {
-              const avatar = hostAvatarUrl(host.avatar_path);
+              const avatar = creatorPhoto(host);
               return (
                 <li key={host.user_id} className="flex w-[8.5rem] shrink-0 flex-col items-center px-1 text-center" data-testid="followed-host" data-name={host.display_name}>
                   <Link href={hostHref(host)} className="group flex flex-col items-center">

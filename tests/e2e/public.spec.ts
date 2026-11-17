@@ -7,12 +7,14 @@ test.beforeAll(requireTestEnv);
 // 샘플 데이터가 필요한 검사: 로컬·CI는 항상, 스테이징은 샘플을 넣은 경우(TEST_EXPECT_SAMPLES=yes)만
 const samples = !isStaging || process.env.TEST_EXPECT_SAMPLES === "yes";
 
-test("메인: 큰 사진 문구(한글만), 지금 가장 흥미로운 경험, 세 카테고리, 만나 볼 사람들, 저널, 심사 기준", async ({ page }) => {
+test("메인(잡지 표지): 카피·표지, 이번 호의 사람들, 그 사람을 만나는 방법, 세 분야, 저널, 심사 기준", async ({ page }) => {
   test.skip(!samples, "샘플 데이터 없음");
   await page.goto("/");
-  await expect(page.getByRole("heading", { level: 1 })).toContainText("새로운 경험이 시작되는 곳");
+  await expect(page.getByRole("heading", { level: 1 })).toContainText("새로운 세계가 됩니다");
   await expect(page.getByText("Make time")).toHaveCount(0);
-  await expect(page.getByTestId("hero-cta")).toHaveAttribute("href", "/meetups");
+  await expect(page.getByTestId("hero-cta")).toHaveAttribute("href", "/hosts");
+  // 표지: 사진이 있는 크리에이터가 표지 인물, 누르면 그 사람의 페이지로
+  await expect(page.getByTestId("cover-story")).toHaveAttribute("href", /^\/hosts\//);
   await expect(page.getByTestId("home-pillars").getByTestId("pillar-tile")).toHaveCount(3);
   await expect(page.getByTestId("sample-notice")).toBeVisible();
   const cards = page.getByTestId("home-this-week").getByTestId("meetup-card");
@@ -22,7 +24,7 @@ test("메인: 큰 사진 문구(한글만), 지금 가장 흥미로운 경험, �
   await expect(cards.first().getByTestId("card-seats")).toContainText(/(\d+자리 남음|마감)/);
   const creators = page.getByTestId("home-creators").getByTestId("creator-tile");
   await expect(creators.first()).toBeVisible();
-  expect(await creators.count()).toBeLessThanOrEqual(8);
+  expect(await creators.count()).toBeLessThanOrEqual(3);
   await expect(page.getByTestId("home-journal").getByTestId("content-card").first()).toBeVisible();
   await expect(page.getByTestId("home-curation")).toContainText("공개 전 검수");
   // 아직 없는 기능(멤버십)은 메인에 보이지 않음

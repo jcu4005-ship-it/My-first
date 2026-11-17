@@ -16,7 +16,16 @@ export type Session = {
   status: "open" | "closed" | "cancelled" | "completed";
 };
 
-export type HostSummary = { user_id: string; slug: string | null; display_name: string; headline: string; is_sample: boolean; is_test?: boolean };
+export type HostSummary = {
+  user_id: string;
+  slug: string | null;
+  display_name: string;
+  headline: string;
+  is_sample: boolean;
+  is_test?: boolean;
+  avatar_path?: string | null;
+  occupation?: string;
+};
 
 export type MeetupCardData = {
   id: string;
@@ -75,7 +84,7 @@ const HOST_DETAIL_SELECT =
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 const CARD_SELECT =
-  "id, title, summary, price, category_slug, cover_image_url, cover_path, is_sample, status, host:host_profiles(user_id, slug, display_name, headline, is_sample, is_test), sessions:meetup_sessions(id, starts_at, ends_at, area, venue_name, capacity, reserved_count, status)";
+  "id, title, summary, price, category_slug, cover_image_url, cover_path, is_sample, status, host:host_profiles(user_id, slug, display_name, headline, is_sample, is_test, avatar_path, occupation), sessions:meetup_sessions(id, starts_at, ends_at, area, venue_name, capacity, reserved_count, status)";
 
 type Row = {
   id: string;

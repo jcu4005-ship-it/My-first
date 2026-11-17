@@ -3,29 +3,30 @@
 
 /*
  * 디자인 토큰 — 색·글꼴·모서리 값은 여기서만 정의합니다.
- * 방향 (2026-11-17 대표 시안): Creator Culture — 아이보리 바탕, 짙은 포레스트 그린, 따뜻한 회색, 갈색 톤 사진, 에디토리얼 세리프.
- * 팔레트: Forest #1E3328 · Deep #15241C · Sage #8A9A7E · Ivory #F3EFE8 · Card #FBF9F5 · Warm gray #5E5B53 · Charcoal #1F211E
+ * 방향 (2026-11-17 승인 "문화 잡지"): 종이 바탕, 잉크 검정, 딥 포레스트(브랜드), 안개 회색, 신호색 Ember(화면당 한두 곳).
+ * 팔레트: Paper #F3F0EA · Ink #121311 · Forest #1C3326 · Fog #8A877F · Ember #D2522B · Card #FBFAF7
  * 대비: 작은 본문 글자는 ink·muted-foreground·forest만 사용 (아이보리 바탕에서 4.5:1 이상). sage는 큰 글자·장식에만.
  * 시스템 다크 모드에 따라 색을 뒤집지 않습니다 (브랜드 화면 고정).
  */
 :root {
-  --forest: #1e3328;
-  --forest-deep: #15241c;
+  --forest: #1c3326;
+  --forest-deep: #132219;
   --forest-soft: #2c4536;
-  --ink: #1f211e;
-  --cream: #f3efe8;
-  --linen: #e8e3d9;
+  --ink: #121311;
+  --cream: #f3f0ea;
+  --linen: #e7e3db;
   --sage: #8a9a7e;
   --mint: #c9d1bf;
-  --clay: #9a4a34;
+  --fog: #8a877f;
+  --clay: #d2522b;               /* Ember: 마지막 자리·호 번호 등 화면당 한두 곳 */
   --white: #ffffff;
 
   --background: var(--cream);
   --foreground: var(--ink);
-  --card: #fbf9f5;
+  --card: #fbfaf7;
   --muted: var(--linen);
-  --muted-foreground: #5e5b53;
-  --border: #e0dad0;
+  --muted-foreground: #5c5a54;
+  --border: #dcd7cd;
   --primary: var(--forest);
   --primary-foreground: #ffffff;
   --secondary: var(--linen);
@@ -66,6 +67,8 @@
   --color-sage: var(--sage);
   --color-mint: var(--mint);
   --color-clay: var(--clay);
+  --color-ember: var(--clay);
+  --color-fog: var(--fog);
   --radius-sm: calc(var(--radius) - 8px);
   --radius-md: calc(var(--radius) - 4px);
   --radius-lg: var(--radius);
@@ -73,7 +76,6 @@
   --radius-2xl: calc(var(--radius) + 8px);
   --font-sans: var(--font-pretendard), system-ui, sans-serif;
   --font-display: var(--font-display-serif), var(--font-pretendard), serif;
-  --font-editorial: var(--font-latin-serif), var(--font-display-serif), serif;
 }
 
 @layer base {

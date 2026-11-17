@@ -8,8 +8,8 @@ import { cn } from "@/lib/utils";
 
 const TABS = [
   { href: "/", label: "홈", icon: House, match: (p: string) => p === "/" },
-  { href: "/meetups", label: "탐색", icon: Compass, match: (p: string) => p.startsWith("/meetups") },
   { href: "/hosts", label: "크리에이터", icon: Users, match: (p: string) => p.startsWith("/hosts") || p.startsWith("/become-a-host") },
+  { href: "/meetups", label: "프로그램", icon: Compass, match: (p: string) => p.startsWith("/meetups") },
   { href: "/saved", label: "저장", icon: Bookmark, match: (p: string) => p.startsWith("/saved") },
   { href: "/me", label: "마이", icon: UserRound, match: (p: string) => p.startsWith("/me") || p.startsWith("/checkout") },
 ];

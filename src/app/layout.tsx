@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
-import { Cormorant_Garamond, Noto_Serif_KR } from "next/font/google";
+import { Noto_Serif_KR } from "next/font/google";
 
 import { brand, displayName } from "@/config/brand";
 import { assertValidEnv } from "@/config/env";
@@ -22,14 +22,6 @@ const displaySerif = Noto_Serif_KR({
   preload: false,
 });
 
-/** 영문 에디토리얼 제목용 (Make time for what inspires you.) */
-const latinSerif = Cormorant_Garamond({
-  variable: "--font-latin-serif",
-  weight: ["400", "500"],
-  subsets: ["latin"],
-  display: "swap",
-});
-
 export const metadata: Metadata = {
   title: { default: displayName(), template: `%s · ${displayName()}` },
   description: brand.description,
@@ -46,7 +38,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="ko"
-      className={`${pretendard.variable} ${displaySerif.variable} ${latinSerif.variable} h-full antialiased`}
+      className={`${pretendard.variable} ${displaySerif.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col">
         <EnvironmentBanner

@@ -3,7 +3,7 @@ import { Mail, Search } from "lucide-react";
 import { Suspense } from "react";
 
 import { displayName } from "@/config/brand";
-import { LogoInline } from "@/components/brand/logo";
+import { LogoInline, LogoSymbol } from "@/components/brand/logo";
 import { Button } from "@/components/ui/button";
 import { getCurrentMember } from "@/lib/auth/session";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -71,8 +71,8 @@ async function UnreadBadge({ userId }: { userId: string }) {
 }
 
 const NAV = [
-  { href: "/meetups", label: "프로그램" },
   { href: "/hosts", label: "크리에이터" },
+  { href: "/meetups", label: "프로그램" },
   { href: "/journal", label: "저널" },
   { href: "/become-a-host", label: "크리에이터 지원" },
 ];
@@ -82,14 +82,15 @@ const NAV = [
  * 휴대폰에서는 위쪽 메뉴 대신 아래 탭 막대(홈·탐색·호스트·예약·마이)를 씁니다.
  * tabBar=false: 아래쪽에 자체 고정 버튼이 있는 화면(프로그램 상세)에서 탭 막대를 숨김.
  */
-export function SiteHeader({ tabBar = true }: { tabBar?: boolean }) {
+export function SiteHeader({ tabBar = true, masthead = false }: { tabBar?: boolean; masthead?: boolean }) {
   return (
     <>
-      <header className="sticky top-0 z-30 border-b border-border/70 bg-background/92 backdrop-blur">
+      <header className={`sticky top-0 z-30 bg-background/92 backdrop-blur ${masthead ? "" : "border-b border-border/70"}`}>
         <div className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between gap-3 px-4 sm:px-6">
           <div className="flex items-center gap-10 whitespace-nowrap">
             <Link href="/" className="flex items-center text-foreground" aria-label={`${displayName()} 홈`} data-testid="site-logo">
-              <LogoInline />
+              {/* 메인은 아래에 큰 제호가 있으므로 심볼만 */}
+              {masthead ? <LogoSymbol className="w-6" /> : <LogoInline />}
             </Link>
             <nav aria-label="주요 메뉴" className="hidden items-center gap-7 md:flex">
               {NAV.map((n) => (

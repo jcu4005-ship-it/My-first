@@ -22,7 +22,7 @@ import { getAppSettings } from "@/lib/settings/queries";
 import { CLASS_LEVEL_LABEL } from "@/lib/validation/meetup";
 
 import { BookingForm } from "./booking-form";
-import { hostAvatarUrl, hostHref } from "@/lib/hosting/avatar";
+import { creatorPhoto, hostHref } from "@/lib/hosting/avatar";
 
 export const instant = false;
 
@@ -86,7 +86,7 @@ export default async function MeetupDetailPage({ params }: PageProps<"/meetups/[
   const style = categoryStyle(meetup.category_slug);
   const outcomes = lines(meetup.learning_outcomes);
   const audience = lines(meetup.target_audience);
-  const avatar = meetup.host ? hostAvatarUrl(meetup.host.avatar_path) : null;
+  const avatar = meetup.host ? creatorPhoto(meetup.host) : null;
   // 신청할 수 없는 프로그램(샘플·베타 유료)은 버튼이 신청되는 것처럼 보이지 않게
   const cannotBook = viewerState === "sample" || viewerState === "beta_paid";
   const ctaShort = cannotBook ? (viewerState === "sample" ? "예시 프로그램 · 신청 불가" : "지금은 신청 불가 · 일정 보기") : anyOpen ? "신청하기" : "일정 보기";

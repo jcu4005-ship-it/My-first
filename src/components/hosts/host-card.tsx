@@ -2,7 +2,7 @@ import Link from "next/link";
 
 import { Photo } from "@/components/media/photo";
 import { pillarInfo } from "@/config/pillars";
-import { hostAvatarUrl, hostHref } from "@/lib/hosting/avatar";
+import { creatorPhoto, hostHref } from "@/lib/hosting/avatar";
 import type { HostDetail, MeetupCardData } from "@/lib/meetups/queries";
 
 /** 호스트 카드: 동그란 사진(없으면 이니셜) + 이름 + 하는 일 + 분야, 아래에 대표 프로그램 */
@@ -16,7 +16,7 @@ export function HostCard({
   className?: string;
 }) {
   const pillar = pillarInfo(host.primary_pillar ?? host.pillars?.[0]);
-  const avatar = hostAvatarUrl(host.avatar_path);
+  const avatar = creatorPhoto(host);
   return (
     <div className={`flex h-full flex-col rounded-2xl border border-border/70 bg-card p-5 ${className}`} data-testid="host-card" data-name={host.display_name}>
       <Link href={hostHref(host)} className="group flex flex-col gap-4" data-testid="expert-card">
@@ -59,7 +59,7 @@ export function HostCard({
  */
 export function CreatorTile({ host, programCount }: { host: HostDetail; programCount: number }) {
   const pillar = pillarInfo(host.primary_pillar);
-  const avatar = hostAvatarUrl(host.avatar_path);
+  const avatar = creatorPhoto(host);
   const pending = !host.is_sample && !host.bio && !host.headline;
   return (
     <Link href={hostHref(host)} className="group block" data-testid="creator-tile" data-name={host.display_name}>

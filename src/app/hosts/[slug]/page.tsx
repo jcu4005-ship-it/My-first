@@ -14,7 +14,7 @@ import { SiteHeader } from "@/components/site-header";
 import { pillarInfo } from "@/config/pillars";
 import { getCurrentMember } from "@/lib/auth/session";
 import { listPublishedContents } from "@/lib/contents/queries";
-import { hostAvatarUrl } from "@/lib/hosting/avatar";
+import { creatorPhoto } from "@/lib/hosting/avatar";
 import { getFollowState } from "@/lib/hosting/follows";
 import {
   getHost,
@@ -72,7 +72,7 @@ export default async function HostPage({ params }: PageProps<"/hosts/[slug]">) {
   );
   const { soon, later } = splitBySoon(meetups);
   const pillar = pillarInfo(host.primary_pillar);
-  const avatar = hostAvatarUrl(host.avatar_path);
+  const avatar = creatorPhoto(host);
   // 이름·분야만 먼저 올린 호스트(소개 미작성): "심사 통과" 표시 대신 "소개 준비 중"
   const introPending = !host.philosophy && !host.bio && !host.headline;
   const expertise = [
