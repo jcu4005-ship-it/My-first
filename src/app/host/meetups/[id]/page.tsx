@@ -141,7 +141,10 @@ export default async function ManageMeetupPage({ params, searchParams }: PagePro
                       <p className="text-sm text-muted-foreground">{s.area} · {s.venue_name}{s.address_detail ? ` · ${s.address_detail}` : ""}</p>
                     </div>
                     <div className="text-right">
-                      <StatusPill tone={s.status === "open" ? "ok" : "muted"}>{SESSION_LABEL[s.status]}</StatusPill>
+                      {/* 시간이 지난 일정은 상태와 관계없이 "종료" (취소된 일정은 그대로 "취소됨") */}
+                      <StatusPill tone={s.status === "open" && future ? "ok" : "muted"}>
+                        <span data-testid="session-state">{s.status !== "cancelled" && !future ? SESSION_LABEL.completed : SESSION_LABEL[s.status]}</span>
+                      </StatusPill>
                       <p className="mt-1 text-sm" data-testid="session-seats">신청 {s.reserved_count} / {s.capacity}명</p>
                       {(waitCounts[s.id] ?? 0) > 0 && (
                         <p className="text-xs text-clay" data-testid="session-waitlist">대기 {waitCounts[s.id]}명 · 정원을 늘리면 알림이 가요</p>

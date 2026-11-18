@@ -23,6 +23,8 @@ const displaySerif = Noto_Serif_KR({
 });
 
 export const metadata: Metadata = {
+  // 공유 카드(og:image) 주소를 완전한 주소로 — 설정이 없으면 Vercel 배포 주소를 Next.js가 자동으로 씀
+  ...(process.env.NEXT_PUBLIC_SITE_URL ? { metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL) } : {}),
   title: { default: displayName(), template: `%s · ${displayName()}` },
   description: brand.description,
 };

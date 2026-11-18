@@ -115,6 +115,7 @@ test("후기: 출석 체크 → 참가자 후기(별점·검사) → 공개 → 
   await expect(rowA.getByText("불참으로 체크했어요.")).toBeVisible();
   await host.reload();
   await expect(host.getByTestId("attendance-row").filter({ hasText: p.nickname }).getByTestId("attendance-state")).toHaveText("참석");
+  await expect(host.getByTestId("session-state").first()).toHaveText("종료"); // 지난 일정은 "모집 중"이 아니라 "종료"
 
   // 2. 불참 처리된 사람은 후기를 쓸 수 없음
   const ab = await loginPage(browser, absent.email);
