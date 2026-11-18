@@ -102,6 +102,14 @@ export default async function HostDashboard() {
                     <p className="text-sm text-muted-foreground">
                       {upcoming.length ? `다음 일정 ${formatShortDateTime(upcoming[0].starts_at)} · 예정 ${upcoming.length}회 · 신청 ${reserved}/${capacity}명` : "예정된 일정 없음"}
                     </p>
+                    {m.status === "published" && upcoming.length === 0 && (
+                      <p className="rounded-lg bg-notice px-3 py-1.5 text-xs text-notice-foreground" data-testid="no-upcoming-warning">
+                        공개 중이지만 다가오는 일정이 없어서 프로그램 목록에 보이지 않아요. 일정을 추가해 주세요.
+                      </p>
+                    )}
+                    {m.status === "draft" && (
+                      <p className="text-xs text-muted-foreground">아직 공개 전이에요. 일정을 추가하고 검수를 요청하면 운영팀 승인 후 공개돼요.</p>
+                    )}
                   </Link>
                 </li>
               );

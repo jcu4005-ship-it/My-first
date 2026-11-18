@@ -120,6 +120,12 @@ export default async function ManageMeetupPage({ params, searchParams }: PagePro
           </section>
         )}
 
+        {meetup.status === "published" && !sessions.some((s) => s.status !== "cancelled" && isFuture(s.starts_at)) && (
+          <p className="mt-6 rounded-xl bg-notice px-4 py-3 text-sm text-notice-foreground" data-testid="no-upcoming-warning">
+            공개 중이지만 다가오는 일정이 없어서 프로그램 목록과 크리에이터 페이지에 보이지 않아요. 아래에서 새 일정을 추가해 주세요.
+          </p>
+        )}
+
         <section className="mt-10">
           <h2 className="mb-4 text-lg font-semibold">일정과 참가자</h2>
           {sessions.length === 0 && <p className="mb-4 text-sm text-muted-foreground">아직 일정이 없어요. 아래에서 첫 일정을 추가해 주세요.</p>}

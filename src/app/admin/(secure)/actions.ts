@@ -86,7 +86,7 @@ const applicationReviewSchema = z.object({
 const REVIEW_DONE = {
   start_review: "심사를 시작했어요.",
   request_revision: "수정을 요청했어요. 지원자에게 알림이 가요.",
-  approve: "승인했어요. 공개 호스트 프로필이 만들어졌어요.",
+  approve: "승인했어요. 공개 호스트 프로필이 만들어졌어요. 다음 단계: 호스트가 프로그램을 만들고 일정 추가 후 검수를 요청하면 '프로그램 심사'에 올라와요. 거기서 공개 승인해야 프로그램 목록에 보여요.",
   reject: "반려했어요. 지원자에게 알림이 가요.",
 } as const;
 

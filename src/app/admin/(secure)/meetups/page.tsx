@@ -3,7 +3,7 @@ import Link from "next/link";
 
 import { ActionForm } from "@/components/forms/action-form";
 import { requireAdmin } from "@/lib/auth/guards";
-import { formatPrice, formatShortDateTime } from "@/lib/format";
+import { formatPrice, formatShortDateTime, isFuture } from "@/lib/format";
 import { MEETUP_STATUS_LABEL, listMeetupsByStatus, type MeetupStatus } from "@/lib/hosting/queries";
 import { cn } from "@/lib/utils";
 
@@ -37,6 +37,9 @@ export default async function AdminMeetupsPage({ searchParams }: PageProps<"/adm
           <li key={m.id} className="rounded-2xl border p-5" data-testid="review-meetup" data-title={m.title}>
             <p className="text-xs text-muted-foreground">{m.host?.display_name}{m.is_sample ? " · 샘플" : ""} · {m.category_slug} · {formatPrice(m.price)}{m.meetup_type === "alcohol" ? " · 주류" : ""}</p>
             <p className="mt-1 font-semibold">{m.title}</p>
+            {m.status === "published" && !m.sessions.some((s) => s.status !== "cancelled" && isFuture(s.starts_at)) && (
+              <p className="mt-1 text-xs font-semibold text-clay" data-testid="no-upcoming-warning">공개 중이지만 다가오는 일정이 없어 목록에 안 보여요</p>
+            )}
             <p className="mt-1 text-sm text-muted-foreground">{m.summary}</p>
             {m.price > 0 && (
               <p className="mt-2 bg-notice px-3 py-2 text-sm text-notice-foreground" data-testid="price-rationale">
