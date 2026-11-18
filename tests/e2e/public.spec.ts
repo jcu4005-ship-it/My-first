@@ -278,3 +278,25 @@ test("약관·환불 정책: 바닥글에서 연결, 초안 표시, 환불 기�
     await expect(page.getByTestId("refund-summary")).toContainText("50% 환불");
   }
 });
+
+test("프로그램 검색: 머리글 돋보기 → 검색창, 제목·크리에이터로 찾기, 결과 없음 안내, 검색 지우기", async ({ page }) => {
+  await page.goto("/");
+  await page.getByRole("link", { name: "프로그램 검색" }).click();
+  await expect(page).toHaveURL(/\/meetups#search$/);
+  const form = page.getByTestId("program-search");
+  const first = page.getByTestId("meetup-card").first();
+  const title = (await first.getByRole("heading").first().textContent().catch(() => null))?.trim();
+  test.skip(!title, "공개 프로그램이 없음");
+  const word = title!.split(/\s+/)[0];
+  await form.getByRole("searchbox").fill(word);
+  await form.getByRole("button", { name: "검색" }).click();
+  await expect(page).toHaveURL(new RegExp(`q=${encodeURIComponent(word).replace(/%20/g, "\\+")}`));
+  await expect(page.getByTestId("result-count")).toContainText(`“${word}” 검색 결과`);
+  await expect(page.getByTestId("meetup-card").first()).toBeVisible();
+  await form.getByRole("searchbox").fill("절대없는검색어zz");
+  await form.getByRole("button", { name: "검색" }).click();
+  await expect(page.getByTestId("search-empty")).toContainText("맞는 프로그램이 없어요");
+  await page.goto("/meetups?q=abc");
+  await page.getByTestId("clear-search").click();
+  await expect(page).toHaveURL(/\/meetups$/);
+});

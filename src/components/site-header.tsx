@@ -101,7 +101,7 @@ export function SiteHeader({ tabBar = true, masthead = false }: { tabBar?: boole
             </nav>
           </div>
           <div className="flex items-center gap-2">
-            <Link href="/meetups" className={iconButton} aria-label="프로그램 찾기">
+            <Link href="/meetups#search" className={iconButton} aria-label="프로그램 검색">
               <Search aria-hidden strokeWidth={1.6} />
             </Link>
             <Suspense fallback={<div className="h-10 w-10" />}>

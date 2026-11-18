@@ -8,12 +8,14 @@ import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { PILLARS, isPillar, pillarInfo } from "@/config/pillars";
 import { listCategories, listUpcomingMeetups } from "@/lib/meetups/queries";
+import { normalizeQuery, searchMeetups } from "@/lib/meetups/search";
 
 export const metadata: Metadata = { title: "프로그램 둘러보기" };
 export const instant = false;
 
 export default async function MeetupsPage({ searchParams }: PageProps<"/meetups">) {
-  const sp = (await searchParams) as { category?: string; pillar?: string };
+  const sp = (await searchParams) as { category?: string; pillar?: string; q?: string };
+  const q = normalizeQuery(sp.q);
   const categories = await listCategories();
   const active = categories.find((c) => c.slug === sp.category);
   // 세부 분야를 고르면 그 분야의 대분류가 자동으로 선택됨
@@ -22,11 +24,12 @@ export default async function MeetupsPage({ searchParams }: PageProps<"/meetups"
   // 한 번만 읽고 화면에서 나눔: 세부 분야 칩에 개수를 보여 주고, 프로그램이 없는 분야는 숨기기 위해
   const all = await listUpcomingMeetups();
   const pillarSlugs = new Set(pillarCategories.map((c) => c.slug));
-  const meetups = all.filter((m) => (active ? m.category_slug === active.slug : pillar ? pillarSlugs.has(m.category_slug) : true));
+  const names = Object.fromEntries(categories.map((c) => [c.slug, c.name]));
+  const inScope = all.filter((m) => (active ? m.category_slug === active.slug : pillar ? pillarSlugs.has(m.category_slug) : true));
+  const meetups = searchMeetups(inScope, q, { categoryName: (slug) => names[slug] });
   const counts = all.reduce<Record<string, number>>((acc, m) => ({ ...acc, [m.category_slug]: (acc[m.category_slug] ?? 0) + 1 }), {});
   const chipCategories = pillarCategories.filter((c) => counts[c.slug] || c.slug === active?.slug);
   const info = pillarInfo(pillar);
-  const names = Object.fromEntries(categories.map((c) => [c.slug, c.name]));
 
   return (
     <>
@@ -50,6 +53,20 @@ export default async function MeetupsPage({ searchParams }: PageProps<"/meetups"
               </Link>
             ))}
           </nav>
+          <form action="/meetups" method="get" role="search" className="mt-5 flex max-w-md gap-2" data-testid="program-search">
+            {active ? <input type="hidden" name="category" value={active.slug} /> : pillar && <input type="hidden" name="pillar" value={pillar} />}
+            <label htmlFor="search" className="sr-only">프로그램 검색</label>
+            <input
+              id="search"
+              name="q"
+              type="search"
+              defaultValue={q}
+              maxLength={40}
+              placeholder="프로그램, 크리에이터, 동네로 검색 (예: 사진, 용산)"
+              className="h-12 min-w-0 flex-1 rounded-full border border-border bg-white px-5 text-base placeholder:text-muted-foreground focus:border-foreground focus:outline-none sm:text-sm"
+            />
+            <button type="submit" className="h-12 shrink-0 rounded-full bg-foreground px-6 text-sm font-semibold text-background hover:bg-foreground/90">검색</button>
+          </form>
         </PageHero>
         <div className="sticky top-16 z-20 border-b border-border/60 bg-background/95 backdrop-blur">
           <div className="mx-auto w-full max-w-6xl px-4 sm:px-6">
@@ -58,7 +75,16 @@ export default async function MeetupsPage({ searchParams }: PageProps<"/meetups"
         </div>
         <div className="mx-auto w-full max-w-6xl px-4 pt-6 sm:px-6 sm:pt-8">
           <p className="mb-5 text-sm text-muted-foreground" data-testid="result-count">
-            {meetups.length}개의 프로그램
+            {q ? (
+              <>
+                &ldquo;{q}&rdquo; 검색 결과 {meetups.length}개 ·{" "}
+                <Link href={active ? `/meetups?category=${active.slug}` : pillar ? `/meetups?pillar=${pillar}` : "/meetups"} className="underline underline-offset-4" data-testid="clear-search">
+                  검색 지우기
+                </Link>
+              </>
+            ) : (
+              <>{meetups.length}개의 프로그램</>
+            )}
           </p>
           {meetups.some((m) => m.is_sample) && (
             <p className="mb-6 rounded-xl bg-notice px-4 py-3 text-sm text-notice-foreground">
@@ -67,6 +93,14 @@ export default async function MeetupsPage({ searchParams }: PageProps<"/meetups"
           )}
           {meetups.length ? (
             <MeetupGrid meetups={meetups} categoryNames={names} pillarOf={Object.fromEntries(categories.map((c) => [c.slug, c.pillar]))} />
+          ) : q ? (
+            <div className="rounded-3xl border border-dashed border-border px-6 py-16 text-center" data-testid="search-empty">
+              <p className="text-xl font-extrabold">&ldquo;{q}&rdquo;에 맞는 프로그램이 없어요</p>
+              <p className="mt-2 text-sm text-muted-foreground">다른 단어로 찾아보거나, 크리에이터를 먼저 둘러보세요.</p>
+              <Link href={`/hosts?q=${encodeURIComponent(q)}`} className="mt-5 inline-block text-sm font-semibold underline-offset-4 hover:underline">
+                크리에이터에서 &ldquo;{q}&rdquo; 찾기
+              </Link>
+            </div>
           ) : (
             <div className="rounded-3xl border border-dashed border-border px-6 py-16 text-center" data-testid="empty-state">
               <p className="font-display text-xl font-bold text-forest">아직 열린 프로그램이 없어요</p>
