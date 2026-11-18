@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useActionState, useState, useTransition } from "react";
 
-import { SeatTable } from "@/components/brand/seat-table";
+import { ChairLegend, ChairRing } from "@/components/brand/chair-ring";
 import { FormMessage } from "@/components/forms/field";
 import { Button } from "@/components/ui/button";
 import { formatDate, formatPrice, formatTime } from "@/lib/format";
@@ -60,23 +60,26 @@ export function BookingForm({
     });
 
   return (
-    <form action={action} className="flex scroll-mt-24 flex-col gap-4" id="booking" data-testid="booking-form">
+    <form action={action} className="flex scroll-mt-24 flex-col gap-3.5" id="booking" data-testid="booking-form">
       <input type="hidden" name="meetupId" value={meetupId} />
       {shown && (
-        <div className="text-center">
-          <p className="font-display text-base font-bold">{canBook ? "몇 자리 앉을지 고르세요" : "이 테이블의 자리"}</p>
-          <SeatTable
+        <div className="flex items-center gap-5 sm:gap-7">
+          <ChairRing
             capacity={shown.capacity}
             taken={shown.reserved}
             mine={canBook && selected ? quantity : 0}
             closed={!shown.open || shown.left === 0}
-            size="lg"
-            className="mx-auto my-2 w-52"
+            className="w-32 shrink-0 sm:w-40"
           />
-          <p className="text-xs text-muted-foreground">
-            {canBook && <><span className="text-clay">●</span> 내 자리 · </>}
-            {shown.capacity}명 테이블 중 {shown.reserved}명 예약
-          </p>
+          <div className="min-w-0">
+            <p className="text-[24px] leading-tight font-extrabold tracking-[-0.03em] break-keep sm:text-[27px]">
+              {!shown.open || shown.left === 0 ? "마감됐어요" : shown.reserved === 0 ? `${shown.capacity}자리 모두 비어 있어요` : `${shown.left}자리 남았어요`}
+            </p>
+            <p className="mt-1 text-[13.5px] text-muted-foreground">
+              {shown.capacity}자리 중 {shown.reserved}자리 찼어요
+            </p>
+            <ChairLegend mine={canBook} className="mt-2.5" />
+          </div>
         </div>
       )}
       <fieldset className="flex flex-col gap-2">
@@ -88,8 +91,8 @@ export function BookingForm({
               key={s.id}
               data-testid="session-row"
               className={cn(
-                "flex cursor-pointer items-center justify-between gap-3 rounded-2xl border border-border bg-card px-4 py-3 transition-colors",
-                sessionId === s.id && !disabled ? "border-forest bg-forest/5 ring-1 ring-forest" : "hover:border-forest/40",
+                "flex cursor-pointer items-center justify-between gap-3 rounded-[14px] border-[1.5px] border-border px-4 py-3 transition-colors",
+                sessionId === s.id && !disabled ? "border-foreground bg-card" : "hover:border-foreground/40",
                 disabled && "cursor-default opacity-70",
               )}
             >
@@ -101,7 +104,7 @@ export function BookingForm({
                   checked={sessionId === s.id}
                   disabled={disabled}
                   onChange={() => { setSessionId(s.id); setQuantity(1); resetCoupon(); }}
-                  className="size-4 accent-[var(--forest)]"
+                  className="size-4 accent-[var(--ink)]"
                 />
                 <span>
                   <span className="block font-semibold">{formatDate(s.starts_at)}</span>
@@ -114,7 +117,7 @@ export function BookingForm({
                 ) : !s.open || s.left === 0 ? (
                   <span className="text-muted-foreground" data-testid="seats-full">마감</span>
                 ) : s.left <= 3 ? (
-                  <span className="font-semibold text-clay">{s.left}자리 남음</span>
+                  <span className="font-bold text-ember">{s.left}자리 남음</span>
                 ) : (
                   <span className="text-muted-foreground">{s.left}자리 남음</span>
                 )}
@@ -125,7 +128,7 @@ export function BookingForm({
       </fieldset>
 
       {viewerState === "ok" && firstAvailable && maxQuantity > 1 && (
-        <label className="flex items-center justify-between rounded-2xl bg-linen/70 px-4 py-3 text-sm">
+        <label className="flex items-center justify-between rounded-[14px] border-[1.5px] border-border px-4 py-3 text-sm">
           <span className="font-medium">신청 인원</span>
           <select name="quantity" value={quantity} onChange={(e) => { setQuantity(Number(e.target.value)); resetCoupon(); }}
             className="h-10 rounded-xl border border-border bg-white px-3" aria-label="신청 인원">
@@ -138,7 +141,7 @@ export function BookingForm({
       {(maxQuantity === 1 || viewerState !== "ok") && <input type="hidden" name="quantity" value="1" />}
 
       {viewerState === "ok" && firstAvailable && acceptCoupons && (
-        <div className="flex flex-col gap-2 rounded-2xl bg-linen/70 px-4 py-3" data-testid="coupon">
+        <div className="flex flex-col gap-2 rounded-[14px] border-[1.5px] border-border px-4 py-3" data-testid="coupon">
           <label htmlFor="couponCode" className="text-sm font-medium">할인 쿠폰 (선택)</label>
           <div className="flex gap-2">
             <input
@@ -166,7 +169,7 @@ export function BookingForm({
       <FormMessage message={result.message} />
 
       {viewerState === "guest" ? (
-        <Button asChild size="lg" className="w-full">
+        <Button asChild size="lg" className="w-full rounded-full bg-foreground hover:bg-foreground/90">
           <Link href={`/login?next=/meetups/${meetupId}`}>로그인하고 신청하기</Link>
         </Button>
       ) : viewerState === "beta_paid" ? (
@@ -179,7 +182,7 @@ export function BookingForm({
       ) : viewerState === "own" ? (
         <Button size="lg" className="w-full" disabled>내가 연 프로그램이에요</Button>
       ) : firstAvailable ? (
-        <Button type="submit" size="lg" className="w-full" disabled={pending || !sessionId} data-testid="book-submit">
+        <Button type="submit" size="lg" className="w-full rounded-full bg-foreground hover:bg-foreground/90" disabled={pending || !sessionId} data-testid="book-submit">
           {pending ? "보내는 중…" : `신청하기 · ${formatPrice(applied ? applied.total : price * quantity)}`}
         </Button>
       ) : (
