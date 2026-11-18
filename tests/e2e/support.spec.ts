@@ -62,10 +62,12 @@ test("고객센터: FAQ → 1:1 문의(검사) → 다른 회원은 볼 수 없�
   const admin = await loginPage(browser, a.email);
   await admin.goto("/admin/support");
   await expect(admin).toHaveURL(/\/admin\/mfa/);
+  await admin.waitForLoadState("networkidle"); // 화면 준비 후 입력 (느린 배포 서버)
   const secret = (await admin.getByTestId("mfa-secret").textContent())!.trim();
   await admin.getByLabel(/6자리 코드/).fill(totp(secret));
   await admin.getByRole("button", { name: "확인" }).click();
-  await expect(admin).toHaveURL(/\/admin\/support$/);
+  await expect(admin).toHaveURL(/\/admin\/support$/, { timeout: 15_000 });
+  await admin.waitForLoadState("networkidle");
   await admin.locator(`[data-testid=admin-ticket-row][data-subject="${subject}"]`).click();
   const reply = admin.getByTestId("admin-reply-form");
   await reply.getByLabel("답변", { exact: true }).fill("취소하시면 결제 금액은 바로 환불 처리돼요. (테스트 결제)");

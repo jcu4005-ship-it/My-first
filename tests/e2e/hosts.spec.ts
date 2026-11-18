@@ -121,10 +121,12 @@ test("관리자 호스트 관리: 주소 변경 → 활동 중지(공개 화면�
   await login(page, a.email);
   await page.goto("/admin/hosts?tab=approved");
   await expect(page).toHaveURL(/\/admin\/mfa/);
+  await page.waitForLoadState("networkidle"); // 화면 준비 후 입력 (느린 배포 서버)
   const secret = (await page.getByTestId("mfa-secret").textContent())!.trim();
   await page.getByLabel(/6자리 코드/).fill(totp(secret));
   await page.getByRole("button", { name: "확인" }).click();
-  await expect(page).toHaveURL(/\/admin\/hosts/);
+  await expect(page).toHaveURL(/\/admin\/hosts/, { timeout: 15_000 });
+  await page.waitForLoadState("networkidle");
   await page.locator(`[data-testid=host-row][data-name="${hostName}"]`).getByTestId("manage-host").click();
   await expect(page.getByTestId("admin-host")).toHaveAttribute("data-status", "approved");
 

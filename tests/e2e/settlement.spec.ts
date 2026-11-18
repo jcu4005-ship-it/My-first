@@ -75,10 +75,11 @@ test("정산: 결제는 플랫폼에서만 → 0% 기간이 지난 호스트는 
   const admin = await loginPage(browser, a.email);
   await admin.goto("/admin/settlements");
   await expect(admin).toHaveURL(/\/admin\/mfa/);
+  await admin.waitForLoadState("networkidle"); // 화면 준비 후 입력 (느린 배포 서버)
   const secret = (await admin.getByTestId("mfa-secret").textContent())!.trim();
   await admin.getByLabel(/6자리 코드/).fill(totp(secret));
   await admin.getByRole("button", { name: "확인" }).click();
-  await expect(admin).toHaveURL(/\/admin\/settlements$/);
+  await expect(admin).toHaveURL(/\/admin\/settlements$/, { timeout: 15_000 });
   await admin.waitForLoadState("networkidle");
   await expect(admin.getByTestId("current-rate")).toHaveText("20%");
   const ar = admin.getByTestId("admin-settlement-row").filter({ hasText: title });

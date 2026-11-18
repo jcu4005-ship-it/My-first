@@ -68,10 +68,13 @@ test("관리자: 2단계 인증 전에는 관리자 화면 불가 → OTP 등록
   await page.goto("/admin/members");
   await expect(page).toHaveURL(/\/admin\/mfa\?next=%2Fadmin%2Fmembers/);
 
+  await page.waitForLoadState("networkidle"); // 화면 준비 후 입력 (느린 배포 서버)
+
   const secret = (await page.getByTestId("mfa-secret").textContent())!.trim();
   await page.getByLabel(/6자리 코드/).fill(totp(secret));
   await page.getByRole("button", { name: "확인" }).click();
-  await expect(page).toHaveURL(/\/admin\/members$/);
+  await expect(page).toHaveURL(/\/admin\/members$/, { timeout: 15_000 });
+  await page.waitForLoadState("networkidle");
 
   await page.getByRole("searchbox", { name: "회원 검색" }).or(page.getByLabel("회원 검색")).fill(target.email);
   await page.getByRole("button", { name: "검색" }).click();

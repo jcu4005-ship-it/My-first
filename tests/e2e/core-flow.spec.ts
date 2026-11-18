@@ -73,10 +73,12 @@ test("호스트 지원서(임시 저장·수정 요청·재제출) → 승인 �
   const admin = await loginPage(browser, adminUser.email);
   await admin.goto("/admin/hosts");
   await expect(admin).toHaveURL(/\/admin\/mfa/);
+  await admin.waitForLoadState("networkidle"); // 화면 준비 후 입력 (느린 배포 서버)
   const secret = (await admin.getByTestId("mfa-secret").textContent())!.trim();
   await admin.getByLabel(/6자리 코드/).fill(totp(secret));
   await admin.getByRole("button", { name: "확인" }).click();
-  await expect(admin).toHaveURL(/\/admin\/hosts$/);
+  await expect(admin).toHaveURL(/\/admin\/hosts$/, { timeout: 15_000 });
+  await admin.waitForLoadState("networkidle");
   await admin.locator(`[data-testid=host-application][data-name="${hostName}"]`).click();
   const detail = admin.getByTestId("application-detail");
   // 연락처는 기본으로 가려져 있고, 사유를 적어야 원문이 보여요 (감사 기록)

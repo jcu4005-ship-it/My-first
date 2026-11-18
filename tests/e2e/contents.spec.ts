@@ -101,10 +101,12 @@ test("콘텐츠: 호스트 작성 → 필수 항목 검사 → 검토 요청 →
   const admin = await loginPage(browser, adminUser.email);
   await admin.goto("/admin/contents");
   await expect(admin).toHaveURL(/\/admin\/mfa/);
+  await admin.waitForLoadState("networkidle"); // 화면 준비 후 입력 (느린 배포 서버)
   const secret = (await admin.getByTestId("mfa-secret").textContent())!.trim();
   await admin.getByLabel(/6자리 코드/).fill(totp(secret));
   await admin.getByRole("button", { name: "확인" }).click();
-  await expect(admin).toHaveURL(/\/admin\/contents$/);
+  await expect(admin).toHaveURL(/\/admin\/contents$/, { timeout: 15_000 });
+  await admin.waitForLoadState("networkidle");
   await admin.locator(`[data-testid=admin-content-row][data-title="${title}"]`).click();
   const detail = admin.getByTestId("content-detail");
   await expect(detail.getByTestId("content-body")).toContainText("빛이 어디서 오는지");

@@ -56,10 +56,12 @@ test("비공개 베타: 관리자 설정(사유·감사 기록) → 초대 코�
     const admin = await loginPage(browser, a.email);
     await admin.goto("/admin/launch");
     await expect(admin).toHaveURL(/\/admin\/mfa/);
+    await admin.waitForLoadState("networkidle"); // 화면 준비 후 입력 (느린 배포 서버)
     const secret = (await admin.getByTestId("mfa-secret").textContent())!.trim();
     await admin.getByLabel(/6자리 코드/).fill(totp(secret));
     await admin.getByRole("button", { name: "확인" }).click();
-    await expect(admin).toHaveURL(/\/admin\/launch$/);
+    await expect(admin).toHaveURL(/\/admin\/launch$/, { timeout: 15_000 });
+    await admin.waitForLoadState("networkidle");
     // 화면 스크립트가 다 준비된 뒤에 누름 (준비 전 클릭은 오류 문구 없이 일반 제출이 되어 느린 배포 서버에서 흔들림)
     await admin.waitForLoadState("networkidle");
 

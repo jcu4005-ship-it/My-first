@@ -168,10 +168,11 @@ test("후기: 출석 체크 → 참가자 후기(별점·검사) → 공개 → 
   const admin = await loginPage(browser, a.email);
   await admin.goto("/admin/reviews");
   await expect(admin).toHaveURL(/\/admin\/mfa/);
+  await admin.waitForLoadState("networkidle"); // 화면 준비 후 입력 (느린 배포 서버)
   const secret = (await admin.getByTestId("mfa-secret").textContent())!.trim();
   await admin.getByLabel(/6자리 코드/).fill(totp(secret));
   await admin.getByRole("button", { name: "확인" }).click();
-  await expect(admin).toHaveURL(/\/admin\/reviews$/);
+  await expect(admin).toHaveURL(/\/admin\/reviews$/, { timeout: 15_000 });
   await admin.waitForLoadState("networkidle");
   const ar = admin.getByTestId("admin-review-item").filter({ hasText: title });
   await ar.getByTestId("review-hide-form").getByRole("textbox").fill("짧음");
