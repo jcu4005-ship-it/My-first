@@ -108,7 +108,9 @@ export default async function MeetupDetailPage({ params }: PageProps<"/meetups/[
   // 소개를 아직 쓰지 않은 호스트(이름·분야만 등록)에게는 "심사 통과" 표시를 붙이지 않음
   const hostVerified = Boolean(meetup.host && (meetup.host.bio || meetup.host.headline));
   const more = meetup.upcomingSessions.length - 1;
-  const coverPhoto = meetup.cover_image_url ?? avatar;
+  // 맨 위 사진: 크리에이터 사진 우선(대표 결정), 없으면 프로그램 대표 사진
+  const coverPhoto = avatar ?? meetup.cover_image_url;
+  const coverIsCreator = Boolean(avatar);
   const nextLeft = next ? seatsLeft(next) : 0;
 
   return (
@@ -116,15 +118,15 @@ export default async function MeetupDetailPage({ params }: PageProps<"/meetups/[
       <SiteHeader tabBar={false} />
       <RecordRecentlyViewed item={{ kind: "program", href: `/meetups/${meetup.id}`, title: meetup.title }} />
       <main className="flex-1 pb-28 lg:pb-0">
-        {/* 1. 표지: 프로그램 대표 사진(없으면 크리에이터 사진) + 제목·정보 */}
+        {/* 1. 표지: 크리에이터 사진(없으면 프로그램 대표 사진) + 제목·정보 */}
         <div className="mx-auto grid w-full max-w-6xl gap-5 sm:px-6 lg:grid-cols-[7fr_5fr] lg:gap-11 lg:pt-2">
           <div className="relative aspect-[4/3] w-full overflow-hidden bg-forest sm:rounded-[2px] lg:aspect-[5/4]">
             <Photo
               src={coverPhoto}
-              alt={meetup.cover_image_url ? meetup.title : `${meetup.host?.display_name ?? ""} 사진`}
+              alt={coverIsCreator ? `${meetup.host?.display_name ?? ""} 사진` : meetup.title}
               priority
               sizes="(min-width: 1024px) 58vw, 100vw"
-              className={meetup.cover_image_url ? undefined : "object-[50%_18%]"}
+              className={coverIsCreator ? "object-[50%_18%]" : undefined}
               fallback={<EditorialCover category={meetup.category_slug} title={meetup.title} size="hero" showTitle={false} showLabel={false} className="!bg-forest !text-white" />}
             />
             <SaveButton
@@ -233,6 +235,12 @@ export default async function MeetupDetailPage({ params }: PageProps<"/meetups/[
         <div className="mx-auto mt-12 grid w-full max-w-6xl gap-10 px-4 sm:mt-16 sm:px-6 lg:grid-cols-[7fr_5fr] lg:gap-11">
           <article>
             <Block title="크리에이터가 들려주는 이야기" label="STORY">
+              {/* 위에 크리에이터 사진이 있으면, 호스트가 올린 프로그램 사진은 여기에 */}
+              {coverIsCreator && meetup.cover_image_url && (
+                <figure className="relative mb-5 aspect-[16/10] overflow-hidden rounded-[2px] bg-linen" data-testid="program-photo">
+                  <Photo src={meetup.cover_image_url} alt={meetup.title} sizes="(min-width: 1024px) 58vw, 100vw" fallback={null} />
+                </figure>
+              )}
               <p className="text-[16px] leading-[1.85] whitespace-pre-line text-foreground/85">{meetup.description}</p>
             </Block>
 
