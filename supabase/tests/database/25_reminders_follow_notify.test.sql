@@ -15,14 +15,17 @@ select pg_temp.logout();
 
 select ok(exists (select 1 from cron.job where jobname = 'roundi-session-reminders' and schedule = '7 * * * *'), '매시 7분 예약 작업 등록');
 
--- 5일 뒤 일정: 아직 알림 없음
-select is(private.send_session_reminders(), 0, '24시간보다 먼 일정은 알림 없음');
+-- 5일 뒤 일정: 아직 알림 없음 (다른 데이터가 있는 DB에서도 맞도록 이 시험의 회원만 확인)
+select private.send_session_reminders();
+select is((select count(*)::int from public.notifications where user_id in (:'p', :'h') and kind in ('session.reminder', 'session.host_reminder')), 0, '24시간보다 먼 일정은 알림 없음');
 -- 20시간 뒤로 당김
 update public.meetup_sessions set starts_at = now() + interval '20 hours', ends_at = now() + interval '22 hours' where id = :'s';
-select is(private.send_session_reminders(), 2, '참가자 1 + 호스트 1 알림');
+select private.send_session_reminders();
+select is((select count(*)::int from public.notifications where user_id in (:'p', :'h') and kind in ('session.reminder', 'session.host_reminder')), 2, '참가자 1 + 호스트 1 알림');
 select ok(exists (select 1 from public.notifications where user_id = :'p' and kind = 'session.reminder'), '참가자 하루 전 알림');
 select ok(exists (select 1 from public.notifications where user_id = :'h' and kind = 'session.host_reminder' and body like '%확정 1명%'), '호스트 하루 전 알림(확정 인원)');
-select is(private.send_session_reminders(), 0, '같은 일정은 다시 보내지 않는다');
+select private.send_session_reminders();
+select is((select count(*)::int from public.notifications where user_id in (:'p', :'h') and kind in ('session.reminder', 'session.host_reminder')), 2, '같은 일정은 다시 보내지 않는다');
 
 -- 팔로워 알림
 insert into public.host_follows (follower_id, host_id) values (:'f', :'h');
