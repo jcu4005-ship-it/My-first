@@ -13,6 +13,7 @@ import { MEETUP_STATUS_LABEL, getHostSessionsAndParticipants, getMyMeetup, getWa
 
 import {
   couponConsentAction,
+  duplicateMeetupAction,
   hostCancelMeetupAction,
   hostCancelSessionAction,
   markAttendanceAction,
@@ -29,7 +30,7 @@ const SESSION_LABEL = { open: "모집 중", closed: "모집 마감", cancelled: 
 
 export default async function ManageMeetupPage({ params, searchParams }: PageProps<"/host/meetups/[id]">) {
   const { id } = await params;
-  const { saved, repriced } = (await searchParams) as { saved?: string; repriced?: string };
+  const { saved, repriced, copied } = (await searchParams) as { saved?: string; repriced?: string; copied?: string };
   const member = await requireRole("host", `/host/meetups/${id}`);
   const meetup = await getMyMeetup(member.id, id);
   if (!meetup) notFound();
@@ -45,7 +46,11 @@ export default async function ManageMeetupPage({ params, searchParams }: PagePro
       <SiteHeader />
       <main className="mx-auto w-full max-w-4xl flex-1 px-4 py-8 sm:px-8">
         <Link href="/host" className="text-sm text-muted-foreground">← 내 프로그램</Link>
-        {saved && <p className="mt-4 rounded-xl bg-notice px-4 py-3 text-sm text-notice-foreground" data-testid="saved-notice">저장했어요.</p>}
+        {saved && (
+          <p className="mt-4 rounded-xl bg-notice px-4 py-3 text-sm text-notice-foreground" data-testid="saved-notice">
+            {copied ? "복제했어요. 제목과 내용을 다듬고, 일정을 추가한 뒤 검수를 요청해 주세요." : "저장했어요."}
+          </p>
+        )}
         {repriced && (
           <p className="mt-4 rounded-xl bg-notice px-4 py-3 text-sm text-notice-foreground" data-testid="repriced-notice">
             참가비를 올려서 다시 검수를 받아요. 운영팀이 승인하면 새 참가비로 다시 공개돼요. 그동안은 목록에 보이지 않아요.
@@ -71,6 +76,7 @@ export default async function ManageMeetupPage({ params, searchParams }: PagePro
                 <Link href={`/meetups/${meetup.id}`}>공개 페이지</Link>
               </Button>
             )}
+            <ActionForm action={duplicateMeetupAction} hidden={{ meetupId: meetup.id }} label="복제해서 새로 만들기" variant="ghost" testId="duplicate-meetup" />
           </div>
         </div>
 
@@ -146,6 +152,7 @@ export default async function ManageMeetupPage({ params, searchParams }: PagePro
                         <span data-testid="session-state">{s.status !== "cancelled" && !future ? SESSION_LABEL.completed : SESSION_LABEL[s.status]}</span>
                       </StatusPill>
                       <p className="mt-1 text-sm" data-testid="session-seats">신청 {s.reserved_count} / {s.capacity}명</p>
+                      <Link href={`/host/meetups/${meetup.id}/roster?session=${s.id}`} className="text-xs underline underline-offset-4" data-testid="roster-link">출석부 인쇄</Link>
                       {(waitCounts[s.id] ?? 0) > 0 && (
                         <p className="text-xs text-clay" data-testid="session-waitlist">대기 {waitCounts[s.id]}명 · 정원을 늘리면 알림이 가요</p>
                       )}

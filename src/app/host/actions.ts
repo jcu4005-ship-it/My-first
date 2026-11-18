@@ -11,6 +11,7 @@ import { refundBooking } from "@/lib/payments/service";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { fieldErrors } from "@/lib/validation/auth";
 import { HOST_AVATAR_BUCKET } from "@/lib/hosting/avatar";
+import { getMyMeetup } from "@/lib/hosting/queries";
 import { hostProfileSchema, meetupFormSchema, sessionFormSchema } from "@/lib/validation/meetup";
 
 const LOGIN_REQUIRED: FormState = { status: "error", message: "로그인이 필요합니다." };
@@ -91,29 +92,49 @@ export async function meetupStatusAction(_prev: FormState, formData: FormData): 
   return { status: "success", message: done[parsed.data.action] };
 }
 
+const repeatSchema = z.object({
+  repeat: z.enum(["none", "weekly", "biweekly"]).catch("none"),
+  count: z.coerce.number().int().min(1).max(8).catch(1),
+});
+
+/** 일정 추가 — 반복(매주·2주마다, 최대 8회)이면 같은 시간·장소·정원으로 한 번에. 이미 같은 시각에 있는 일정은 건너뜀 */
 export async function addSessionAction(_prev: FormState, formData: FormData): Promise<FormState> {
   const member = await activeMember();
   if (!member) return LOGIN_REQUIRED;
   const meetupId = formValue(formData, "meetupId");
-  const values = Object.fromEntries(["date", "startTime", "endTime", "area", "venueName", "addressDetail", "capacity"].map((k) => [k, formValue(formData, k)]));
+  const values = Object.fromEntries(["date", "startTime", "endTime", "area", "venueName", "addressDetail", "capacity", "repeat", "count"].map((k) => [k, formValue(formData, k)]));
   const parsed = sessionFormSchema.safeParse(values);
   if (!parsed.success) return { status: "error", fieldErrors: fieldErrors(parsed.error), values };
   const v = parsed.data;
+  const r = repeatSchema.parse({ repeat: values.repeat, count: values.count });
+  const times = r.repeat === "none" ? 1 : r.count;
+  const stepDays = r.repeat === "biweekly" ? 14 : 7;
   const supabase = await createSupabaseServerClient();
-  const { error } = await supabase.from("meetup_sessions").insert({
-    meetup_id: meetupId,
-    starts_at: v.startsAt,
-    ends_at: v.endsAt,
-    area: v.area,
-    venue_name: v.venueName,
-    address_detail: v.addressDetail,
-    capacity: v.capacity,
-  });
+  const { data: existing } = await supabase.from("meetup_sessions").select("starts_at, status").eq("meetup_id", meetupId);
+  const taken = new Set((existing ?? []).filter((x) => x.status !== "cancelled").map((x) => new Date(x.starts_at).getTime()));
+  const rows = Array.from({ length: times }, (_, i) => {
+    const shift = i * stepDays * 86400000;
+    return {
+      meetup_id: meetupId,
+      starts_at: new Date(new Date(v.startsAt).getTime() + shift).toISOString(),
+      ends_at: new Date(new Date(v.endsAt).getTime() + shift).toISOString(),
+      area: v.area,
+      venue_name: v.venueName,
+      address_detail: v.addressDetail,
+      capacity: v.capacity,
+    };
+  }).filter((row) => !taken.has(new Date(row.starts_at).getTime()));
+  if (!rows.length) return { status: "error", message: "이미 같은 시각에 일정이 있어요.", values };
+  const { error } = await supabase.from("meetup_sessions").insert(rows);
   if (error) {
     return { status: "error", message: error.code === "42501" ? "일정을 추가할 수 없는 프로그램입니다." : rpcErrorMessage(error), values };
   }
   revalidatePath(`/host/meetups/${meetupId}`);
-  return { status: "success", message: "일정을 추가했어요." };
+  const skipped = times - rows.length;
+  return {
+    status: "success",
+    message: rows.length > 1 ? `일정 ${rows.length}개를 추가했어요.${skipped ? ` (이미 있던 ${skipped}개는 건너뜀)` : ""}` : "일정을 추가했어요.",
+  };
 }
 
 const sessionStatusSchema = z.object({ sessionId: z.uuid(), meetupId: z.uuid(), action: z.enum(["close", "open", "cancel"]) });
@@ -344,4 +365,43 @@ export async function replyReviewAction(_prev: FormState, formData: FormData): P
   revalidatePath("/meetups", "layout");
   revalidatePath("/hosts", "layout");
   return { status: "success", message: "답글을 남겼어요. 후기를 쓴 분께 알림이 가요." };
+}
+
+/** 프로그램 복제 — 글·참가비·순서를 그대로 가져와 "임시 저장" 새 프로그램으로 (일정·사진·쿠폰 동의는 복사하지 않음) */
+export async function duplicateMeetupAction(_prev: FormState, formData: FormData): Promise<FormState> {
+  const member = await activeMember();
+  if (!member) return LOGIN_REQUIRED;
+  if (!member.roles.includes("host")) return NOT_HOST;
+  const id = z.uuid().safeParse(formValue(formData, "meetupId"));
+  if (!id.success) return { status: "error", message: "잘못된 요청입니다." };
+  const src = await getMyMeetup(member.id, id.data);
+  if (!src) return { status: "error", message: "복제할 수 없는 프로그램입니다." };
+  const title = `${src.title} (복사본)`.slice(0, 60);
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase
+    .from("meetups")
+    .insert({
+      host_id: member.id,
+      title,
+      category_slug: src.category_slug,
+      meetup_type: src.meetup_type,
+      summary: src.summary,
+      description: src.description,
+      price: src.price,
+      max_quantity_per_booking: src.max_quantity_per_booking,
+      target_audience: src.target_audience,
+      requirements: src.requirements,
+      what_to_bring: src.what_to_bring,
+      agenda: src.agenda,
+      refund_policy_text: src.refund_policy_text,
+      level: src.level,
+      learning_outcomes: src.learning_outcomes,
+      materials_note: src.materials_note,
+      price_rationale: src.price_rationale,
+    })
+    .select("id")
+    .single();
+  if (error || !data) return { status: "error", message: rpcErrorMessage(error) };
+  revalidatePath("/host");
+  redirect(`/host/meetups/${data.id}?saved=1&copied=1`);
 }

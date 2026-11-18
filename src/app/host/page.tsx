@@ -11,6 +11,19 @@ import { MEETUP_STATUS_LABEL, getMyHostProfile, listMyMeetups } from "@/lib/host
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { hostHref } from "@/lib/hosting/avatar";
 
+/** 앞으로 7일 안의 (취소되지 않은) 일정, 날짜순 */
+function upcomingWeek(meetups: Awaited<ReturnType<typeof listMyMeetups>>) {
+  const now = new Date();
+  const until = new Date(now.getTime() + 7 * 86400000);
+  return meetups
+    .flatMap((m) =>
+      m.sessions
+        .filter((s) => s.status !== "cancelled" && new Date(s.starts_at) > now && new Date(s.starts_at) <= until)
+        .map((s) => ({ sessionId: s.id, meetupId: m.id, title: m.title, startsAt: s.starts_at, reserved: s.reserved_count, capacity: s.capacity })),
+    )
+    .sort((a, b) => a.startsAt.localeCompare(b.startsAt));
+}
+
 type HostStats = {
   programs_published: number;
   upcoming_sessions: number;
@@ -29,8 +42,10 @@ export default async function HostDashboard() {
   const host = await getMyHostProfile(member.id);
   if (!host || host.status !== "approved" || !member.roles.includes("host")) redirect("/become-a-host/apply");
   const supabase = await createSupabaseServerClient();
-  const [meetups, statsRes] = await Promise.all([listMyMeetups(member.id), supabase.rpc("host_my_stats")]);
+  const [meetups, statsRes, savesRes] = await Promise.all([listMyMeetups(member.id), supabase.rpc("host_my_stats"), supabase.rpc("host_meetup_save_counts")]);
+  const saves = Object.fromEntries(((savesRes.data as { meetup_id: string; saves: number }[] | null) ?? []).map((r) => [r.meetup_id, r.saves]));
   const st = (statsRes.data as HostStats[] | null)?.[0];
+  const week = upcomingWeek(meetups);
   const stats = [
     { label: "공개 중인 프로그램", value: st?.programs_published ?? 0 },
     { label: "다가오는 일정", value: st?.upcoming_sessions ?? 0 },
@@ -77,6 +92,31 @@ export default async function HostDashboard() {
           })}
         </ul>
 
+        {/* 앞으로 7일: 모든 프로그램의 일정을 날짜순으로 한눈에 */}
+        <section className="mt-10" data-testid="host-week">
+          <h2 className="mb-3 text-lg font-semibold">앞으로 7일</h2>
+          {week.length === 0 ? (
+            <p className="rounded-xl border border-dashed px-4 py-5 text-sm text-muted-foreground">7일 안에 열리는 일정이 없어요.</p>
+          ) : (
+            <ul className="divide-y rounded-xl border bg-card">
+              {week.map((w) => (
+                <li key={w.sessionId} className="flex flex-wrap items-center justify-between gap-2 px-4 py-3" data-testid="host-week-row">
+                  <Link href={`/host/meetups/${w.meetupId}`} className="min-w-0">
+                    <span className="block text-sm font-semibold">{formatShortDateTime(w.startsAt)}</span>
+                    <span className="block truncate text-[13px] text-muted-foreground">{w.title}</span>
+                  </Link>
+                  <span className="flex items-center gap-3 text-sm">
+                    <b className="tabular-nums">{w.reserved}/{w.capacity}명</b>
+                    <Link href={`/host/meetups/${w.meetupId}/roster?session=${w.sessionId}`} className="text-[13px] underline underline-offset-4" data-testid="roster-link">
+                      출석부
+                    </Link>
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+
         <h2 className="mt-10 mb-4 text-lg font-semibold">내 프로그램</h2>
         {meetups.length === 0 ? (
           <div className="rounded-2xl border border-dashed p-10 text-center">
@@ -99,6 +139,9 @@ export default async function HostDashboard() {
                       </StatusPill>
                     </div>
                     <p className="font-semibold">{m.title}</p>
+                    {(saves[m.id] ?? 0) > 0 && (
+                      <p className="text-xs text-muted-foreground" data-testid="meetup-saves">저장한 사람 {saves[m.id]}명 · 새 일정을 열면 관심 있는 분들이 찾아와요</p>
+                    )}
                     <p className="text-sm text-muted-foreground">
                       {upcoming.length ? `다음 일정 ${formatShortDateTime(upcoming[0].starts_at)} · 예정 ${upcoming.length}회 · 신청 ${reserved}/${capacity}명` : "예정된 일정 없음"}
                     </p>

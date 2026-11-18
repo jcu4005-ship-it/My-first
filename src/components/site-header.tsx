@@ -9,6 +9,7 @@ import { getCurrentMember } from "@/lib/auth/session";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 import { MobileTabBar } from "./mobile-tab-bar";
+import { SavesSync } from "./saved";
 
 const iconButton =
   "relative inline-flex size-10 items-center justify-center rounded-full text-foreground transition-colors hover:bg-linen";
@@ -44,6 +45,7 @@ async function AccountNav() {
         내 예약
       </Link>
       <UnreadBadge userId={member.id} />
+      <SavesSync />
       <Link href="/me" className="hidden max-w-28 truncate px-2 py-2 font-medium md:inline" data-testid="nav-nickname">
         {member.nickname}
       </Link>

@@ -2,7 +2,9 @@
 
 import Link from "next/link";
 import { Bookmark } from "lucide-react";
-import { useMemo, useSyncExternalStore } from "react";
+import { useEffect, useMemo, useSyncExternalStore } from "react";
+
+import { syncSavesAction, toggleSaveAction } from "@/app/saved/actions";
 
 import { cn } from "@/lib/utils";
 
@@ -71,6 +73,8 @@ export function SaveButton({ item, className, tone = "light" }: { item: SavedIte
     e.stopPropagation();
     const list = parse(read());
     write(saved ? list.filter((x) => x.id !== item.id) : [item, ...list.filter((x) => x.id !== item.id)]);
+    // 로그인했으면 계정에도 저장 (실패해도 이 기기 목록은 그대로)
+    void toggleSaveAction(item.id, !saved).catch(() => undefined);
   }
   return (
     <button
@@ -88,6 +92,30 @@ export function SaveButton({ item, className, tone = "light" }: { item: SavedIte
       <Bookmark aria-hidden className="size-[17px]" strokeWidth={1.8} fill={saved ? "currentColor" : "none"} />
     </button>
   );
+}
+
+/**
+ * 로그인한 회원: 탭을 열 때 한 번, 이 기기의 저장을 계정에 올리고 계정 목록으로 맞춤
+ * (다른 기기에서 저장한 것도 여기 북마크에 표시됨)
+ */
+export function SavesSync() {
+  useEffect(() => {
+    try {
+      if (window.sessionStorage.getItem(EVENT + ":synced")) return;
+      window.sessionStorage.setItem(EVENT + ":synced", "1");
+    } catch {
+      // 저장소를 못 쓰는 브라우저면 매번 맞춤
+    }
+    const local = parse(read());
+    syncSavesAction(local.map((x) => x.id))
+      .then((remote) => {
+        if (!remote) return;
+        const ids = new Set(remote.map((x) => x.id));
+        write([...remote, ...local.filter((x) => !ids.has(x.id))]);
+      })
+      .catch(() => undefined);
+  }, []);
+  return null;
 }
 
 /** 저장 화면 목록 */

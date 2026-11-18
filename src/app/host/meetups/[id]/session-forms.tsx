@@ -2,6 +2,7 @@
 
 import { useActionState } from "react";
 
+import { SelectField } from "@/components/forms/controls";
 import { Field, FormMessage } from "@/components/forms/field";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -28,7 +29,27 @@ export function AddSessionForm({ meetupId }: { meetupId: string }) {
         <Field name="venueName" label="장소 이름 (공개)" placeholder="카페 레이어드 2층" defaultValue={v.venueName} error={e.venueName} />
       </div>
       <Field name="addressDetail" label="상세 주소 (확정 참가자에게만 공개)" defaultValue={v.addressDetail} error={e.addressDetail} />
-      <Field name="capacity" label="정원 (명)" inputMode="numeric" defaultValue={v.capacity ?? "8"} error={e.capacity} className="max-w-32" />
+      <div className="grid gap-4 sm:grid-cols-3">
+        <Field name="capacity" label="정원 (명)" inputMode="numeric" defaultValue={v.capacity ?? "8"} error={e.capacity} />
+        <SelectField
+          name="repeat"
+          label="반복"
+          defaultValue={v.repeat ?? "none"}
+          options={[
+            { value: "none", label: "한 번만" },
+            { value: "weekly", label: "매주 같은 요일·시간" },
+            { value: "biweekly", label: "2주마다" },
+          ]}
+        />
+        <SelectField
+          name="count"
+          label="모두 몇 번"
+          defaultValue={v.count ?? "1"}
+          error={e.count}
+          options={Array.from({ length: 8 }, (_, i) => ({ value: String(i + 1), label: `${i + 1}번` }))}
+        />
+      </div>
+      <p className="-mt-2 text-xs text-muted-foreground">반복을 고르면 첫 날짜부터 같은 시간·장소·정원으로 한 번에 추가돼요. 이미 같은 시각에 있는 일정은 건너뛰어요.</p>
       <Button type="submit" disabled={pending} className="self-start">{pending ? "추가 중…" : "일정 추가"}</Button>
     </form>
   );

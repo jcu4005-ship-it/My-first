@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { CalendarDays, MapPin } from "lucide-react";
+import { CalendarDays, CalendarPlus, MapPin, Navigation } from "lucide-react";
 
 import { ActionForm } from "@/components/forms/action-form";
 import { StatusPill } from "@/components/forms/controls";
@@ -56,6 +56,24 @@ function BookingCard({ b, highlight }: { b: MyBooking; highlight: boolean }) {
           {b.address_detail && (
             <p className="mt-3 rounded-xl bg-forest/5 px-3 py-2 text-sm text-forest" data-testid="booking-address">상세 주소: {b.address_detail}</p>
           )}
+          {/* 그날 바로 쓰는 버튼: 길찾기 · 내 캘린더에 추가(상세 주소 포함, 2시간 전 알림) */}
+          <div className="mt-3 flex flex-wrap gap-2 text-[13px]" data-testid="booking-tools">
+            {(b.address_detail || b.venue_name) && (
+              <>
+                <a href={`https://map.naver.com/p/search/${encodeURIComponent(b.address_detail || `${b.area} ${b.venue_name}`)}`} target="_blank" rel="noopener noreferrer"
+                  className="inline-flex h-9 items-center gap-1.5 rounded-full border border-border px-3.5 font-semibold hover:border-foreground" data-testid="map-naver">
+                  <Navigation aria-hidden className="size-3.5" strokeWidth={2} />네이버 지도
+                </a>
+                <a href={`https://map.kakao.com/link/search/${encodeURIComponent(b.address_detail || `${b.area} ${b.venue_name}`)}`} target="_blank" rel="noopener noreferrer"
+                  className="inline-flex h-9 items-center gap-1.5 rounded-full border border-border px-3.5 font-semibold hover:border-foreground" data-testid="map-kakao">
+                  <Navigation aria-hidden className="size-3.5" strokeWidth={2} />카카오맵
+                </a>
+              </>
+            )}
+            <a href={`/me/bookings/${b.booking_id}/calendar`} className="inline-flex h-9 items-center gap-1.5 rounded-full border border-border px-3.5 font-semibold hover:border-foreground" data-testid="booking-calendar">
+              <CalendarPlus aria-hidden className="size-3.5" strokeWidth={2} />캘린더에 추가
+            </a>
+          </div>
           <div className="mt-4">
             <ActionForm action={cancelBookingAction} hidden={{ bookingId: b.booking_id }} label="신청 취소" variant="ghost"
               confirmText={b.payment_status === "paid" ? refundConfirm(b.starts_at, b.total_price) : "신청을 취소할까요? 취소하면 자리가 다른 분께 돌아가요."} testId="cancel-booking" />
