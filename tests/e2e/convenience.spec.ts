@@ -108,10 +108,12 @@ test("호스트 편의: 프로그램 복제 → 반복 일정 3회 한 번에 �
   await viewer.goto(`/meetups/${meetupId}`);
   await viewer.waitForLoadState("networkidle");
   await viewer.getByTestId("save-button").first().click();
+  // 저장은 버튼을 누른 뒤 서버에 기록됨 → 호스트 홈을 새로 열며 확인 (요소가 없으면 기다리지 않고 다음 번에 다시)
   await expect.poll(async () => {
     await host.goto("/host");
-    return (await host.getByTestId("host-meetup-row").filter({ hasText: title }).filter({ hasNotText: "복사본" }).getByTestId("meetup-saves").textContent().catch(() => "")) ?? "";
-  }, { timeout: 15_000 }).toContain("저장한 사람 1명");
+    const saves = host.getByTestId("host-meetup-row").filter({ hasText: title }).filter({ hasNotText: "복사본" }).getByTestId("meetup-saves");
+    return (await saves.count()) ? ((await saves.first().innerText()) ?? "") : "";
+  }, { timeout: 30_000, intervals: [1_000, 2_000, 3_000] }).toContain("저장한 사람 1명");
 
   // 다른 기기(새 브라우저)에서도 저장 목록이 보임
   const other = await loginPage(browser, p.email);
