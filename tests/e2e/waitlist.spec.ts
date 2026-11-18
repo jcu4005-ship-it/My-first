@@ -80,3 +80,20 @@ test("대기 신청: 마감된 일정 → 대기 신청(내 예약에 표시, �
   await page.goto("/me/bookings");
   await expect(page.getByTestId("my-waitlist")).toHaveCount(1);
 });
+
+test("무료 신청 취소: 내 예약에서 취소하면 참가자 본인 알림에 '신청을 취소했어요'", async ({ browser }) => {
+  const h = await createMember("e2ecnh");
+  await makeApprovedHost(h.id, `취소알림호스트${Date.now() % 10000}`);
+  const title = `취소 알림 시험 ${Date.now() % 100000}`;
+  const { sessionId } = await freeProgram(h.id, title, 4);
+  const p = await createMember("e2ecnp");
+  expect((await p.client.rpc("book_session", { p_session_id: sessionId, p_quantity: 1 })).error).toBeNull();
+  const page = await loginPage(browser, p.email);
+  await page.goto("/me/bookings");
+  await page.waitForLoadState("networkidle");
+  page.once("dialog", (d) => void d.accept());
+  await page.getByTestId("booking-card").filter({ hasText: title }).getByTestId("cancel-booking").getByRole("button").click();
+  await expect(page.getByTestId("booking-card").filter({ hasText: title })).toContainText("취소함");
+  await page.goto("/me/notifications");
+  await expect(page.getByTestId("notification").filter({ hasText: "신청을 취소했어요" }).filter({ hasText: title })).toBeVisible();
+});
