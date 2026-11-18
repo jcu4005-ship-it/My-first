@@ -121,3 +121,20 @@ test("호스트 편의: 프로그램 복제 → 반복 일정 3회 한 번에 �
   await expect(other.getByTestId("saved-scope")).toContainText("계정에 저장돼요");
   await expect(other.getByTestId("saved-list")).toContainText(title);
 });
+
+test("크리에이터의 다른 프로그램 · 호스트 프로필 체크리스트", async ({ browser, page }) => {
+  const h = await createMember("e2eoph");
+  await makeApprovedHost(h.id, `다른프로호스트${Date.now() % 10000}`);
+  const a = await freeProgram(h.id, `첫 번째 프로그램 ${Date.now() % 100000}`, 6);
+  const bTitle = `두 번째 프로그램 ${Date.now() % 100000}`;
+  await freeProgram(h.id, bTitle, 6);
+  await page.goto(`/meetups/${a.meetupId}`);
+  await expect(page.getByTestId("host-other-programs")).toContainText(bTitle);
+
+  const host = await loginPage(browser, h.email);
+  await host.goto("/host");
+  const list = host.getByTestId("profile-checklist");
+  await expect(list).toBeVisible();
+  await expect(list.getByTestId("checklist-item").filter({ hasText: "첫 프로그램 공개" })).toHaveAttribute("data-done", "true");
+  await expect(list.getByTestId("checklist-item").filter({ hasText: "작업 철학" })).toHaveAttribute("data-done", "false");
+});

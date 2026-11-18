@@ -46,6 +46,13 @@ export default async function HostDashboard() {
   const saves = Object.fromEntries(((savesRes.data as { meetup_id: string; saves: number }[] | null) ?? []).map((r) => [r.meetup_id, r.saves]));
   const st = (statsRes.data as HostStats[] | null)?.[0];
   const week = upcomingWeek(meetups);
+  const checklist = [
+    { label: "프로필 사진", done: Boolean(host.avatar_path), href: "/host/profile" },
+    { label: "직업·하는 일 한 줄", done: Boolean(host.occupation?.trim()), href: "/host/profile" },
+    { label: "작업 철학 (메인 인용문에 쓰여요)", done: Boolean(host.philosophy?.trim()), href: "/host/profile" },
+    { label: "소개", done: Boolean(host.bio?.trim()), href: "/host/profile" },
+    { label: "첫 프로그램 공개", done: meetups.some((m) => m.status === "published"), href: "/host/meetups/new" },
+  ];
   const stats = [
     { label: "공개 중인 프로그램", value: st?.programs_published ?? 0 },
     { label: "다가오는 일정", value: st?.upcoming_sessions ?? 0 },
@@ -74,6 +81,22 @@ export default async function HostDashboard() {
             <Link href="/host/meetups/new">새 프로그램 만들기</Link>
           </Button>
         </div>
+
+        {checklist.some((c) => !c.done) && (
+          <section className="mt-8 rounded-2xl border border-dashed p-5" data-testid="profile-checklist">
+            <p className="font-semibold">프로필을 채우면 참가자에게 더 잘 보여요 <span className="text-muted-foreground">({checklist.filter((c) => c.done).length}/{checklist.length})</span></p>
+            <p className="mt-1 text-sm text-muted-foreground">사진과 작업 철학이 있으면 메인 &lsquo;이번 호의 사람들&rsquo;과 공유 카드에 그대로 쓰여요.</p>
+            <ul className="mt-3 flex flex-col gap-1.5 text-sm">
+              {checklist.map((c) => (
+                <li key={c.label} className="flex items-center gap-2" data-testid="checklist-item" data-done={c.done ? "true" : "false"}>
+                  <span aria-hidden className={`flex size-5 items-center justify-center rounded-full text-[11px] font-bold ${c.done ? "bg-forest text-white" : "border border-border"}`}>{c.done ? "✓" : ""}</span>
+                  <span className={c.done ? "text-muted-foreground line-through" : ""}>{c.label}</span>
+                  {!c.done && <Link href={c.href} className="text-xs underline underline-offset-4">채우기</Link>}
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
 
         <ul className="mt-8 grid grid-cols-2 gap-2.5 sm:grid-cols-5" data-testid="host-stats">
           {stats.map((x) => {

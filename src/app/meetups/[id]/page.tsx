@@ -22,7 +22,8 @@ import { getCurrentMember } from "@/lib/auth/session";
 import { myConfirmedSessionIds } from "@/lib/bookings/queries";
 import { durationLabel, formatDate, formatPrice, formatTime } from "@/lib/format";
 import { getFollowState } from "@/lib/hosting/follows";
-import { getMeetup, listCategories } from "@/lib/meetups/queries";
+import { getMeetup, listCategories, listUpcomingMeetups } from "@/lib/meetups/queries";
+import { MeetupRow } from "@/components/meetups/meetup-card";
 import { REFUND_RULES } from "@/lib/payments/refund-policy";
 import { getAppSettings } from "@/lib/settings/queries";
 import { CLASS_LEVEL_LABEL } from "@/lib/validation/meetup";
@@ -73,13 +74,15 @@ export default async function MeetupDetailPage({ params }: PageProps<"/meetups/[
   const { id } = await params;
   const [meetup, categories, member, settings] = await Promise.all([getMeetup(id), listCategories(), getCurrentMember(), getAppSettings()]);
   if (!meetup) notFound();
-  const [mine, follow, reviews, reviewSummary, myWaitlist] = await Promise.all([
+  const [mine, follow, reviews, reviewSummary, myWaitlist, hostPrograms] = await Promise.all([
     member ? myConfirmedSessionIds(member.id, meetup.upcomingSessions.map((s) => s.id)) : Promise.resolve(new Set<string>()),
     meetup.host ? getFollowState(meetup.host.user_id, member?.id ?? null) : Promise.resolve(null),
     listPublicReviews({ meetupId: meetup.id }),
     getReviewSummary({ meetupId: meetup.id }),
     member ? listMyWaitlist() : Promise.resolve([]),
+    meetup.host ? listUpcomingMeetups({ hostId: meetup.host.user_id }) : Promise.resolve([]),
   ]);
+  const otherPrograms = hostPrograms.filter((m) => m.id !== meetup.id).slice(0, 3);
   const waiting = new Set(myWaitlist.map((w) => w.session_id));
   // 비공개 베타: 유료 프로그램 신청 막음 (DB도 한 번 더 막음)
   const betaPaid = meetup.price > 0 && !settings.paid_bookings_enabled;
@@ -365,6 +368,15 @@ export default async function MeetupDetailPage({ params }: PageProps<"/meetups/[
                 </p>
               )}
             </Block>
+            {otherPrograms.length > 0 && meetup.host && (
+              <Block title={`${meetup.host.display_name}의 다른 프로그램`} label="MORE" testId="host-other-programs">
+                <div>
+                  {otherPrograms.map((m, i) => (
+                    <MeetupRow key={m.id} meetup={m} index={i + 1} categoryName={categories.find((c) => c.slug === m.category_slug)?.name ?? ""} />
+                  ))}
+                </div>
+              </Block>
+            )}
           </article>
 
           {/* PC: 오른쪽 고정 신청 요약 */}
