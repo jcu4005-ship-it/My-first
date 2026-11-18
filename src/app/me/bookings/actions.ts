@@ -31,5 +31,8 @@ export async function cancelBookingAction(_prev: FormState, formData: FormData):
   const result = await refundBooking(id.data, member.id, "cancelled_by_user", "참가자 취소");
   if (!result.ok) return { status: "error", message: result.message };
   revalidatePath("/me/bookings");
-  return { status: "success", message: "신청을 취소하고 전액 환불했어요. (테스트 결제)" };
+  return {
+    status: "success",
+    message: result.refunded > 0 ? `신청을 취소하고 ${result.refunded.toLocaleString("ko-KR")}원 환불했어요. (테스트 결제)` : "신청을 취소했어요. 환불 기간이 지나 환불 금액은 없어요.",
+  };
 }

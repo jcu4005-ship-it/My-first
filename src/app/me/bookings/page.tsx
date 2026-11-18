@@ -9,6 +9,7 @@ import { SiteHeader } from "@/components/site-header";
 import { Button } from "@/components/ui/button";
 import { requireMember } from "@/lib/auth/guards";
 import { listMyBookings, type MyBooking } from "@/lib/bookings/queries";
+import { refundPercent } from "@/lib/payments/refund-policy";
 import { listMyWaitlist } from "@/lib/bookings/waitlist";
 import { formatDate, formatPrice, formatTime, isFuture, formatShortDateTime } from "@/lib/format";
 
@@ -57,12 +58,26 @@ function BookingCard({ b, highlight }: { b: MyBooking; highlight: boolean }) {
           )}
           <div className="mt-4">
             <ActionForm action={cancelBookingAction} hidden={{ bookingId: b.booking_id }} label="신청 취소" variant="ghost"
-              confirmText={b.payment_status === "paid" ? "신청을 취소할까요? 결제 금액은 전액 환불됩니다. (테스트 결제)" : "신청을 취소할까요? 취소하면 자리가 다른 분께 돌아가요."} testId="cancel-booking" />
+              confirmText={b.payment_status === "paid" ? refundConfirm(b.starts_at, b.total_price) : "신청을 취소할까요? 취소하면 자리가 다른 분께 돌아가요."} testId="cancel-booking" />
+            {b.payment_status === "paid" && (
+              <p className="mt-1.5 text-xs text-muted-foreground" data-testid="refund-quote">
+                지금 취소하면 {refundPercent(b.starts_at)}% 환불 ({formatPrice(Math.floor((b.total_price * refundPercent(b.starts_at)) / 100))}) ·{" "}
+                <Link href="/refund" className="underline underline-offset-4">환불 기준</Link>
+              </p>
+            )}
           </div>
         </>
       )}
     </li>
   );
+}
+
+function refundConfirm(startsAt: string, total: number) {
+  const pct = refundPercent(startsAt);
+  const amount = Math.floor((total * pct) / 100);
+  return pct === 0
+    ? "신청을 취소할까요? 프로그램 당일이라 환불되지 않아요. 자리는 다른 분께 돌아가요. (테스트 결제)"
+    : `신청을 취소할까요? ${pct}% 환불(${amount.toLocaleString("ko-KR")}원)돼요. (테스트 결제)`;
 }
 
 export default async function MyBookingsPage({ searchParams }: PageProps<"/me/bookings">) {

@@ -102,3 +102,34 @@ test("정산: 결제는 플랫폼에서만 → 0% 기간이 지난 호스트는 
   await host.goto("/me/notifications");
   await expect(host.getByText("정산금이 지급되었어요").first()).toBeVisible();
 });
+
+test("환불 기준: 프로그램 2일 전 참가자 취소 → 미리 보기 50% → 취소하면 절반 환불, 남은 금액은 호스트 정산", async ({ browser }) => {
+  const h = await createMember("e2erfh");
+  await makeApprovedHost(h.id, `환불호스트${Date.now() % 10000}`);
+  await adminApi().from("host_profiles").update({ reviewed_at: new Date(Date.now() - 210 * 86400000).toISOString() }).eq("user_id", h.id);
+  const title = `환불 기준 시험 ${Date.now() % 100000}`;
+  const { sessionId } = await paidProgram(h.id, title, 30000);
+  // 한국 날짜로 2일 뒤 저녁 7시
+  const k = new Date(Date.now() + 9 * 3600000);
+  const start = new Date(Date.UTC(k.getUTCFullYear(), k.getUTCMonth(), k.getUTCDate() + 2, 19 - 9, 0));
+  await adminApi().from("meetup_sessions").update({ starts_at: start.toISOString(), ends_at: new Date(start.getTime() + 7200000).toISOString() }).eq("id", sessionId);
+  const p = await createMember("e2erfp");
+  const { data: bookingId, error } = await p.client.rpc("book_session", { p_session_id: sessionId, p_quantity: 1 });
+  expect(error).toBeNull();
+  expect((await adminApi().rpc("confirm_payment", { p_booking_id: bookingId, p_provider: "mock", p_payment_key: `mock_rf_${bookingId}`, p_amount: 30000 })).error).toBeNull();
+
+  const page = await loginPage(browser, p.email);
+  await page.goto("/me/bookings");
+  await page.waitForLoadState("networkidle");
+  const card = page.getByTestId("booking-card").filter({ hasText: title });
+  await expect(card.getByTestId("refund-quote")).toContainText("50% 환불 (15,000원)");
+  page.once("dialog", (d) => { expect(d.message()).toContain("50% 환불(15,000원)"); void d.accept(); });
+  await card.getByTestId("cancel-booking").getByRole("button").click();
+  await expect(card).toContainText("15,000원 환불 완료");
+
+  const host = await loginPage(browser, h.email);
+  await host.goto("/host/settlements");
+  const row = host.getByTestId("settlement-row").filter({ hasText: title });
+  await expect(row).toContainText("15,000원"); // 남은 참가비
+  await expect(row).toContainText("12,000원"); // 수수료 20% 뺀 정산액
+});

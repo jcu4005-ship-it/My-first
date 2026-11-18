@@ -23,6 +23,7 @@ import { myConfirmedSessionIds } from "@/lib/bookings/queries";
 import { durationLabel, formatDate, formatPrice, formatTime } from "@/lib/format";
 import { getFollowState } from "@/lib/hosting/follows";
 import { getMeetup, listCategories } from "@/lib/meetups/queries";
+import { REFUND_RULES } from "@/lib/payments/refund-policy";
 import { getAppSettings } from "@/lib/settings/queries";
 import { CLASS_LEVEL_LABEL } from "@/lib/validation/meetup";
 
@@ -341,11 +342,29 @@ export default async function MeetupDetailPage({ params }: PageProps<"/meetups/[
             {/* 참가 후기 — 실제 참가자가 쓴 후기만 (샘플 프로그램은 후기 자리 없음) */}
             {!meetup.is_sample && <ReviewSection reviews={reviews} summary={reviewSummary} />}
 
-            {meetup.refund_policy_text && (
-              <Block title="취소 및 환불" label="REFUND">
-                <p className="text-[14px] leading-relaxed text-muted-foreground">{meetup.refund_policy_text}</p>
-              </Block>
-            )}
+            <Block title="취소 및 환불" label="REFUND" testId="refund-summary">
+              <ul className="text-[14.5px]">
+                {REFUND_RULES.map((r) => (
+                  <li key={r.when} className="flex justify-between border-b border-border py-2.5">
+                    <span>{r.when}</span>
+                    <b className="tabular-nums">{r.percent === 0 ? "환불 없음" : `${r.percent}% 환불`}</b>
+                  </li>
+                ))}
+                <li className="flex justify-between border-b border-border py-2.5">
+                  <span>크리에이터 사정으로 취소</span>
+                  <b>전액 환불</b>
+                </li>
+              </ul>
+              <p className="mt-2.5 text-[13px] text-muted-foreground">
+                모든 프로그램에 같은 기준이 적용돼요. <Link href="/refund" className="underline underline-offset-4">자세히 보기</Link>
+              </p>
+              {meetup.refund_policy_text && !meetup.is_sample && (
+                <p className="mt-3 text-[13.5px] leading-relaxed text-muted-foreground">
+                  <b className="mr-1.5 text-foreground">크리에이터 안내</b>
+                  {meetup.refund_policy_text}
+                </p>
+              )}
+            </Block>
           </article>
 
           {/* PC: 오른쪽 고정 신청 요약 */}

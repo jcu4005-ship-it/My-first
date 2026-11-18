@@ -258,3 +258,23 @@ test("개인정보 처리방침: 바닥글·가입 화면에서 연결, 초안 �
   await expect(policy.getByTestId("privacy-draft-note")).toContainText("초안");
   await expect(policy).toContainText("촬영 위치(GPS)");
 });
+
+test("약관·환불 정책: 바닥글에서 연결, 초안 표시, 환불 기준 3단계, 프로그램 상세에 같은 기준", async ({ page }) => {
+  await page.goto("/");
+  await page.getByRole("contentinfo").getByRole("link", { name: "이용약관" }).click();
+  await expect(page).toHaveURL(/\/terms$/);
+  await expect(page.getByTestId("terms-draft-note")).toContainText("초안");
+  await expect(page.getByTestId("business-info-pending")).toBeVisible();
+  await page.getByRole("contentinfo").getByRole("link", { name: "취소·환불 정책" }).click();
+  await expect(page).toHaveURL(/\/refund$/);
+  const table = page.getByTestId("refund-table");
+  await expect(table).toContainText("3일 전까지");
+  await expect(table).toContainText("50%");
+  await expect(table).toContainText("환불 없음");
+  await page.goto("/meetups");
+  const program = await page.getByTestId("meetup-card").first().getAttribute("href").catch(() => null);
+  if (program) {
+    await page.goto(program);
+    await expect(page.getByTestId("refund-summary")).toContainText("50% 환불");
+  }
+});

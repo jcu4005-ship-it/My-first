@@ -14,7 +14,7 @@ export async function refundBooking(
   actorId: string,
   cancelStatus: "cancelled_by_user" | "cancelled_by_host",
   reason: string,
-): Promise<{ ok: true } | { ok: false; message: string }> {
+): Promise<{ ok: true; refunded: number } | { ok: false; message: string }> {
   const admin = createSupabaseServiceClient();
   const { data: payment, error: lookupError } = await admin
     .from("payments")
@@ -24,11 +24,16 @@ export async function refundBooking(
   if (lookupError || !payment || payment.status !== "paid" || !payment.payment_key) {
     return { ok: false, message: "환불할 결제를 찾을 수 없어요." };
   }
-  const provider = getPaymentProvider();
-  try {
-    await provider.refund({ paymentKey: payment.payment_key, amount: payment.amount, reason });
-  } catch {
-    return { ok: false, message: "결제사 환불 요청에 실패했어요. 잠시 후 다시 시도해 주세요." };
+  // 환불 금액은 DB의 플랫폼 환불 기준으로 계산(참가자 취소: 3일 전 100% · 2~1일 전 50% · 당일 0%, 호스트 취소: 100%)
+  const { data: amount, error: quoteError } = await admin.rpc("refund_amount_for", { p_booking_id: bookingId, p_cancel_status: cancelStatus });
+  if (quoteError || typeof amount !== "number") return { ok: false, message: "환불 금액을 계산하지 못했어요." };
+  if (amount > 0) {
+    const provider = getPaymentProvider();
+    try {
+      await provider.refund({ paymentKey: payment.payment_key, amount, reason });
+    } catch {
+      return { ok: false, message: "결제사 환불 요청에 실패했어요. 잠시 후 다시 시도해 주세요." };
+    }
   }
   const { error } = await admin.rpc("refund_booking", {
     p_booking_id: bookingId,
@@ -37,5 +42,5 @@ export async function refundBooking(
     p_reason: reason,
   });
   if (error) return { ok: false, message: error.message };
-  return { ok: true };
+  return { ok: true, refunded: amount };
 }

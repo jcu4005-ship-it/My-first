@@ -243,11 +243,11 @@ export function MeetupForm({
         />
         <TextareaField
           name="refundPolicyText"
-          label="취소·환불 안내"
+          label="취소·환불 추가 안내 (선택)"
           rows={2}
           defaultValue={v.refundPolicyText}
           error={e.refundPolicyText}
-          hint="결제 연동 전까지는 안내 문구로만 표시돼요."
+          hint="환불 비율은 플랫폼 공통 기준(3일 전 100% · 2~1일 전 50% · 당일 환불 없음)으로 정해져요. 재료 준비 등 참가자가 알아야 할 내용만 적어 주세요."
         />
       </section>
       <Button type="submit" size="lg" disabled={pending} className="self-start">

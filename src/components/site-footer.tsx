@@ -9,6 +9,8 @@ const LINKS = [
   { href: "/become-a-host", label: "크리에이터 안내·정책" },
   { href: "/signup", label: "회원가입" },
   { href: "/help", label: "고객센터" },
+  { href: "/terms", label: "이용약관" },
+  { href: "/refund", label: "취소·환불 정책" },
   { href: "/privacy", label: "개인정보 처리방침" },
 ];
 
