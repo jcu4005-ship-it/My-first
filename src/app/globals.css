@@ -39,6 +39,73 @@
   --ring: var(--forest);
   --radius: 1rem;
   color-scheme: light;
+  /* 드롭 × 모닥불 원 (2026-11-20 승인) — 참가자 화면은 .theme-dusk 안에서만 */
+  --dusk: #17110d;
+  --dusk-2: #221912;
+  --ember-glow: #ff6a2b;  /* 당신 자리 · 주요 버튼 */
+  --amber: #ffb15c;       /* 강조 글자 */
+  --lit: #f2c48c;         /* 먼저 앉은 사람 */
+  --ember-ink: #1d1510;   /* 주황 위 글자 */
+}
+
+/*
+ * 해 질 녘 테마 (참가자 화면). 차가운 검정 대신 따뜻한 갈색빛 어둠 + 불빛 주황 하나.
+ * 대비: 본문 #fff2e2 · 보조 #b8a492 (바탕 #17110d에서 4.5:1 이상). 주황 버튼의 글자는 짙은 갈색.
+ * 결제·환불·주소처럼 읽어야 하는 정보는 .sheet(밝은 종이)로.
+ */
+.theme-dusk {
+  --background: var(--dusk);
+  --foreground: #fff2e2;
+  --card: var(--dusk-2);
+  --muted: #2a1f17;
+  --muted-foreground: #b8a492;
+  --border: #3a2c22;
+  --primary: var(--ember-glow);
+  --primary-foreground: var(--ember-ink);
+  --secondary: #2a1f17;
+  --secondary-foreground: #fff2e2;
+  --accent: var(--ember-glow);
+  --accent-foreground: var(--ember-ink);
+  --destructive: #ff8a7a;
+  --notice: #2a1f17;
+  --notice-foreground: #f2dcc4;
+  --ring: var(--amber);
+  --forest: var(--amber);
+  --forest-deep: #0f0b08;
+  --forest-soft: #3a2c22;
+  --linen: #2a1f17;
+  --cream: #fff2e2;
+  --clay: var(--ember-glow);
+  --fog: #b8a492;
+  --sage: #8a7a6a;
+  --mint: #3a2c22;
+  color-scheme: dark;
+  background-color: var(--dusk);
+  background-image: radial-gradient(120% 50% at 60% 0%, rgb(255 138 61 / 0.12), transparent 60%);
+  background-repeat: no-repeat;
+  color: var(--foreground);
+}
+.theme-dusk ::selection { background: var(--ember-glow); color: var(--ember-ink); }
+/* 해 질 녘 화면 안의 밝은 종이 시트 */
+.theme-dusk .sheet,
+.sheet {
+  --background: #fbf3e8;
+  --foreground: #1d1510;
+  --card: #ffffff;
+  --muted: #f1e7da;
+  --muted-foreground: #6f5f52;
+  --border: #e6dccd;
+  --secondary: #f1e7da;
+  --secondary-foreground: #1d1510;
+  --notice: #f1e7da;
+  --notice-foreground: #3d322a;
+  --forest: #9a3a14;
+  --linen: #f1e7da;
+  --destructive: #a33a2a;
+  --ring: #9a3a14;
+  color-scheme: light;
+  background-color: #fbf3e8;
+  color: #1d1510;
 }
 
 @theme inline {
@@ -76,6 +143,13 @@
   --radius-2xl: calc(var(--radius) + 8px);
   --font-sans: var(--font-pretendard), system-ui, sans-serif;
   --font-display: var(--font-display-serif), var(--font-pretendard), serif;
+  --font-num: var(--font-plex-mono), ui-monospace, monospace;
+  --color-dusk: var(--dusk);
+  --color-dusk-2: var(--dusk-2);
+  --color-ember-glow: var(--ember-glow);
+  --color-amber: var(--amber);
+  --color-lit: var(--lit);
+  --color-ember-ink: var(--ember-ink);
 }
 
 @layer base {
@@ -90,6 +164,10 @@
     background-color: var(--cream);
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.2 0 0 0 0 0.18 0 0 0 0 0.12 0 0 0 .05 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
     background-size: 160px 160px;
+  }
+  /* 해 질 녘 화면이면 바탕도 같은 색 (아래 탭 여백까지) */
+  body:has(.theme-dusk) {
+    background: var(--dusk);
   }
   /* 휴대폰 아래 탭 막대가 있으면 마지막 내용이 가려지지 않도록 */
   @media (width < 48rem) {
@@ -150,6 +228,13 @@
     --ring: var(--cream);
   }
 }
+
+/* 당신 자리 의자: 천천히 숨 쉬는 불빛 (움직임 줄이기 설정이면 멈춤) */
+@keyframes seat-breathe {
+  0%, 100% { opacity: 0.75; }
+  50% { opacity: 1; }
+}
+.seat-glow { animation: seat-breathe 2.6s ease-in-out infinite; }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {

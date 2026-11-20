@@ -7,8 +7,23 @@ test.beforeAll(requireTestEnv);
 // 샘플 데이터가 필요한 검사: 로컬·CI는 항상, 스테이징은 샘플을 넣은 경우(TEST_EXPECT_SAMPLES=yes)만
 const samples = !isStaging || process.env.TEST_EXPECT_SAMPLES === "yes";
 
-test("메인 제호와 표지: O 자리에 의자 로고, 크리에이터 사진이 2초마다 바뀌고 점으로 넘길 수 있다", async ({ page }) => {
+test("홈(모닥불 원): 크리에이터 얼굴 원 · 먼저 앉은 사람 · 당신 자리 → 상세, 잡지형 소개는 /about", async ({ page }) => {
   await page.goto("/");
+  const hero = page.getByTestId("home-circle");
+  await expect(hero.getByRole("heading", { level: 1 })).toBeVisible();
+  const cta = page.getByTestId("home-cta").filter({ visible: true });
+  test.skip((await cta.count()) === 0, "열린 원이 없음");
+  await expect(hero.getByTestId("seat-table")).toBeVisible();
+  // 실제 예약 수로 쓴 한 줄
+  await expect(page.getByTestId("home-seat-line").filter({ visible: true })).toContainText(/(명이 먼저 앉았어요|첫 번째 자리예요) · \d+자리 남음/);
+  await expect(cta).toHaveAttribute("href", /^\/meetups\/[0-9a-f-]{36}#booking$/);
+  await page.getByTestId("home-about").click();
+  await expect(page).toHaveURL(/\/about$/);
+  await expect(page.getByTestId("wordmark-chair")).toBeVisible();
+});
+
+test("라운디 이야기(예전 메인) 제호와 표지: O 자리에 의자 로고, 크리에이터 사진이 2초마다 바뀌고 점으로 넘길 수 있다", async ({ page }) => {
+  await page.goto("/about");
   await expect(page.getByTestId("wordmark-chair")).toBeVisible();
   const cover = page.getByTestId("cover-story");
   await expect(cover).toHaveAttribute("href", /^\/hosts\//);
@@ -22,9 +37,9 @@ test("메인 제호와 표지: O 자리에 의자 로고, 크리에이터 사진
   await expect(cover).toHaveAttribute("href", first!);
 });
 
-test("메인(잡지 표지): 카피·표지, 이번 호의 사람들, 그 사람을 만나는 방법, 세 분야, 저널, 심사 기준", async ({ page }) => {
+test("라운디 이야기(잡지 표지): 카피·표지, 이번 호의 사람들, 그 사람을 만나는 방법, 세 분야, 저널, 심사 기준", async ({ page }) => {
   test.skip(!samples, "샘플 데이터 없음");
-  await page.goto("/");
+  await page.goto("/about");
   await expect(page.getByRole("heading", { level: 1 })).toContainText("새로운 세계가 됩니다");
   await expect(page.getByText("Make time")).toHaveCount(0);
   await expect(page.getByTestId("hero-cta")).toHaveAttribute("href", "/hosts");
@@ -49,9 +64,9 @@ test("메인(잡지 표지): 카피·표지, 이번 호의 사람들, 그 사람
   await expect(page).toHaveURL(/\/meetups\?pillar=knowledge$/);
 });
 
-test("메인 추천 카드: 남은 자리(글자)·참가비가 보이고, 누르면 상세로 (의자 그림은 상세에서만)", async ({ page }) => {
+test("라운디 이야기 추천 카드: 남은 자리(글자)·참가비가 보이고, 누르면 상세로 (의자 그림은 상세에서만)", async ({ page }) => {
   test.skip(!samples, "샘플 데이터 없음");
-  await page.goto("/");
+  await page.goto("/about");
   const card = page.getByTestId("home-this-week").getByTestId("meetup-card").first();
   await expect(card.getByTestId("card-seats")).toContainText(/(\d+자리 남음|마감) · 정원 \d+명/); // 남은 자리는 글자로
   await expect(card.getByTestId("seat-table")).toHaveCount(0); // 의자 그림은 상세에서만
@@ -60,7 +75,8 @@ test("메인 추천 카드: 남은 자리(글자)·참가비가 보이고, 누�
   await card.click();
   await expect(page).toHaveURL(/\/meetups\/[0-9a-f-]{36}$/);
   await expect(page.getByTestId("meetup-title")).toHaveText(title);
-  await expect(page.getByTestId("seat-table").first()).toBeVisible();
+  // 원(의자 그림)은 휴대폰·PC 자리가 따로 있어 보이는 것만 확인
+  await expect(page.getByTestId("seat-table").filter({ visible: true }).first()).toBeVisible();
 });
 
 test("호스트 안내: 정책·과정·약속·로드맵, 지원하기 연결, 메뉴에서 진입", async ({ page }) => {

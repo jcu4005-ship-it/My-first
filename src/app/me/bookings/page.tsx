@@ -5,6 +5,7 @@ import { CalendarDays, CalendarPlus, MapPin, Navigation } from "lucide-react";
 import { ActionForm } from "@/components/forms/action-form";
 import { StatusPill } from "@/components/forms/controls";
 import { SampleBadge } from "@/components/meetups/badges";
+import { Dusk } from "@/components/layout/dusk";
 import { SiteHeader } from "@/components/site-header";
 import { Button } from "@/components/ui/button";
 import { requireMember } from "@/lib/auth/guards";
@@ -18,12 +19,20 @@ import { cancelBookingAction } from "./actions";
 export const metadata: Metadata = { title: "내 예약" };
 export const instant = false;
 
+/** 남은 날 (한국 날짜 기준): 0이면 D-DAY */
+function dDay(iso: string) {
+  const kst = (d: Date) => new Date(d.toLocaleString("en-US", { timeZone: "Asia/Seoul" })).setHours(0, 0, 0, 0);
+  const days = Math.round((kst(new Date(iso)) - kst(new Date())) / 86_400_000);
+  return days <= 0 ? "D-DAY" : `D-${days}`;
+}
+
 function BookingCard({ b, highlight }: { b: MyBooking; highlight: boolean }) {
   const upcoming = isFuture(b.starts_at);
   const confirmed = b.status === "confirmed";
   return (
-    <li className={`rounded-2xl border bg-card p-5 ${highlight ? "border-forest ring-1 ring-forest" : "border-border/70"}`} data-testid="booking-card" data-status={b.status}>
+    <li className={`rounded-[22px] border bg-card p-5 ${highlight || (confirmed && upcoming) ? "border-amber/70" : "border-border"} ${highlight ? "ring-1 ring-amber" : ""}`} data-testid="booking-card" data-status={b.status}>
       <div className="flex flex-wrap items-center gap-2">
+        {confirmed && upcoming && <span className="rounded-full bg-ember-glow px-2.5 py-0.5 font-num text-xs font-semibold text-ember-ink">{dDay(b.starts_at)}</span>}
         {confirmed ? (
           <StatusPill tone={upcoming ? "ok" : "muted"}>{upcoming ? "참가 확정" : "참여 완료"}</StatusPill>
         ) : b.status === "pending_payment" ? (
@@ -35,18 +44,18 @@ function BookingCard({ b, highlight }: { b: MyBooking; highlight: boolean }) {
         {b.payment_status === "paid" && <StatusPill tone="muted">결제 완료 (테스트)</StatusPill>}
         {b.is_sample && <SampleBadge />}
       </div>
-      <Link href={`/meetups/${b.meetup_id}`} className="mt-3 block font-semibold leading-snug hover:underline">{b.title}</Link>
+      <Link href={`/meetups/${b.meetup_id}`} className="mt-3 block text-[17px] leading-snug font-extrabold tracking-[-0.02em] hover:underline">{b.title}</Link>
       <p className="mt-2 flex items-center gap-2 text-sm text-muted-foreground">
-        <CalendarDays aria-hidden className="size-4 shrink-0 text-forest" strokeWidth={1.6} />
+        <CalendarDays aria-hidden className="size-4 shrink-0" strokeWidth={1.6} />
         {formatDate(b.starts_at)} {formatTime(b.starts_at)}
       </p>
       <p className="mt-1 flex items-center gap-2 text-sm text-muted-foreground">
-        <MapPin aria-hidden className="size-4 shrink-0 text-forest" strokeWidth={1.6} />
+        <MapPin aria-hidden className="size-4 shrink-0" strokeWidth={1.6} />
         <span className="truncate">{b.area} · {b.venue_name}</span>
       </p>
       <p className="mt-3 flex items-center justify-between border-t border-border/70 pt-3 text-sm">
         <span className="text-muted-foreground">{b.quantity}명 · 호스트 {b.host_name}</span>
-        <span className="font-bold text-forest">{formatPrice(b.total_price)}</span>
+        <span className="font-num font-semibold">{formatPrice(b.total_price)}</span>
       </p>
       {b.status === "pending_payment" && (
         <Button asChild className="mt-4 w-full"><Link href={`/checkout/${b.booking_id}`}>결제하기</Link></Button>
@@ -54,7 +63,7 @@ function BookingCard({ b, highlight }: { b: MyBooking; highlight: boolean }) {
       {confirmed && upcoming && (
         <>
           {b.address_detail && (
-            <p className="mt-3 rounded-xl bg-forest/5 px-3 py-2 text-sm text-forest" data-testid="booking-address">상세 주소: {b.address_detail}</p>
+            <p className="sheet mt-3 rounded-xl px-3.5 py-2.5 text-sm" data-testid="booking-address"><b>상세 주소</b> · {b.address_detail} <span className="text-muted-foreground">(확정자에게만)</span></p>
           )}
           {/* 그날 바로 쓰는 버튼: 길찾기 · 내 캘린더에 추가(상세 주소 포함, 2시간 전 알림) */}
           <div className="mt-3 flex flex-wrap gap-2 text-[13px]" data-testid="booking-tools">
@@ -107,37 +116,37 @@ export default async function MyBookingsPage({ searchParams }: PageProps<"/me/bo
   const past = bookings.filter((b) => !upcoming.includes(b));
 
   return (
-    <>
+    <Dusk>
       <SiteHeader />
       <main className="mx-auto w-full max-w-2xl flex-1 px-4 py-8 sm:px-6">
-        <h1 className="font-display text-2xl font-bold text-forest sm:text-3xl">내 예약</h1>
+        <h1 className="text-[30px] font-black tracking-[-0.04em] sm:text-[38px]">내 자리</h1>
         {booked && (
           <p className="mt-4 rounded-xl bg-notice px-4 py-3 text-sm text-notice-foreground" data-testid="booked-notice">
-            신청이 확정되었어요! 상세 주소와 일정을 확인해 주세요.
+            자리가 확정됐어요! 상세 주소와 일정을 확인해 주세요.
           </p>
         )}
         <section className="mt-8">
-          <h2 className="mb-3 text-lg font-bold">다가오는 프로그램 <span className="text-muted-foreground">{upcoming.length}</span></h2>
+          <h2 className="mb-3 text-lg font-extrabold">앉을 자리 <span className="text-muted-foreground">{upcoming.length}</span></h2>
           {upcoming.length ? (
             <ul className="flex flex-col gap-3">{upcoming.map((b) => <BookingCard key={b.booking_id} b={b} highlight={b.booking_id === booked} />)}</ul>
           ) : (
             <div className="rounded-2xl border border-dashed border-border p-8 text-center">
-              <p className="text-muted-foreground">예정된 프로그램이 없어요.</p>
-              <Button asChild className="mt-4"><Link href="/meetups">프로그램 둘러보기</Link></Button>
+              <p className="text-muted-foreground">아직 앉을 자리가 없어요.</p>
+              <Button asChild className="mt-4 rounded-full"><Link href="/meetups">지금 열린 원 둘러보기</Link></Button>
             </div>
           )}
         </section>
         {waitlist.length > 0 && (
           <section className="mt-10" data-testid="my-waitlist">
-            <h2 className="mb-3 text-lg font-bold">대기 중인 일정 <span className="text-muted-foreground">{waitlist.length}</span></h2>
+            <h2 className="mb-3 text-lg font-extrabold">대기 중인 원 <span className="text-muted-foreground">{waitlist.length}</span></h2>
             <ul className="flex flex-col gap-2">
               {waitlist.map((w) => (
-                <li key={w.session_id} className="flex flex-wrap items-center justify-between gap-2 rounded-2xl bg-card px-4 py-3">
+                <li key={w.session_id} className="flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-border bg-card px-4 py-3">
                   <Link href={`/meetups/${w.meetup_id}`} className="min-w-0">
                     <span className="block truncate font-semibold hover:underline">{w.title}</span>
                     <span className="block text-xs text-muted-foreground">{formatShortDateTime(w.starts_at)}</span>
                   </Link>
-                  <span className={w.left_seats > 0 ? "text-sm font-semibold text-clay" : "text-sm text-muted-foreground"}>
+                  <span className={w.left_seats > 0 ? "text-sm font-semibold text-amber" : "text-sm text-muted-foreground"}>
                     {w.left_seats > 0 ? `자리 ${w.left_seats}개 생김 · 지금 신청하기` : "자리가 나면 알려 드려요"}
                   </span>
                 </li>
@@ -148,13 +157,13 @@ export default async function MyBookingsPage({ searchParams }: PageProps<"/me/bo
         {past.length > 0 && (
           <section className="mt-10">
             <div className="mb-3 flex items-end justify-between">
-              <h2 className="text-lg font-bold">지난·취소한 신청</h2>
-              <Link href="/me/reviews" className="text-sm font-semibold text-forest underline-offset-4 hover:underline" data-testid="write-review-link">후기 남기기</Link>
+              <h2 className="text-lg font-extrabold">지난·취소한 자리</h2>
+              <Link href="/me/reviews" className="text-sm font-semibold text-amber underline-offset-4 hover:underline" data-testid="write-review-link">후기 남기기</Link>
             </div>
             <ul className="flex flex-col gap-3">{past.map((b) => <BookingCard key={b.booking_id} b={b} highlight={false} />)}</ul>
           </section>
         )}
       </main>
-    </>
+    </Dusk>
   );
 }

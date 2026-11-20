@@ -2,16 +2,15 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Bookmark, Compass, House, UserRound, Users } from "lucide-react";
+import { Armchair, Compass, House, UserRound } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 
 const TABS = [
   { href: "/", label: "홈", icon: House, match: (p: string) => p === "/" },
-  { href: "/hosts", label: "크리에이터", icon: Users, match: (p: string) => p.startsWith("/hosts") || p.startsWith("/become-a-host") },
-  { href: "/meetups", label: "프로그램", icon: Compass, match: (p: string) => p.startsWith("/meetups") },
-  { href: "/saved", label: "저장", icon: Bookmark, match: (p: string) => p.startsWith("/saved") },
-  { href: "/me", label: "마이", icon: UserRound, match: (p: string) => p.startsWith("/me") || p.startsWith("/checkout") },
+  { href: "/meetups", label: "둘러보기", icon: Compass, match: (p: string) => p.startsWith("/meetups") || p.startsWith("/hosts") },
+  { href: "/me/bookings", label: "내 자리", icon: Armchair, match: (p: string) => p.startsWith("/me/bookings") || p.startsWith("/checkout") },
+  { href: "/me", label: "마이", icon: UserRound, match: (p: string) => ((p === "/me" || p.startsWith("/me/")) && !p.startsWith("/me/bookings")) || p.startsWith("/saved") },
 ];
 
 /** 휴대폰 전용 아래 탭 막대. 실제로 있는 화면으로만 연결합니다. */
@@ -23,7 +22,7 @@ export function MobileTabBar() {
       data-tabbar
       className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-card/95 pb-[env(safe-area-inset-bottom)] backdrop-blur md:hidden"
     >
-      <ul className="mx-auto grid max-w-md grid-cols-5">
+      <ul className="mx-auto grid max-w-md grid-cols-4">
         {TABS.map(({ href, label, icon: Icon, match }) => {
           const active = match(pathname);
           return (
@@ -33,7 +32,7 @@ export function MobileTabBar() {
                 aria-current={active ? "page" : undefined}
                 className={cn(
                   "flex h-16 flex-col items-center justify-center gap-1 text-[11px] font-medium",
-                  active ? "text-forest" : "text-muted-foreground",
+                  active ? "font-bold text-foreground" : "text-muted-foreground",
                 )}
               >
                 <Icon aria-hidden className="size-5" strokeWidth={active ? 2 : 1.6} />

@@ -6,6 +6,7 @@ const LINKS = [
   { href: "/meetups", label: "프로그램" },
   { href: "/hosts", label: "크리에이터" },
   { href: "/journal", label: "저널" },
+  { href: "/about", label: "라운디 이야기" },
   { href: "/become-a-host", label: "크리에이터 안내·정책" },
   { href: "/signup", label: "회원가입" },
   { href: "/help", label: "고객센터" },

@@ -39,8 +39,8 @@ export function FollowButton({
     : light
     ? "inline-flex h-9 items-center justify-center rounded-full px-4 text-sm font-semibold transition-colors disabled:opacity-60"
     : "inline-flex h-11 items-center justify-center rounded-full px-6 text-sm font-medium transition-colors disabled:opacity-60";
-  const on = light ? "border border-forest/30 text-forest hover:border-forest" : "border border-cream/40 text-cream hover:border-cream";
-  const off = light ? "bg-forest text-white hover:bg-forest/90" : "bg-cream text-forest hover:bg-linen";
+  const on = light ? "border border-foreground/30 text-foreground hover:border-foreground" : "border border-cream/40 text-cream hover:border-cream";
+  const off = light ? "bg-primary text-primary-foreground hover:bg-primary/90" : "bg-cream text-ember-ink hover:bg-cream/90";
   const withCount = showCount ?? !light;
   return (
     <div className={stretch ? "flex flex-1 flex-col gap-1 [&>form]:w-full" : light && !withCount ? "flex flex-col items-end gap-1" : "flex flex-wrap items-center gap-3"} data-testid="follow">

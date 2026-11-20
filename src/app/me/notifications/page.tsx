@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 import { ActionForm } from "@/components/forms/action-form";
+import { Dusk } from "@/components/layout/dusk";
 import { SiteHeader } from "@/components/site-header";
 import { requireMember } from "@/lib/auth/guards";
 import { formatShortDateTime } from "@/lib/format";
@@ -24,11 +25,11 @@ export default async function NotificationsPage() {
   const items = data ?? [];
   const unread = items.filter((n) => !n.read_at).length;
   return (
-    <>
+    <Dusk>
       <SiteHeader />
       <main className="mx-auto w-full max-w-2xl flex-1 px-4 py-8 sm:px-6">
         <div className="flex items-end justify-between gap-4">
-          <h1 className="font-display text-2xl font-bold text-forest sm:text-3xl">알림</h1>
+          <h1 className="text-[30px] font-black tracking-[-0.04em] sm:text-[38px]">알림</h1>
           {unread > 0 && <ActionForm action={async () => { "use server"; return markAllReadAction(); }} hidden={{}} label="모두 읽음" variant="ghost" />}
         </div>
         {items.length === 0 ? (
@@ -37,9 +38,9 @@ export default async function NotificationsPage() {
           <ul className="mt-6 flex flex-col gap-2" data-testid="notification-list">
             {items.map((n) => (
               <li key={n.id} data-testid="notification" data-kind={n.kind}>
-                <Link href={n.link ?? "/me"} className={`block rounded-2xl border p-4 transition-colors hover:border-forest/40 ${n.read_at ? "border-border/70 bg-card/60" : "border-forest/30 bg-white"}`}>
+                <Link href={n.link ?? "/me"} className={`block rounded-2xl border p-4 transition-colors hover:border-amber/60 ${n.read_at ? "border-border bg-card/50" : "border-amber/50 bg-card"}`}>
                   <div className="flex justify-between gap-3">
-                    <p className={n.read_at ? "font-medium text-foreground/80" : "font-semibold"}>{!n.read_at && <span className="mr-2 inline-block size-2 rounded-full bg-clay align-middle" aria-label="읽지 않음" />}{n.title}</p>
+                    <p className={n.read_at ? "font-medium text-foreground/80" : "font-semibold"}>{!n.read_at && <span className="mr-2 inline-block h-[3px] w-3 rounded-full bg-ember-glow align-middle" aria-label="읽지 않음" />}{n.title}</p>
                     <time className="shrink-0 text-xs text-muted-foreground">{formatShortDateTime(n.created_at)}</time>
                   </div>
                   {n.body && <p className="mt-1 text-sm text-muted-foreground">{n.body}</p>}
@@ -49,6 +50,6 @@ export default async function NotificationsPage() {
           </ul>
         )}
       </main>
-    </>
+    </Dusk>
   );
 }

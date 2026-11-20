@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
-import { Noto_Serif_KR } from "next/font/google";
+import { IBM_Plex_Mono, Noto_Serif_KR } from "next/font/google";
 
 import { brand, displayName } from "@/config/brand";
 import { assertValidEnv } from "@/config/env";
@@ -17,6 +17,15 @@ const pretendard = localFont({
 const displaySerif = Noto_Serif_KR({
   variable: "--font-display-serif",
   weight: ["500", "700"],
+  subsets: ["latin"],
+  display: "swap",
+  preload: false,
+});
+
+// 카운트다운·시각 숫자 (자리수가 흔들리지 않는 고정폭)
+const plexMono = IBM_Plex_Mono({
+  variable: "--font-plex-mono",
+  weight: ["500", "600"],
   subsets: ["latin"],
   display: "swap",
   preload: false,
@@ -40,7 +49,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="ko"
-      className={`${pretendard.variable} ${displaySerif.variable} h-full antialiased`}
+      className={`${pretendard.variable} ${displaySerif.variable} ${plexMono.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col">
         <EnvironmentBanner

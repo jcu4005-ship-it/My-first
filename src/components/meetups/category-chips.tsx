@@ -3,11 +3,11 @@ import Link from "next/link";
 import type { Category } from "@/lib/meetups/queries";
 import { cn } from "@/lib/utils";
 
-/** 알약 모양 선택 버튼 (선택된 것은 딥 그린) */
+/** 알약 모양 선택 버튼 (선택된 것은 글자색 바탕 — 밝은 화면·해 질 녘 화면 모두) */
 export function chipClass(isActive: boolean) {
   return cn(
     "inline-flex h-9 shrink-0 items-center whitespace-nowrap rounded-full border px-4 text-sm transition-colors",
-    isActive ? "border-forest bg-forest font-semibold text-white" : "border-border bg-white/70 text-foreground/80 hover:border-forest/40",
+    isActive ? "border-foreground bg-foreground font-semibold text-background" : "border-border bg-card text-foreground/80 hover:border-foreground/40",
   );
 }
 

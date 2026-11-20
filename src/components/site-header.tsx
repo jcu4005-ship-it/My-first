@@ -42,7 +42,7 @@ async function AccountNav() {
         </Link>
       )}
       <Link href="/me/bookings" className={link}>
-        내 예약
+        내 자리
       </Link>
       <UnreadBadge userId={member.id} />
       <SavesSync />
@@ -73,8 +73,8 @@ async function UnreadBadge({ userId }: { userId: string }) {
 }
 
 const NAV = [
+  { href: "/meetups", label: "둘러보기" },
   { href: "/hosts", label: "크리에이터" },
-  { href: "/meetups", label: "프로그램" },
   { href: "/journal", label: "저널" },
   { href: "/become-a-host", label: "크리에이터 지원" },
 ];

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useActionState, useState, useTransition } from "react";
 
-import { ChairLegend, ChairRing } from "@/components/brand/chair-ring";
+import { SeatCircle } from "@/components/brand/seat-circle";
 import { FormMessage } from "@/components/forms/field";
 import { Button } from "@/components/ui/button";
 import { formatDate, formatPrice, formatTime } from "@/lib/format";
@@ -30,6 +30,8 @@ export function BookingForm({
   sessions,
   state: viewerState,
   acceptCoupons = false,
+  face,
+  initial,
 }: {
   meetupId: string;
   price: number;
@@ -39,6 +41,9 @@ export function BookingForm({
   state: "guest" | "sample" | "own" | "ok" | "beta_paid";
   /** 호스트가 쿠폰 허용에 동의한 유료 프로그램 */
   acceptCoupons?: boolean;
+  /** 원 가운데 크리에이터 얼굴(없으면 첫 글자) */
+  face?: string | null;
+  initial?: string;
 }) {
   const [result, action, pending] = useActionState(bookAction, initialFormState);
   const firstAvailable = sessions.find((s) => s.open && s.left > 0 && !s.mine);
@@ -63,22 +68,24 @@ export function BookingForm({
     <form action={action} className="flex scroll-mt-24 flex-col gap-3.5" id="booking" data-testid="booking-form">
       <input type="hidden" name="meetupId" value={meetupId} />
       {shown && (
-        <div className="flex items-center gap-5 sm:gap-7">
-          <ChairRing
-            capacity={shown.capacity}
-            taken={shown.reserved}
-            mine={canBook && selected ? quantity : 0}
-            closed={!shown.open || shown.left === 0}
-            className="w-32 shrink-0 sm:w-40"
-          />
+        <div className="flex items-center gap-5 rounded-[22px] border border-border bg-card p-4 sm:gap-6">
+          <div className="w-28 shrink-0 sm:w-32">
+            <SeatCircle
+              decorative
+              capacity={shown.capacity}
+              taken={shown.reserved + (canBook && selected ? quantity - 1 : 0)}
+              you={!shown.open || shown.left === 0 ? false : canBook && selected ? "open" : false}
+              face={face}
+              initial={initial}
+            />
+          </div>
           <div className="min-w-0">
-            <p className="text-[24px] leading-tight font-extrabold tracking-[-0.03em] break-keep sm:text-[27px]">
-              {!shown.open || shown.left === 0 ? "마감됐어요" : shown.reserved === 0 ? `${shown.capacity}자리 모두 비어 있어요` : `${shown.left}자리 남았어요`}
+            <p className="text-[21px] leading-tight font-black tracking-[-0.03em] break-keep sm:text-[24px]">
+              {!shown.open || shown.left === 0 ? "원이 가득 찼어요" : shown.reserved === 0 ? "첫 번째 자리예요" : `${shown.reserved}명이 먼저 앉았어요`}
             </p>
             <p className="mt-1 text-[13.5px] text-muted-foreground">
-              {shown.capacity}자리 중 {shown.reserved}자리 찼어요
+              {shown.capacity}자리 중 {shown.reserved}자리 찼어요{shown.open && shown.left > 0 ? ` · ${shown.left}자리 남음` : ""}
             </p>
-            <ChairLegend mine={canBook} className="mt-2.5" />
           </div>
         </div>
       )}
@@ -91,8 +98,8 @@ export function BookingForm({
               key={s.id}
               data-testid="session-row"
               className={cn(
-                "flex cursor-pointer items-center justify-between gap-3 rounded-[14px] border-[1.5px] border-border px-4 py-3 transition-colors",
-                sessionId === s.id && !disabled ? "border-foreground bg-card" : "hover:border-foreground/40",
+                "flex cursor-pointer items-center justify-between gap-3 rounded-[14px] border-[1.5px] border-border bg-card px-4 py-3 transition-colors",
+                sessionId === s.id && !disabled ? "border-amber" : "hover:border-foreground/40",
                 disabled && "cursor-default opacity-70",
               )}
             >
@@ -104,7 +111,7 @@ export function BookingForm({
                   checked={sessionId === s.id}
                   disabled={disabled}
                   onChange={() => { setSessionId(s.id); setQuantity(1); resetCoupon(); }}
-                  className="size-4 accent-[var(--ink)]"
+                  className="size-4 accent-[var(--ember-glow)]"
                 />
                 <span>
                   <span className="block font-semibold">{formatDate(s.starts_at)}</span>
@@ -113,11 +120,11 @@ export function BookingForm({
               </span>
               <span className="text-xs">
                 {s.mine ? (
-                  <span className="pill bg-forest text-white" data-testid="session-mine">신청 완료</span>
+                  <span className="pill bg-ember-glow text-ember-ink" data-testid="session-mine">내 자리</span>
                 ) : !s.open || s.left === 0 ? (
                   <span className="text-muted-foreground" data-testid="seats-full">마감</span>
                 ) : s.left <= 3 ? (
-                  <span className="font-bold text-ember">{s.left}자리 남음</span>
+                  <span className="font-bold text-amber">{s.left}자리 남음</span>
                 ) : (
                   <span className="text-muted-foreground">{s.left}자리 남음</span>
                 )}
@@ -131,7 +138,7 @@ export function BookingForm({
         <label className="flex items-center justify-between rounded-[14px] border-[1.5px] border-border px-4 py-3 text-sm">
           <span className="font-medium">신청 인원</span>
           <select name="quantity" value={quantity} onChange={(e) => { setQuantity(Number(e.target.value)); resetCoupon(); }}
-            className="h-10 rounded-xl border border-border bg-white px-3" aria-label="신청 인원">
+            className="h-10 rounded-xl border border-border bg-card px-3 text-foreground" aria-label="신청 인원">
             {Array.from({ length: Math.max(1, maxForSelected) }, (_, i) => i + 1).map((n) => (
               <option key={n} value={n}>{n}명</option>
             ))}
@@ -151,7 +158,7 @@ export function BookingForm({
               maxLength={20}
               autoComplete="off"
               placeholder="쿠폰 코드"
-              className="h-10 min-w-0 flex-1 rounded-xl border border-border bg-white px-3 text-base uppercase sm:text-sm"
+              className="h-10 min-w-0 flex-1 rounded-xl border border-border bg-card px-3 text-base text-foreground uppercase sm:text-sm"
             />
             <Button type="button" variant="outline" disabled={checking || !code.trim() || !sessionId} onClick={checkCoupon}>
               {checking ? "확인 중…" : "적용"}
@@ -169,7 +176,7 @@ export function BookingForm({
       <FormMessage message={result.message} />
 
       {viewerState === "guest" ? (
-        <Button asChild size="lg" className="w-full rounded-full bg-foreground hover:bg-foreground/90">
+        <Button asChild size="lg" className="h-14 w-full rounded-full text-[16px] font-black">
           <Link href={`/login?next=/meetups/${meetupId}`}>로그인하고 신청하기</Link>
         </Button>
       ) : viewerState === "beta_paid" ? (
@@ -182,8 +189,8 @@ export function BookingForm({
       ) : viewerState === "own" ? (
         <Button size="lg" className="w-full" disabled>내가 연 프로그램이에요</Button>
       ) : firstAvailable ? (
-        <Button type="submit" size="lg" className="w-full rounded-full bg-foreground hover:bg-foreground/90" disabled={pending || !sessionId} data-testid="book-submit">
-          {pending ? "보내는 중…" : `신청하기 · ${formatPrice(applied ? applied.total : price * quantity)}`}
+        <Button type="submit" size="lg" className="h-14 w-full rounded-full text-[16px] font-black shadow-[0_12px_34px_-12px_rgb(255_106_43/0.8)]" disabled={pending || !sessionId} data-testid="book-submit">
+          {pending ? "자리 잡는 중…" : `이 자리에 앉기 · ${formatPrice(applied ? applied.total : price * quantity)}`}
         </Button>
       ) : (
         <Button size="lg" className="w-full" disabled>신청 가능한 일정이 없어요</Button>

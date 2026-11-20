@@ -3,7 +3,7 @@ import type { Session } from "@/lib/meetups/queries";
 export function SampleBadge({ className = "" }: { className?: string }) {
   return (
     <span
-      className={`inline-flex items-center rounded-full bg-white/95 px-2.5 py-0.5 text-[11px] font-semibold text-forest shadow-sm ${className}`}
+      className={`inline-flex items-center rounded-full border border-border bg-card px-2.5 py-0.5 text-[11px] font-semibold text-foreground shadow-sm ${className}`}
       data-testid="sample-badge"
       title="서비스 준비 중 보여 드리는 샘플 프로그램입니다"
     >
