@@ -25,7 +25,16 @@ export async function syncSavesAction(localIds: string[]): Promise<SavedItem[] |
   const supabase = await createSupabaseServerClient();
   const ids = Array.from(new Set(localIds.filter((id) => z.uuid().safeParse(id).success))).slice(0, 60);
   await Promise.all(ids.map((id) => supabase.rpc("set_meetup_saved", { p_meetup_id: id, p_saved: true })));
-  const { data } = await supabase.rpc("my_saved_meetups");
+  return listMySavedMeetups();
+}
+
+/** 계정에 저장된 목록 (로그인한 회원만) */
+export async function listMySavedMeetups(): Promise<SavedItem[] | null> {
+  const member = await getCurrentMember();
+  if (!member || member.status !== "active") return null;
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase.rpc("my_saved_meetups");
+  if (error) return null;
   return ((data as { meetup_id: string; title: string; next_starts_at: string | null; area: string | null }[] | null) ?? []).map((r) => ({
     id: r.meetup_id,
     title: r.title,

@@ -118,9 +118,28 @@ export function SavesSync() {
   return null;
 }
 
-/** 저장 화면 목록 */
-export function SavedList() {
-  const items = useSaved();
+/** 이 기기 목록에 이미 합친 계정 목록 (합친 뒤에는 기기 목록을 그대로 따름) */
+const mergedAccounts = new WeakSet<SavedItem[]>();
+
+/**
+ * 저장 화면 목록.
+ * 로그인한 회원이면 서버에서 읽은 계정 목록(account)을 처음부터 보여 주고(다른 기기에서 저장한 것 포함),
+ * 이 기기 목록과 합쳐 기기에 기록한 뒤부터는 기기 목록(저장·해제가 바로 반영됨)을 따릅니다.
+ */
+export function SavedList({ account }: { account?: SavedItem[] }) {
+  const local = useSaved();
+  useEffect(() => {
+    if (!account) return;
+    const current = parse(read());
+    const ids = new Set(account.map((x) => x.id));
+    mergedAccounts.add(account);
+    write([...account, ...current.filter((x) => !ids.has(x.id))]); // 목록 변경 이벤트로 다시 그려짐
+  }, [account]);
+  const items = useMemo(() => {
+    if (!account || mergedAccounts.has(account)) return local;
+    const ids = new Set(account.map((x) => x.id));
+    return [...account, ...local.filter((x) => !ids.has(x.id))];
+  }, [account, local]);
   if (!items.length) {
     return (
       <div className="rounded-[20px] border border-dashed border-border bg-card/60 px-6 py-14 text-center" data-testid="saved-empty">

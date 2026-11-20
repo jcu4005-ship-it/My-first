@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 
 import { getCurrentMember } from "@/lib/auth/session";
+import { listMySavedMeetups } from "@/app/saved/actions";
 
 import { SavedList } from "@/components/saved";
 import { SiteFooter } from "@/components/site-footer";
@@ -11,6 +12,8 @@ export const instant = false;
 
 export default async function SavedPage() {
   const member = await getCurrentMember().catch(() => null);
+  // 계정 목록은 서버에서 바로 읽어 보여 줌 (다른 기기에서 저장한 것도 첫 화면부터 보임)
+  const account = member ? await listMySavedMeetups().catch(() => null) : null;
   return (
     <>
       <SiteHeader />
@@ -20,7 +23,7 @@ export default async function SavedPage() {
         <p className="mt-1.5 mb-6 text-sm text-muted-foreground" data-testid="saved-scope">
           {member ? "계정에 저장돼요. 로그인한 어느 기기에서나 같은 목록이 보여요." : "지금은 이 기기에만 저장돼요. 로그인하면 계정에 함께 저장돼 다른 기기에서도 보여요."}
         </p>
-        <SavedList />
+        <SavedList account={account ?? undefined} />
       </main>
       <SiteFooter />
     </>
