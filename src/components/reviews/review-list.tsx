@@ -37,7 +37,7 @@ export function ReviewSection({
           {title}
         </h2>
         {summary.count > 0 && summary.avg != null && (
-          <p className="flex items-center gap-1.5 text-[13px]" data-testid="review-summary">
+          <p className="flex items-center gap-1.5 text-[14px]" data-testid="review-summary">
             <Stars value={summary.avg} />
             <b className="tabular-nums">{summary.avg.toFixed(1)}</b>
             <span className="text-fog">· 후기 {summary.count}개</span>
@@ -52,7 +52,7 @@ export function ReviewSection({
         <ul className="divide-y divide-border">
           {reviews.map((r) => (
             <li key={r.id} className="py-5" data-testid="review-item">
-              <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[12.5px]">
+              <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[13.5px]">
                 <Stars value={r.rating} />
                 <b>{r.nickname}</b>
                 <span className="text-fog">{formatYmd(r.created_at)}</span>
@@ -64,8 +64,8 @@ export function ReviewSection({
               </div>
               <p className="mt-2 text-[14.5px] leading-relaxed whitespace-pre-line break-keep">{r.body}</p>
               {r.host_reply && (
-                <div className="mt-3 border-l-2 border-forest/40 bg-linen/50 px-3.5 py-2.5 text-[13.5px]" data-testid="review-reply">
-                  <p className="text-[11px] font-bold tracking-[0.14em] text-forest">크리에이터의 답글</p>
+                <div className="mt-3 border-l-2 border-forest/40 bg-linen/50 px-3.5 py-2.5 text-[14.5px]" data-testid="review-reply">
+                  <p className="text-[12.5px] font-bold tracking-[0.14em] text-forest">크리에이터의 답글</p>
                   <p className="mt-1 leading-relaxed whitespace-pre-line">{r.host_reply}</p>
                 </div>
               )}

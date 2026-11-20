@@ -24,13 +24,13 @@ export function WaitlistPanel({
   return (
     <div className="mt-4 rounded-2xl border border-dashed border-border px-4 py-4" data-testid="waitlist">
       <p className="text-sm font-semibold">마감된 일정 대기하기</p>
-      <p className="mt-0.5 text-xs text-muted-foreground">자리가 나면 알림으로 알려 드려요. 먼저 신청한 분이 자리를 가져가요.</p>
+      <p className="mt-0.5 text-[13px] text-muted-foreground">자리가 나면 알림으로 알려 드려요. 먼저 신청한 분이 자리를 가져가요.</p>
       <ul className="mt-3 flex flex-col gap-2.5">
         {sessions.map((s) => (
           <li key={s.id} className="flex flex-wrap items-center justify-between gap-2 text-sm" data-testid="waitlist-row">
             <span>
               {formatDate(s.starts_at)} {formatTime(s.starts_at)}
-              {waiting.has(s.id) && <span className="ml-2 text-xs font-semibold text-forest" data-testid="waitlist-on">대기 중</span>}
+              {waiting.has(s.id) && <span className="ml-2 text-[13px] font-semibold text-forest" data-testid="waitlist-on">대기 중</span>}
             </span>
             {!loggedIn ? (
               <Link href={`/login?next=/meetups/${meetupId}`} className="text-sm font-semibold text-forest underline-offset-4 hover:underline">

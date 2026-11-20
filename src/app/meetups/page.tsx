@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
-import { Dusk } from "@/components/layout/dusk";
+import { Night } from "@/components/layout/night";
 import { CategoryChips } from "@/components/meetups/category-chips";
 import { CircleGrid } from "@/components/meetups/circle-card";
 import { SiteFooter } from "@/components/site-footer";
@@ -9,6 +9,7 @@ import { SiteHeader } from "@/components/site-header";
 import { PILLARS, isPillar, pillarInfo } from "@/config/pillars";
 import { listCategories, listUpcomingMeetups } from "@/lib/meetups/queries";
 import { normalizeQuery, searchMeetups } from "@/lib/meetups/search";
+import { getHostReviewSummaries } from "@/lib/reviews/queries";
 
 export const metadata: Metadata = { title: "프로그램 둘러보기" };
 export const instant = false;
@@ -30,13 +31,14 @@ export default async function MeetupsPage({ searchParams }: PageProps<"/meetups"
   const counts = all.reduce<Record<string, number>>((acc, m) => ({ ...acc, [m.category_slug]: (acc[m.category_slug] ?? 0) + 1 }), {});
   const chipCategories = pillarCategories.filter((c) => counts[c.slug] || c.slug === active?.slug);
   const info = pillarInfo(pillar);
+  const trust = await getHostReviewSummaries(meetups.flatMap((m) => (m.host ? [m.host.user_id] : [])));
 
   return (
-    <Dusk>
+    <Night>
       <SiteHeader />
       <main className="flex-1">
         <section className="mx-auto w-full max-w-6xl px-4 pt-8 sm:px-6 sm:pt-12">
-          <h1 className="text-[34px] leading-tight font-black tracking-[-0.045em] break-keep sm:text-[52px]">
+          <h1 className="text-[34px] leading-tight font-display font-bold tracking-[-0.02em] break-keep sm:text-[52px]">
             {active ? active.name : info ? info.ko : "지금 열린 원"}
           </h1>
           <p className="mt-2 max-w-xl text-[14.5px] leading-relaxed text-muted-foreground">
@@ -53,7 +55,7 @@ export default async function MeetupsPage({ searchParams }: PageProps<"/meetups"
                 defaultValue={q}
                 maxLength={40}
                 placeholder="무엇을, 누구에게 배우고 싶나요? (예: 사진, 용산)"
-                className="h-12 min-w-0 flex-1 rounded-2xl border border-border bg-card px-4 text-base text-foreground placeholder:text-muted-foreground focus:border-amber focus:outline-none sm:text-sm"
+                className="h-12 min-w-0 flex-1 rounded-2xl border border-border bg-card px-4 text-base text-foreground placeholder:text-muted-foreground focus:border-gold focus:outline-none sm:text-sm"
               />
               <button type="submit" className="h-12 shrink-0 rounded-2xl bg-foreground px-5 text-sm font-bold text-background hover:bg-foreground/90">검색</button>
             </form>
@@ -97,7 +99,7 @@ export default async function MeetupsPage({ searchParams }: PageProps<"/meetups"
             </p>
           )}
           {meetups.length ? (
-            <CircleGrid meetups={meetups} categoryNames={names} />
+            <CircleGrid meetups={meetups} categoryNames={names} trust={trust} />
           ) : q ? (
             <div className="rounded-3xl border border-dashed border-border px-6 py-16 text-center" data-testid="search-empty">
               <p className="text-xl font-extrabold">&ldquo;{q}&rdquo;에 맞는 프로그램이 없어요</p>
@@ -112,7 +114,7 @@ export default async function MeetupsPage({ searchParams }: PageProps<"/meetups"
               <p className="mt-2 text-sm text-muted-foreground">
                 곧 새로운 프로그램이 열립니다. 이 분야의 전문가라면 호스트로 신청해 주세요.
               </p>
-              <Link href="/become-a-host/apply" className="mt-5 inline-block text-sm font-semibold text-amber underline-offset-4 hover:underline">
+              <Link href="/become-a-host/apply" className="mt-5 inline-block text-sm font-semibold text-gold underline-offset-4 hover:underline">
                 호스트 지원하기
               </Link>
             </div>
@@ -120,6 +122,6 @@ export default async function MeetupsPage({ searchParams }: PageProps<"/meetups"
         </div>
       </main>
       <SiteFooter />
-    </Dusk>
+    </Night>
   );
 }

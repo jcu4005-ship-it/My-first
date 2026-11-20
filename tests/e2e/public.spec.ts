@@ -10,12 +10,12 @@ const samples = !isStaging || process.env.TEST_EXPECT_SAMPLES === "yes";
 test("홈(모닥불 원): 크리에이터 얼굴 원 · 먼저 앉은 사람 · 당신 자리 → 상세, 잡지형 소개는 /about", async ({ page }) => {
   await page.goto("/");
   const hero = page.getByTestId("home-circle");
-  await expect(hero.getByRole("heading", { level: 1 })).toBeVisible();
+  await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
   const cta = page.getByTestId("home-cta").filter({ visible: true });
   test.skip((await cta.count()) === 0, "열린 원이 없음");
   await expect(hero.getByTestId("seat-table")).toBeVisible();
   // 실제 예약 수로 쓴 한 줄
-  await expect(page.getByTestId("home-seat-line").filter({ visible: true })).toContainText(/(명이 먼저 앉았어요|첫 번째 자리예요) · \d+자리 남음/);
+  await expect(page.getByTestId("home-seat-line").filter({ visible: true })).toContainText(/(명 신청|첫 번째 자리예요) · \d+자리 남음/);
   await expect(cta).toHaveAttribute("href", /^\/meetups\/[0-9a-f-]{36}#booking$/);
   await page.getByTestId("home-about").click();
   await expect(page).toHaveURL(/\/about$/);

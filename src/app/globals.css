@@ -39,73 +39,77 @@
   --ring: var(--forest);
   --radius: 1rem;
   color-scheme: light;
-  /* 드롭 × 모닥불 원 (2026-11-20 승인) — 참가자 화면은 .theme-dusk 안에서만 */
-  --dusk: #17110d;
-  --dusk-2: #221912;
-  --ember-glow: #ff6a2b;  /* 당신 자리 · 주요 버튼 */
-  --amber: #ffb15c;       /* 강조 글자 */
-  --lit: #f2c48c;         /* 먼저 앉은 사람 */
-  --ember-ink: #1d1510;   /* 주황 위 글자 */
+  /* 드롭 × 모닥불 원 · 색 D안 "미드나잇 네이비 & 골드" (2026-11-20 승인) — 참가자 화면은 .theme-night 안에서만 */
+  --navy: #0f1626;     /* 바탕 */
+  --navy-2: #18223a;   /* 카드 */
+  --navy-3: #202c49;   /* 한 단계 위 카드·입력 */
+  --gold: #e2b872;     /* 핵심 강조만: 당신 자리 · 주요 버튼 · 남은 자리 */
+  --gold-ink: #0f1626; /* 골드 위 글자 */
+  --lit: #8ea3c4;      /* 먼저 앉은 사람 */
+  --ivory: #f7f3ea;    /* 길게 읽는 정보 시트 */
 }
 
 /*
- * 해 질 녘 테마 (참가자 화면). 차가운 검정 대신 따뜻한 갈색빛 어둠 + 불빛 주황 하나.
- * 대비: 본문 #fff2e2 · 보조 #b8a492 (바탕 #17110d에서 4.5:1 이상). 주황 버튼의 글자는 짙은 갈색.
- * 결제·환불·주소처럼 읽어야 하는 정보는 .sheet(밝은 종이)로.
+ * 미드나잇 네이비 테마 (참가자 화면, 색 D안). 네이비가 메인, 골드는 핵심 강조에만.
+ * 대비: 본문 #eef1f7 · 보조 #b4bed1 (바탕 #0f1626·카드 #18223a 모두 7:1 안팎). 저대비 글자 쓰지 않음.
+ * 결제·환불·소개처럼 길게 읽는 정보는 .sheet(아이보리)로 — 답답함을 줄이고 읽기 편하게.
  */
-.theme-dusk {
-  --background: var(--dusk);
-  --foreground: #fff2e2;
-  --card: var(--dusk-2);
-  --muted: #2a1f17;
-  --muted-foreground: #b8a492;
-  --border: #3a2c22;
-  --primary: var(--ember-glow);
-  --primary-foreground: var(--ember-ink);
-  --secondary: #2a1f17;
-  --secondary-foreground: #fff2e2;
-  --accent: var(--ember-glow);
-  --accent-foreground: var(--ember-ink);
-  --destructive: #ff8a7a;
-  --notice: #2a1f17;
-  --notice-foreground: #f2dcc4;
-  --ring: var(--amber);
-  --forest: var(--amber);
-  --forest-deep: #0f0b08;
-  --forest-soft: #3a2c22;
-  --linen: #2a1f17;
-  --cream: #fff2e2;
-  --clay: var(--ember-glow);
-  --fog: #b8a492;
-  --sage: #8a7a6a;
-  --mint: #3a2c22;
+.theme-night {
+  --background: var(--navy);
+  --foreground: #eef1f7;
+  --card: var(--navy-2);
+  --muted: var(--navy-3);
+  --muted-foreground: #b4bed1;
+  --border: #2e3b5c;
+  --primary: var(--gold);
+  --primary-foreground: var(--gold-ink);
+  --secondary: var(--navy-3);
+  --secondary-foreground: #eef1f7;
+  --accent: var(--gold);
+  --accent-foreground: var(--gold-ink);
+  --destructive: #ff9b8f;
+  --notice: var(--navy-3);
+  --notice-foreground: #dfe5f0;
+  --ring: var(--gold);
+  --forest: var(--gold);
+  --forest-deep: #0a101d;
+  --forest-soft: #2e3b5c;
+  --linen: var(--navy-3);
+  --cream: #eef1f7;
+  --clay: var(--gold);
+  --fog: #b4bed1;
+  --sage: #8ea3c4;
+  --mint: #2e3b5c;
   color-scheme: dark;
-  background-color: var(--dusk);
-  background-image: radial-gradient(120% 50% at 60% 0%, rgb(255 138 61 / 0.12), transparent 60%);
+  background-color: var(--navy);
+  background-image: radial-gradient(110% 45% at 50% 0%, rgb(142 163 196 / 0.1), transparent 65%);
   background-repeat: no-repeat;
   color: var(--foreground);
 }
-.theme-dusk ::selection { background: var(--ember-glow); color: var(--ember-ink); }
-/* 해 질 녘 화면 안의 밝은 종이 시트 */
-.theme-dusk .sheet,
+.theme-night ::selection { background: var(--gold); color: var(--gold-ink); }
+/* 네이비 화면 안의 아이보리 시트 (길게 읽는 정보) */
+.theme-night .sheet,
 .sheet {
-  --background: #fbf3e8;
-  --foreground: #1d1510;
+  --background: var(--ivory);
+  --foreground: #14213d;
   --card: #ffffff;
-  --muted: #f1e7da;
-  --muted-foreground: #6f5f52;
-  --border: #e6dccd;
-  --secondary: #f1e7da;
-  --secondary-foreground: #1d1510;
-  --notice: #f1e7da;
-  --notice-foreground: #3d322a;
-  --forest: #9a3a14;
-  --linen: #f1e7da;
+  --muted: #efe9dc;
+  --muted-foreground: #4f5a70;
+  --border: #e2dacb;
+  --secondary: #efe9dc;
+  --secondary-foreground: #14213d;
+  --notice: #efe9dc;
+  --notice-foreground: #2b3550;
+  --forest: #7a5a22;
+  --clay: #7a5a22;
+  --linen: #efe9dc;
   --destructive: #a33a2a;
-  --ring: #9a3a14;
+  --primary: #14213d;
+  --primary-foreground: #f7f3ea;
+  --ring: #14213d;
   color-scheme: light;
-  background-color: #fbf3e8;
-  color: #1d1510;
+  background-color: var(--ivory);
+  color: #14213d;
 }
 
 @theme inline {
@@ -144,12 +148,13 @@
   --font-sans: var(--font-pretendard), system-ui, sans-serif;
   --font-display: var(--font-display-serif), var(--font-pretendard), serif;
   --font-num: var(--font-plex-mono), ui-monospace, monospace;
-  --color-dusk: var(--dusk);
-  --color-dusk-2: var(--dusk-2);
-  --color-ember-glow: var(--ember-glow);
-  --color-amber: var(--amber);
+  --color-navy: var(--navy);
+  --color-navy-2: var(--navy-2);
+  --color-navy-3: var(--navy-3);
+  --color-gold: var(--gold);
+  --color-gold-ink: var(--gold-ink);
   --color-lit: var(--lit);
-  --color-ember-ink: var(--ember-ink);
+  --color-ivory: var(--ivory);
 }
 
 @layer base {
@@ -165,9 +170,9 @@
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.2 0 0 0 0 0.18 0 0 0 0 0.12 0 0 0 .05 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
     background-size: 160px 160px;
   }
-  /* 해 질 녘 화면이면 바탕도 같은 색 (아래 탭 여백까지) */
-  body:has(.theme-dusk) {
-    background: var(--dusk);
+  /* 네이비 화면이면 바탕도 같은 색 (아래 탭 여백까지) */
+  body:has(.theme-night) {
+    background: var(--navy);
   }
   /* 휴대폰 아래 탭 막대가 있으면 마지막 내용이 가려지지 않도록 */
   @media (width < 48rem) {
@@ -229,7 +234,7 @@
   }
 }
 
-/* 당신 자리 의자: 천천히 숨 쉬는 불빛 (움직임 줄이기 설정이면 멈춤) */
+/* 당신 자리 의자: 천천히 숨 쉬는 금빛 (움직임 줄이기 설정이면 멈춤) */
 @keyframes seat-breathe {
   0%, 100% { opacity: 0.75; }
   50% { opacity: 1; }

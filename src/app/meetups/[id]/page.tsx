@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { BadgeCheck } from "lucide-react";
+import { BadgeCheck, CalendarDays, CircleHelp, CreditCard, MapPin, Package, Users } from "lucide-react";
 import { notFound } from "next/navigation";
 
 import { SeatCircle, SeatLegend } from "@/components/brand/seat-circle";
-import { Dusk } from "@/components/layout/dusk";
+import { Night } from "@/components/layout/night";
 import { brand } from "@/config/brand";
 import { FollowButton } from "@/components/hosts/follow-button";
 import { SampleBadge, seatsLeft } from "@/components/meetups/badges";
@@ -24,7 +24,7 @@ import { getCurrentMember } from "@/lib/auth/session";
 import { myConfirmedSessionIds } from "@/lib/bookings/queries";
 import { durationLabel, formatDate, formatPrice, formatTime } from "@/lib/format";
 import { getFollowState } from "@/lib/hosting/follows";
-import { getMeetup, listCategories, listUpcomingMeetups } from "@/lib/meetups/queries";
+import { getHost, getMeetup, listCategories, listHostActivity, listUpcomingMeetups } from "@/lib/meetups/queries";
 import { REFUND_RULES } from "@/lib/payments/refund-policy";
 import { getAppSettings } from "@/lib/settings/queries";
 import { CLASS_LEVEL_LABEL } from "@/lib/validation/meetup";
@@ -58,7 +58,7 @@ function NumberedList({ items, testId }: { items: string[]; testId?: string }) {
     <ol data-testid={testId}>
       {items.map((line, i) => (
         <li key={i} className="grid grid-cols-[1.75rem_1fr] border-b border-border py-3 text-[15.5px] leading-relaxed">
-          <span aria-hidden className="pt-1 text-[13px] font-extrabold text-ember">—</span>
+          <span aria-hidden className="pt-1 text-[14px] font-extrabold text-clay">—</span>
           <span>{line}</span>
         </li>
       ))}
@@ -72,13 +72,16 @@ export default async function MeetupDetailPage({ params }: PageProps<"/meetups/[
   const { id } = await params;
   const [meetup, categories, member, settings] = await Promise.all([getMeetup(id), listCategories(), getCurrentMember(), getAppSettings()]);
   if (!meetup) notFound();
-  const [mine, follow, reviews, reviewSummary, myWaitlist, hostPrograms] = await Promise.all([
+  const [mine, follow, reviews, reviewSummary, myWaitlist, hostPrograms, hostFull, activity, hostReviews] = await Promise.all([
     member ? myConfirmedSessionIds(member.id, meetup.upcomingSessions.map((s) => s.id)) : Promise.resolve(new Set<string>()),
     meetup.host ? getFollowState(meetup.host.user_id, member?.id ?? null) : Promise.resolve(null),
     listPublicReviews({ meetupId: meetup.id }),
     getReviewSummary({ meetupId: meetup.id }),
     member ? listMyWaitlist() : Promise.resolve([]),
     meetup.host ? listUpcomingMeetups({ hostId: meetup.host.user_id }) : Promise.resolve([]),
+    meetup.host ? getHost(meetup.host.user_id).catch(() => null) : Promise.resolve(null),
+    meetup.host ? listHostActivity(meetup.host.user_id, 6) : Promise.resolve([]),
+    meetup.host ? getReviewSummary({ hostId: meetup.host.user_id }) : Promise.resolve({ count: 0, avg: null }),
   ]);
   const otherPrograms = hostPrograms.filter((m) => m.id !== meetup.id).slice(0, 3);
   const waiting = new Set(myWaitlist.map((w) => w.session_id));
@@ -120,7 +123,7 @@ export default async function MeetupDetailPage({ params }: PageProps<"/meetups/[
   /** 원 + 먼저 앉은 사람 (다음 일정 기준, 실제 예약 수) */
   const circle = next && (
     <div className="flex flex-col items-center">
-      <div className="w-[min(64vw,260px)] lg:w-[300px]">
+      <div className="w-[min(56vw,220px)] lg:w-[260px]">
         <SeatCircle
           capacity={next.capacity}
           taken={next.reserved_count}
@@ -131,28 +134,28 @@ export default async function MeetupDetailPage({ params }: PageProps<"/meetups/[
         />
       </div>
       <SeatLegend className="mt-3" />
-      <p className={`mt-3 text-center text-[16px] font-extrabold tracking-[-0.02em] ${nextLine?.closed ? "text-muted-foreground" : "text-amber"}`} data-testid="seat-line">
+      <p className={`mt-3 text-center text-[17px] font-bold tracking-[-0.02em] ${nextLine?.closed ? "text-muted-foreground" : "text-gold"}`} data-testid="seat-line">
         {nextLine?.text}
       </p>
     </div>
   );
 
   return (
-    <Dusk>
+    <Night>
       <SiteHeader tabBar={false} />
       <RecordRecentlyViewed item={{ kind: "program", href: `/meetups/${meetup.id}`, title: meetup.title }} />
       <main className="flex-1 pb-28 lg:pb-0">
         <div className="mx-auto grid w-full max-w-6xl gap-8 sm:px-6 lg:grid-cols-[1fr_430px] lg:gap-11 lg:pt-8">
           <div className="min-w-0">
             {/* 1. 표지: 크리에이터 사진(없으면 프로그램 대표 사진) + 제목 */}
-            <div className="relative aspect-[4/3] w-full overflow-hidden bg-dusk-2 sm:rounded-[28px] lg:aspect-[16/11]">
+            <div className="relative aspect-[4/3] w-full overflow-hidden bg-navy-2 sm:rounded-[28px] lg:aspect-[16/11]">
               <Photo
                 src={coverPhoto}
                 alt={coverIsCreator ? `${meetup.host?.display_name ?? ""} 사진` : meetup.title}
                 priority
                 sizes="(min-width: 1024px) 58vw, 100vw"
                 className={coverIsCreator ? "object-[50%_18%] [filter:sepia(.12)]" : undefined}
-                fallback={<EditorialCover category={meetup.category_slug} title={meetup.title} size="hero" showTitle={false} showLabel={false} className="!bg-dusk-2 !text-cream" />}
+                fallback={<EditorialCover category={meetup.category_slug} title={meetup.title} size="hero" showTitle={false} showLabel={false} className="!bg-navy-2 !text-cream" />}
               />
               <div aria-hidden className="absolute inset-0 bg-[linear-gradient(180deg,rgb(23_17_13/0.35),transparent_30%,transparent_45%,rgb(23_17_13/0.92))]" />
               <SaveButton
@@ -162,15 +165,15 @@ export default async function MeetupDetailPage({ params }: PageProps<"/meetups/[
               />
               <div className="absolute inset-x-0 bottom-0 p-4 sm:p-7">
                 <div className="flex flex-wrap items-center gap-2">
-                  <Link href={`/meetups?category=${meetup.category_slug}`} className="rounded-full bg-cream px-2.5 py-1 text-[12px] font-extrabold text-ember-ink hover:bg-cream/90">
+                  <Link href={`/meetups?category=${meetup.category_slug}`} className="rounded-full bg-cream px-2.5 py-1 text-[13.5px] font-extrabold text-gold-ink hover:bg-cream/90">
                     {category?.name ?? style.label}
                   </Link>
-                  <span className="rounded-full border border-cream/50 px-2.5 py-1 text-[12px] font-semibold text-cream" data-testid="class-level">
+                  <span className="rounded-full border border-cream/50 px-2.5 py-1 text-[13.5px] font-semibold text-cream" data-testid="class-level">
                     {CLASS_LEVEL_LABEL[meetup.level] ?? "누구나"}
                   </span>
                   {meetup.is_sample && <SampleBadge />}
                 </div>
-                <h1 className="mt-2.5 text-[28px] leading-[1.15] font-black tracking-[-0.045em] break-keep text-cream sm:text-[44px]" data-testid="meetup-title">
+                <h1 className="mt-2.5 text-[28px] leading-[1.15] font-display font-bold tracking-[-0.02em] break-keep text-cream sm:text-[44px]" data-testid="meetup-title">
                   {meetup.title}
                 </h1>
               </div>
@@ -181,15 +184,15 @@ export default async function MeetupDetailPage({ params }: PageProps<"/meetups/[
               {meetup.host && (
                 <div className="mt-5 flex items-center gap-3">
                   <Link href={hostHref(meetup.host)} className="group flex min-w-0 flex-1 items-center gap-2.5" data-testid="host-link">
-                    <span className="relative flex size-11 shrink-0 items-center justify-center overflow-hidden rounded-full bg-ember-glow text-sm font-black text-ember-ink">
+                    <span className="relative flex size-11 shrink-0 items-center justify-center overflow-hidden rounded-full bg-navy-3 font-display text-base font-bold text-lit">
                       {avatar ? <Photo src={avatar} alt="" sizes="44px" fallback={null} className="object-[50%_15%]" /> : <span aria-hidden>{initial}</span>}
                     </span>
                     <span className="min-w-0 text-[15px]">
                       <span className="flex items-center gap-1">
                         <b className="truncate group-hover:underline group-hover:underline-offset-4">{meetup.host.display_name}</b>
-                        {hostVerified && <BadgeCheck aria-label="운영팀 심사를 통과한 크리에이터" className="size-4 shrink-0 text-amber" strokeWidth={2} />}
+                        {hostVerified && <BadgeCheck aria-label="운영팀 심사를 통과한 크리에이터" className="size-4 shrink-0 text-gold" strokeWidth={2} />}
                       </span>
-                      <span className="block truncate text-[12.5px] text-muted-foreground">
+                      <span className="block truncate text-[13.5px] text-muted-foreground">
                         {meetup.host.occupation || meetup.host.headline}
                         {follow && ` · 팔로워 ${follow.count.toLocaleString("ko-KR")}명`}
                       </span>
@@ -208,7 +211,7 @@ export default async function MeetupDetailPage({ params }: PageProps<"/meetups/[
                 </div>
               )}
               {meetup.host?.career && (
-                <p className="mt-2 text-[13px] leading-relaxed text-muted-foreground" data-testid="host-career">
+                <p className="mt-2 text-[14.5px] leading-relaxed text-muted-foreground">
                   경력 · {meetup.host.career}
                 </p>
               )}
@@ -216,39 +219,72 @@ export default async function MeetupDetailPage({ params }: PageProps<"/meetups/[
               {/* 3. 휴대폰: 원 (PC는 오른쪽에) */}
               <div className="mt-8 lg:hidden">{circle}</div>
 
-              {/* 4. 일정·장소·인원·참가비 */}
-              <dl className="mt-7 rounded-[22px] border border-border bg-card px-5 py-2 text-[14.5px]">
-                {next && (
-                  <div className="grid grid-cols-[4.5rem_1fr] border-b border-border py-3">
-                    <dt className="text-[12.5px] font-bold text-muted-foreground">일정</dt>
+              {/* 4. 신청 전 확인하세요 — 결제 전에 필요한 정보 전부 */}
+              <section className="mt-8 rounded-[22px] border border-border bg-card px-5 pt-5 pb-2" data-testid="before-you-pay">
+                <h2 className="text-[18px] font-bold tracking-[-0.02em]">신청 전 확인하세요</h2>
+                <dl className="mt-2 text-[15px]">
+                  {next && (
+                    <div className="grid grid-cols-[1.5rem_5rem_1fr] items-start border-b border-border py-3.5">
+                      <CalendarDays aria-hidden className="mt-0.5 size-[18px] text-muted-foreground" strokeWidth={1.7} />
+                      <dt className="font-semibold text-muted-foreground">일정</dt>
+                      <dd>
+                        {formatDate(next.starts_at)} {formatTime(next.starts_at)} · {durationLabel(next.starts_at, next.ends_at)}
+                        {more > 0 && <span className="block text-[14px] text-muted-foreground">다른 일정 {more}개 더 있어요</span>}
+                      </dd>
+                    </div>
+                  )}
+                  {next && (
+                    <div className="grid grid-cols-[1.5rem_5rem_1fr] items-start border-b border-border py-3.5">
+                      <MapPin aria-hidden className="mt-0.5 size-[18px] text-muted-foreground" strokeWidth={1.7} />
+                      <dt className="font-semibold text-muted-foreground">장소</dt>
+                      <dd>
+                        {next.area} · {next.venue_name}
+                        <span className="block text-[14px] text-muted-foreground">상세 주소는 참가 확정 후 안내됩니다</span>
+                      </dd>
+                    </div>
+                  )}
+                  {next && (
+                    <div className="grid grid-cols-[1.5rem_5rem_1fr] items-start border-b border-border py-3.5">
+                      <Users aria-hidden className="mt-0.5 size-[18px] text-muted-foreground" strokeWidth={1.7} />
+                      <dt className="font-semibold text-muted-foreground">인원</dt>
+                      <dd>
+                        정원 {next.capacity}명 · {next.status !== "open" || nextLeft === 0 ? "마감" : <b className="text-gold">{next.reserved_count > 0 ? `${next.reserved_count}명 신청 · ` : "아직 신청 전 · "}{nextLeft}자리 남음</b>}
+                        <span className="block text-[14px] text-muted-foreground">난이도 {CLASS_LEVEL_LABEL[meetup.level] ?? "누구나"} · 한 번에 최대 {meetup.max_quantity_per_booking}명 신청</span>
+                      </dd>
+                    </div>
+                  )}
+                  <div className="grid grid-cols-[1.5rem_5rem_1fr] items-start border-b border-border py-3.5">
+                    <CreditCard aria-hidden className="mt-0.5 size-[18px] text-muted-foreground" strokeWidth={1.7} />
+                    <dt className="font-semibold text-muted-foreground">참가비</dt>
                     <dd>
-                      {formatDate(next.starts_at)} {formatTime(next.starts_at)} · {durationLabel(next.starts_at, next.ends_at)}
-                      {more > 0 && <span className="text-muted-foreground"> · 외 {more}회</span>}
+                      <b className="font-num text-[17px] font-semibold">{meetup.price > 0 ? formatPrice(meetup.price) : "무료"}</b> <span className="text-muted-foreground">(1인)</span>
+                      {meetup.materials_note && <span className="block text-[14px] text-muted-foreground">포함 · {meetup.materials_note}</span>}
+                      <span className="block text-[14px] text-muted-foreground">결제는 {brand.name} 안에서만 · 지금은 테스트 결제(실제 청구 없음)</span>
                     </dd>
                   </div>
-                )}
-                {next && (
-                  <div className="grid grid-cols-[4.5rem_1fr] border-b border-border py-3">
-                    <dt className="text-[12.5px] font-bold text-muted-foreground">장소</dt>
+                  {(meetup.what_to_bring || meetup.requirements) && (
+                    <div className="grid grid-cols-[1.5rem_5rem_1fr] items-start border-b border-border py-3.5">
+                      <Package aria-hidden className="mt-0.5 size-[18px] text-muted-foreground" strokeWidth={1.7} />
+                      <dt className="font-semibold text-muted-foreground">준비</dt>
+                      <dd>
+                        {meetup.what_to_bring && <span className="block">준비물 · {meetup.what_to_bring}</span>}
+                        {meetup.requirements && <span className="block text-[14px] text-muted-foreground">참여 조건 · {meetup.requirements}</span>}
+                      </dd>
+                    </div>
+                  )}
+                  <div className="grid grid-cols-[1.5rem_5rem_1fr] items-start py-3.5">
+                    <CircleHelp aria-hidden className="mt-0.5 size-[18px] text-muted-foreground" strokeWidth={1.7} />
+                    <dt className="font-semibold text-muted-foreground">취소</dt>
                     <dd>
-                      {next.area} · {next.venue_name}
-                      <span className="block text-[12px] text-muted-foreground">상세 주소는 참가 확정 후 안내됩니다</span>
+                      3일 전까지 100% · 2~1일 전 50% · 당일 환불 없음
+                      <span className="block text-[14px] text-muted-foreground">
+                        크리에이터 사정으로 취소되면 전액 환불 ·{" "}
+                        <a href="#refund" className="underline underline-offset-4">자세히</a> · <Link href="/help/contact" className="underline underline-offset-4">문의하기</Link>
+                      </span>
                     </dd>
                   </div>
-                )}
-                {next && (
-                  <div className="grid grid-cols-[4.5rem_1fr] border-b border-border py-3">
-                    <dt className="text-[12.5px] font-bold text-muted-foreground">인원</dt>
-                    <dd>
-                      최대 {next.capacity}명 · {next.status !== "open" || nextLeft === 0 ? "마감" : <b className="text-amber">{nextLeft}자리 남음</b>}
-                    </dd>
-                  </div>
-                )}
-                <div className="grid grid-cols-[4.5rem_1fr] py-3">
-                  <dt className="text-[12.5px] font-bold text-muted-foreground">참가비</dt>
-                  <dd className="font-num text-[17px] font-semibold">{meetup.price > 0 ? formatPrice(meetup.price) : "무료"}</dd>
-                </div>
-              </dl>
+                </dl>
+              </section>
               <ShareBar
                 title={meetup.title}
                 path={`/meetups/${meetup.id}`}
@@ -257,7 +293,7 @@ export default async function MeetupDetailPage({ params }: PageProps<"/meetups/[
 
               {/* 5. 자리와 신청 */}
               <section id="booking-section" className="mt-10 scroll-mt-24">
-                <h2 className="text-[22px] font-black tracking-[-0.03em]">자리 고르기</h2>
+                <h2 className="font-display text-[22px] font-bold tracking-[-0.02em]">자리 고르기</h2>
                 <div className="mt-4">
                   {meetup.is_sample && (
                     <p className="mb-4 rounded-xl bg-notice px-4 py-3 text-sm text-notice-foreground">
@@ -292,7 +328,7 @@ export default async function MeetupDetailPage({ params }: PageProps<"/meetups/[
                     />
                   )}
                   {!meetup.is_sample && meetup.price > 0 && (
-                    <p className="mt-4 text-xs leading-relaxed text-muted-foreground" data-testid="payment-safety">
+                    <p className="mt-4 text-[13px] leading-relaxed text-muted-foreground" data-testid="payment-safety">
                       참가비는 {brand.name}에서만 결제해요. 계좌 송금이나 현장 결제를 요청받으면{" "}
                       <Link href="/help/contact" className="underline underline-offset-4">고객센터</Link>로 알려 주세요.
                     </p>
@@ -300,75 +336,142 @@ export default async function MeetupDetailPage({ params }: PageProps<"/meetups/[
                 </div>
               </section>
 
-              {/* 6. 읽는 정보는 밝은 종이 시트에 */}
-              <article className="sheet mt-10 rounded-[24px] px-5 py-7 sm:px-8 sm:py-9">
-                <Block title="크리에이터가 들려주는 이야기">
-                  {coverIsCreator && meetup.cover_image_url && (
-                    <figure className="relative mb-5 aspect-[16/10] overflow-hidden rounded-[14px] bg-linen" data-testid="program-photo">
-                      <Photo src={meetup.cover_image_url} alt={meetup.title} sizes="(min-width: 1024px) 58vw, 100vw" fallback={null} />
-                    </figure>
-                  )}
-                  <p className="text-[16px] leading-[1.85] whitespace-pre-line text-foreground/85">{meetup.description}</p>
-                </Block>
-
-                {audience.length > 0 && (
-                  <Block title="이런 분께 추천해요">
-                    <NumberedList items={audience} />
-                  </Block>
-                )}
-
-                {(outcomes.length > 0 || meetup.materials_note) && (
-                  <Block title="이 프로그램에서 얻는 것">
-                    {outcomes.length > 0 && <NumberedList items={outcomes} testId="learning-outcomes" />}
-                    {meetup.materials_note && (
-                      <p className="mt-3 text-[14px] leading-relaxed text-muted-foreground">
-                        <b className="mr-2 text-foreground">재료·자료</b>
-                        {meetup.materials_note}
-                      </p>
+              {/* 6. 프로그램 소개 (아이보리) */}
+              <article className="sheet mt-10 rounded-[24px] px-5 py-7 sm:px-8 sm:py-9" data-testid="program-intro">
+                <p className="text-[14px] font-semibold text-muted-foreground">프로그램 소개</p>
+                <h2 className="mt-1 font-display text-[24px] leading-snug font-bold tracking-[-0.02em] break-keep">{meetup.title}</h2>
+                <div className="mt-6">
+                  <Block title="이런 시간이에요">
+                    {coverIsCreator && meetup.cover_image_url && (
+                      <figure className="relative mb-5 aspect-[16/10] overflow-hidden rounded-[14px] bg-linen" data-testid="program-photo">
+                        <Photo src={meetup.cover_image_url} alt={meetup.title} sizes="(min-width: 1024px) 58vw, 100vw" fallback={null} />
+                      </figure>
                     )}
+                    <p className="text-[16.5px] leading-[1.9] whitespace-pre-line">{meetup.description}</p>
                   </Block>
-                )}
+                  {audience.length > 0 && (
+                    <Block title="이런 분께 추천해요">
+                      <NumberedList items={audience} />
+                    </Block>
+                  )}
+                  {(outcomes.length > 0 || meetup.materials_note) && (
+                    <Block title="이 프로그램에서 얻는 것">
+                      {outcomes.length > 0 && <NumberedList items={outcomes} testId="learning-outcomes" />}
+                      {meetup.materials_note && (
+                        <p className="mt-3 text-[15px] leading-relaxed text-muted-foreground">
+                          <b className="mr-2 text-foreground">재료·자료</b>
+                          {meetup.materials_note}
+                        </p>
+                      )}
+                    </Block>
+                  )}
+                  {meetup.agenda.length > 0 && (
+                    <Block title="그날의 순서" id="curriculum">
+                      <ol>
+                        {meetup.agenda.map((a, i) => (
+                          <li key={i} className="grid grid-cols-[4rem_1fr] border-b border-border py-3 text-[16px]">
+                            <span className="pt-0.5 text-[14px] font-bold text-clay tabular-nums">{a.time}</span>
+                            <span>{a.title}</span>
+                          </li>
+                        ))}
+                      </ol>
+                    </Block>
+                  )}
+                </div>
+              </article>
 
-                {meetup.agenda.length > 0 && (
-                  <Block title="그날의 순서" id="curriculum">
-                    <ol>
-                      {meetup.agenda.map((a, i) => (
-                        <li key={i} className="grid grid-cols-[4rem_1fr] border-b border-border py-3 text-[15.5px]">
-                          <span className="pt-0.5 text-[13px] font-extrabold text-ember tabular-nums">{a.time}</span>
-                          <span>{a.title}</span>
-                        </li>
-                      ))}
-                    </ol>
-                  </Block>
-                )}
-
-                {(meetup.requirements || meetup.what_to_bring || meetup.max_quantity_per_booking > 1) && (
-                  <Block title="참여 안내">
-                    <dl className="text-[14.5px]">
-                      {meetup.what_to_bring && (
-                        <div className="grid grid-cols-[6.5rem_1fr] border-b border-border py-2.5">
-                          <dt className="font-semibold">준비물</dt>
-                          <dd className="text-muted-foreground">{meetup.what_to_bring}</dd>
+              {/* 7. 크리에이터 소개 (아이보리) — 실제 등록된 정보만 */}
+              {meetup.host && (
+                <section className="sheet mt-6 rounded-[24px] px-5 py-7 sm:px-8 sm:py-9" data-testid="host-intro">
+                  <p className="text-[14px] font-semibold text-muted-foreground">크리에이터 소개</p>
+                  <div className="mt-3 flex items-center gap-4">
+                    <span className="relative flex size-[72px] shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#e6dfd0] font-display text-2xl font-bold text-[#14213d]">
+                      {avatar ? <Photo src={avatar} alt={`${meetup.host.display_name} 사진`} sizes="72px" fallback={null} className="object-[50%_15%]" /> : <span aria-hidden>{initial}</span>}
+                    </span>
+                    <div className="min-w-0">
+                      <p className="flex items-center gap-1.5 text-[21px] font-bold tracking-[-0.02em]">
+                        {meetup.host.display_name}
+                        {hostVerified && <BadgeCheck aria-label="운영팀 심사를 통과한 크리에이터" className="size-5 shrink-0 text-[#7a5a22]" strokeWidth={2} />}
+                      </p>
+                      <p className="text-[15px] text-muted-foreground">{hostFull?.occupation || meetup.host.occupation || meetup.host.headline}</p>
+                      {hostReviews.count > 0 && hostReviews.avg != null && (
+                        <p className="mt-0.5 text-[14px]">★ <b>{hostReviews.avg.toFixed(1)}</b> · 후기 {hostReviews.count}개</p>
+                      )}
+                    </div>
+                  </div>
+                  {hostFull?.headline && <p className="mt-5 text-[17px] leading-relaxed font-semibold break-keep">{hostFull.headline}</p>}
+                  {hostFull?.bio ? (
+                    <p className="mt-3 text-[16px] leading-[1.85] whitespace-pre-line">{hostFull.bio}</p>
+                  ) : (
+                    <p className="mt-4 rounded-xl border border-dashed border-border px-4 py-3 text-[15px] text-muted-foreground" data-testid="host-intro-pending">
+                      소개 준비 중 · {meetup.host.display_name} 크리에이터가 직접 소개를 쓰고 있어요.
+                    </p>
+                  )}
+                  {(hostFull?.career || hostFull?.credentials || hostFull?.teaching_experience || (hostFull?.expertise?.length ?? 0) > 0) && (
+                    <dl className="mt-5 text-[15px]">
+                      {hostFull?.expertise && hostFull.expertise.length > 0 && (
+                        <div className="grid grid-cols-[5.5rem_1fr] gap-2 border-t border-border py-3">
+                          <dt className="font-bold">전문 분야</dt>
+                          <dd>{hostFull.expertise.join(" · ")}</dd>
                         </div>
                       )}
-                      {meetup.requirements && (
-                        <div className="grid grid-cols-[6.5rem_1fr] border-b border-border py-2.5">
-                          <dt className="font-semibold">참여 조건</dt>
-                          <dd className="text-muted-foreground">{meetup.requirements}</dd>
+                      {hostFull?.career && (
+                        <div className="grid grid-cols-[5.5rem_1fr] gap-2 border-t border-border py-3" data-testid="host-career">
+                          <dt className="font-bold">경력</dt>
+                          <dd className="leading-relaxed whitespace-pre-line">{hostFull.career}</dd>
                         </div>
                       )}
-                      <div className="grid grid-cols-[6.5rem_1fr] border-b border-border py-2.5">
-                        <dt className="font-semibold">한 번에 신청</dt>
-                        <dd className="text-muted-foreground">최대 {meetup.max_quantity_per_booking}명</dd>
-                      </div>
+                      {hostFull?.credentials && (
+                        <div className="grid grid-cols-[5.5rem_1fr] gap-2 border-t border-border py-3">
+                          <dt className="font-bold">자격·수상</dt>
+                          <dd className="leading-relaxed">{hostFull.credentials}</dd>
+                        </div>
+                      )}
+                      {hostFull?.teaching_experience && (
+                        <div className="grid grid-cols-[5.5rem_1fr] gap-2 border-t border-border py-3">
+                          <dt className="font-bold">가르친 경험</dt>
+                          <dd className="leading-relaxed">{hostFull.teaching_experience}</dd>
+                        </div>
+                      )}
                     </dl>
-                  </Block>
-                )}
+                  )}
+                  {/* 활동 기록: 라운디에서 실제로 열린 회차만 */}
+                  <div className="mt-5 border-t border-border pt-4" data-testid="host-activity">
+                    <p className="text-[15px] font-bold">라운디 활동 기록</p>
+                    {activity.length ? (
+                      <ul className="mt-2 text-[15px]">
+                        {activity.map((a) => (
+                          <li key={`${a.meetup_id}-${a.starts_at}`} className="flex justify-between gap-3 py-1.5">
+                            <span className="truncate">
+                              {formatDate(a.starts_at)} · {a.title}
+                              {a.is_sample && " (샘플)"}
+                            </span>
+                            <span className="shrink-0 text-muted-foreground">
+                              {a.reserved_count}/{a.capacity}명 신청
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <p className="mt-1.5 text-[15px] text-muted-foreground">아직 라운디에서 열린 원이 없어요. 이번이 첫 원이에요.</p>
+                    )}
+                  </div>
+                  <Link href={hostHref(meetup.host)} className="mt-5 inline-flex h-11 items-center rounded-xl border border-border px-4 text-[15px] font-semibold hover:border-foreground/50">
+                    {meetup.host.display_name} 페이지 전체 보기
+                  </Link>
+                </section>
+              )}
 
-                {/* 참가 후기 — 실제 참가자가 쓴 후기만 (샘플 프로그램은 후기 자리 없음) */}
-                {!meetup.is_sample && <ReviewSection reviews={reviews} summary={reviewSummary} />}
+              {/* 8. 참가 후기 — 실제 참가자가 쓴 후기만 (샘플 프로그램은 후기 자리 없음) */}
+              {!meetup.is_sample && (
+                <div className="sheet mt-6 rounded-[24px] px-5 pb-6 sm:px-8 [&>section]:mt-0 [&>section]:pt-7">
+                  <ReviewSection reviews={reviews} summary={reviewSummary} />
+                </div>
+              )}
 
-                <Block title="취소 및 환불" testId="refund-summary">
+              {/* 9. 취소 및 환불 */}
+              <div className="sheet mt-6 rounded-[24px] px-5 py-7 sm:px-8">
+                <Block title="취소 및 환불" testId="refund-summary" id="refund">
                   <ul className="text-[14.5px]">
                     {REFUND_RULES.map((r) => (
                       <li key={r.when} className="flex justify-between border-b border-border py-2.5">
@@ -381,21 +484,21 @@ export default async function MeetupDetailPage({ params }: PageProps<"/meetups/[
                       <b>전액 환불</b>
                     </li>
                   </ul>
-                  <p className="mt-2.5 text-[13px] text-muted-foreground">
+                  <p className="mt-2.5 text-[14px] text-muted-foreground">
                     모든 프로그램에 같은 기준이 적용돼요. <Link href="/refund" className="underline underline-offset-4">자세히 보기</Link>
                   </p>
                   {meetup.refund_policy_text && !meetup.is_sample && (
-                    <p className="mt-3 text-[13.5px] leading-relaxed text-muted-foreground">
+                    <p className="mt-3 text-[14.5px] leading-relaxed text-muted-foreground">
                       <b className="mr-1.5 text-foreground">크리에이터 안내</b>
                       {meetup.refund_policy_text}
                     </p>
                   )}
                 </Block>
-              </article>
+              </div>
 
               {otherPrograms.length > 0 && meetup.host && (
                 <section className="mt-12" data-testid="host-other-programs">
-                  <h2 className="text-[22px] font-black tracking-[-0.03em]">{meetup.host.display_name}의 다른 원</h2>
+                  <h2 className="font-display text-[22px] font-bold tracking-[-0.02em]">{meetup.host.display_name}의 다른 원</h2>
                   <div className="mt-4 grid gap-3">
                     {otherPrograms.map((m) => (
                       <CircleCard key={m.id} meetup={m} categoryName={categories.find((c) => c.slug === m.category_slug)?.name ?? ""} />
@@ -412,12 +515,12 @@ export default async function MeetupDetailPage({ params }: PageProps<"/meetups/[
               {circle}
               <div className="mt-6 flex items-baseline justify-between">
                 <b className="font-num text-[26px] font-semibold">{meetup.price > 0 ? formatPrice(meetup.price) : "무료"}</b>
-                {next && <span className="text-[13px] text-muted-foreground">{formatDate(next.starts_at)} {formatTime(next.starts_at)}</span>}
+                {next && <span className="text-[14px] text-muted-foreground">{formatDate(next.starts_at)} {formatTime(next.starts_at)}</span>}
               </div>
-              <Button asChild size="lg" variant={cannotBook ? "outline" : "default"} className="mt-4 h-14 w-full rounded-full text-[16px] font-black shadow-[0_12px_34px_-12px_rgb(255_106_43/0.8)]">
+              <Button asChild size="lg" variant={cannotBook ? "outline" : "default"} className="mt-4 h-14 w-full rounded-xl text-[16px] font-bold">
                 <a href="#booking">{cta}</a>
               </Button>
-              <p className="mt-3 text-center text-xs text-muted-foreground">결제는 {brand.name}에서만 · 지금은 테스트 결제</p>
+              <p className="mt-3 text-center text-[13px] text-muted-foreground">결제는 {brand.name}에서만 · 지금은 테스트 결제</p>
             </div>
           </aside>
         </div>
@@ -425,16 +528,16 @@ export default async function MeetupDetailPage({ params }: PageProps<"/meetups/[
         {/* 휴대폰: 아래 고정 버튼 */}
         <div className="fixed inset-x-0 bottom-0 z-20 border-t border-border bg-background/95 px-4 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] backdrop-blur lg:hidden" data-testid="mobile-cta">
           <div className="mx-auto flex max-w-md items-center gap-3">
-            <p className="shrink-0 text-xs text-muted-foreground">
+            <p className="shrink-0 text-[13px] text-muted-foreground">
               1인<b className="block font-num text-base font-semibold text-foreground">{meetup.price > 0 ? formatPrice(meetup.price) : "무료"}</b>
             </p>
-            <Button asChild size="lg" variant={cannotBook ? "outline" : "default"} className="h-12 flex-1 rounded-full font-black">
+            <Button asChild size="lg" variant={cannotBook ? "outline" : "default"} className="h-12 flex-1 rounded-xl text-[16px] font-bold">
               <a href="#booking">{ctaShort}</a>
             </Button>
           </div>
         </div>
       </main>
       <SiteFooter />
-    </Dusk>
+    </Night>
   );
 }

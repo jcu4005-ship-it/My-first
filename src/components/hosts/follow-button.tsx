@@ -40,7 +40,7 @@ export function FollowButton({
     ? "inline-flex h-9 items-center justify-center rounded-full px-4 text-sm font-semibold transition-colors disabled:opacity-60"
     : "inline-flex h-11 items-center justify-center rounded-full px-6 text-sm font-medium transition-colors disabled:opacity-60";
   const on = light ? "border border-foreground/30 text-foreground hover:border-foreground" : "border border-cream/40 text-cream hover:border-cream";
-  const off = light ? "bg-primary text-primary-foreground hover:bg-primary/90" : "bg-cream text-ember-ink hover:bg-cream/90";
+  const off = light ? "bg-primary text-primary-foreground hover:bg-primary/90" : "bg-cream text-gold-ink hover:bg-cream/90";
   const withCount = showCount ?? !light;
   return (
     <div className={stretch ? "flex flex-1 flex-col gap-1 [&>form]:w-full" : light && !withCount ? "flex flex-col items-end gap-1" : "flex flex-wrap items-center gap-3"} data-testid="follow">
@@ -70,7 +70,7 @@ export function FollowButton({
         </span>
       )}
       {state.message && (
-        <p role={state.status === "error" ? "alert" : "status"} className={stretch ? `text-center text-xs ${state.status === "error" ? "text-destructive" : "text-muted-foreground"}` : light && !withCount ? `max-w-48 text-right text-xs ${state.status === "error" ? "text-destructive" : "text-muted-foreground"}` : `w-full text-sm ${state.status === "error" ? (light ? "text-destructive" : "text-[#f0a08a]") : light ? "text-muted-foreground" : "text-linen"}`}>
+        <p role={state.status === "error" ? "alert" : "status"} className={stretch ? `text-center text-[13px] ${state.status === "error" ? "text-destructive" : "text-muted-foreground"}` : light && !withCount ? `max-w-48 text-right text-[13px] ${state.status === "error" ? "text-destructive" : "text-muted-foreground"}` : `w-full text-sm ${state.status === "error" ? (light ? "text-destructive" : "text-[#f0a08a]") : light ? "text-muted-foreground" : "text-linen"}`}>
           {state.message}
         </p>
       )}

@@ -238,3 +238,32 @@ export async function listHosts(opts: { pillar?: "knowledge" | "creators" | "exp
     .filter((h) => !q || [h.display_name, h.headline, h.career, ...h.expertise].some((t) => t?.toLowerCase().includes(q)))
     .sort((a, b) => Number(b.upcomingCount > 0) - Number(a.upcomingCount > 0) || a.display_name.localeCompare(b.display_name, "ko"));
 }
+
+export type HostActivity = { meetup_id: string; title: string; starts_at: string; capacity: number; reserved_count: number; is_sample: boolean };
+
+/**
+ * 크리에이터 활동 기록: 이미 열렸던 회차(취소 제외, 공개된 프로그램만) — 실제 일정·정원·신청 수.
+ * 신청 수는 그 회차에 자리를 잡은 수(출석 수 아님)라 화면에서도 "신청"으로만 표시.
+ */
+export async function listHostActivity(hostId: string, limit = 8): Promise<HostActivity[]> {
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase
+    .from("meetup_sessions")
+    .select("starts_at, capacity, reserved_count, status, meetup:meetups!inner(id, title, host_id, status, is_sample)")
+    .eq("meetup.host_id", hostId)
+    .eq("meetup.status", "published")
+    .neq("status", "cancelled")
+    .lt("starts_at", new Date().toISOString())
+    .order("starts_at", { ascending: false })
+    .limit(limit)
+    .returns<{ starts_at: string; capacity: number; reserved_count: number; status: string; meetup: { id: string; title: string; is_sample: boolean } }[]>();
+  if (error) return [];
+  return (data ?? []).map((r) => ({
+    meetup_id: r.meetup.id,
+    title: r.meetup.title,
+    starts_at: r.starts_at,
+    capacity: r.capacity,
+    reserved_count: r.reserved_count,
+    is_sample: r.meetup.is_sample,
+  }));
+}

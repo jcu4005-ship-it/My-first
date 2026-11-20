@@ -80,11 +80,11 @@ export function BookingForm({
             />
           </div>
           <div className="min-w-0">
-            <p className="text-[21px] leading-tight font-black tracking-[-0.03em] break-keep sm:text-[24px]">
-              {!shown.open || shown.left === 0 ? "원이 가득 찼어요" : shown.reserved === 0 ? "첫 번째 자리예요" : `${shown.reserved}명이 먼저 앉았어요`}
+            <p className="text-[20px] leading-tight font-bold tracking-[-0.02em] break-keep sm:text-[22px]">
+              {!shown.open || shown.left === 0 ? "모집 마감 · 원이 가득 찼어요" : shown.reserved === 0 ? "첫 번째 자리예요" : `${shown.left}자리 남았어요`}
             </p>
-            <p className="mt-1 text-[13.5px] text-muted-foreground">
-              {shown.capacity}자리 중 {shown.reserved}자리 찼어요{shown.open && shown.left > 0 ? ` · ${shown.left}자리 남음` : ""}
+            <p className="mt-1 text-[14.5px] text-muted-foreground">
+              정원 {shown.capacity}명 · {shown.reserved}명 신청{shown.open && shown.left > 0 ? ` · ${shown.left}자리 남음` : ""}
             </p>
           </div>
         </div>
@@ -99,7 +99,7 @@ export function BookingForm({
               data-testid="session-row"
               className={cn(
                 "flex cursor-pointer items-center justify-between gap-3 rounded-[14px] border-[1.5px] border-border bg-card px-4 py-3 transition-colors",
-                sessionId === s.id && !disabled ? "border-amber" : "hover:border-foreground/40",
+                sessionId === s.id && !disabled ? "border-gold" : "hover:border-foreground/40",
                 disabled && "cursor-default opacity-70",
               )}
             >
@@ -111,20 +111,20 @@ export function BookingForm({
                   checked={sessionId === s.id}
                   disabled={disabled}
                   onChange={() => { setSessionId(s.id); setQuantity(1); resetCoupon(); }}
-                  className="size-4 accent-[var(--ember-glow)]"
+                  className="size-4 accent-[var(--gold)]"
                 />
                 <span>
                   <span className="block font-semibold">{formatDate(s.starts_at)}</span>
                   <span className="block text-sm text-muted-foreground">{formatTime(s.starts_at)} · {s.area}</span>
                 </span>
               </span>
-              <span className="text-xs">
+              <span className="text-[13px]">
                 {s.mine ? (
-                  <span className="pill bg-ember-glow text-ember-ink" data-testid="session-mine">내 자리</span>
+                  <span className="pill bg-gold text-gold-ink" data-testid="session-mine">내 자리</span>
                 ) : !s.open || s.left === 0 ? (
                   <span className="text-muted-foreground" data-testid="seats-full">마감</span>
                 ) : s.left <= 3 ? (
-                  <span className="font-bold text-amber">{s.left}자리 남음</span>
+                  <span className="font-bold text-gold">{s.left}자리 남음</span>
                 ) : (
                   <span className="text-muted-foreground">{s.left}자리 남음</span>
                 )}
@@ -176,26 +176,26 @@ export function BookingForm({
       <FormMessage message={result.message} />
 
       {viewerState === "guest" ? (
-        <Button asChild size="lg" className="h-14 w-full rounded-full text-[16px] font-black">
+        <Button asChild size="lg" className="h-14 w-full rounded-xl text-[16px] font-bold">
           <Link href={`/login?next=/meetups/${meetupId}`}>로그인하고 신청하기</Link>
         </Button>
       ) : viewerState === "beta_paid" ? (
         <div className="flex flex-col gap-2" data-testid="beta-paid-notice">
           <Button size="lg" className="w-full" disabled>비공개 베타 기간에는 무료 프로그램만 신청할 수 있어요</Button>
-          <p className="text-center text-xs text-muted-foreground">결제 기능은 정식 오픈 때 열려요.</p>
+          <p className="text-center text-[13px] text-muted-foreground">결제 기능은 정식 오픈 때 열려요.</p>
         </div>
       ) : viewerState === "sample" ? (
         <Button size="lg" className="w-full" disabled>샘플 프로그램은 신청할 수 없어요</Button>
       ) : viewerState === "own" ? (
         <Button size="lg" className="w-full" disabled>내가 연 프로그램이에요</Button>
       ) : firstAvailable ? (
-        <Button type="submit" size="lg" className="h-14 w-full rounded-full text-[16px] font-black shadow-[0_12px_34px_-12px_rgb(255_106_43/0.8)]" disabled={pending || !sessionId} data-testid="book-submit">
+        <Button type="submit" size="lg" className="h-14 w-full rounded-xl text-[16px] font-bold" disabled={pending || !sessionId} data-testid="book-submit">
           {pending ? "자리 잡는 중…" : `이 자리에 앉기 · ${formatPrice(applied ? applied.total : price * quantity)}`}
         </Button>
       ) : (
         <Button size="lg" className="w-full" disabled>신청 가능한 일정이 없어요</Button>
       )}
-      {viewerState === "ok" && <p className="text-center text-xs text-muted-foreground">무료 프로그램은 바로 확정되고, 유료 프로그램은 테스트 결제 화면으로 이동해요. (지금은 실제 청구가 없는 테스트 모드)</p>}
+      {viewerState === "ok" && <p className="text-center text-[13px] text-muted-foreground">무료 프로그램은 바로 확정되고, 유료 프로그램은 테스트 결제 화면으로 이동해요. (지금은 실제 청구가 없는 테스트 모드)</p>}
     </form>
   );
 }

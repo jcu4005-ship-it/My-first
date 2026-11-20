@@ -27,7 +27,7 @@ export function ShareBar({ title, path, calendarHref }: { title: string; path: s
       window.prompt("이 주소를 복사해 주세요", url);
     }
   }
-  const btn = "inline-flex h-10 items-center gap-1.5 rounded-full border border-border bg-card px-4 text-[13px] font-semibold hover:border-foreground";
+  const btn = "inline-flex h-10 items-center gap-1.5 rounded-full border border-border bg-card px-4 text-[14px] font-semibold hover:border-foreground";
   return (
     <div className="mt-3 flex flex-wrap gap-2" data-testid="share-bar">
       <button type="button" onClick={share} className={btn} data-testid="share-button">

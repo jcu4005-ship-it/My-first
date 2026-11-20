@@ -31,7 +31,7 @@ export function MobileTabBar() {
                 href={href}
                 aria-current={active ? "page" : undefined}
                 className={cn(
-                  "flex h-16 flex-col items-center justify-center gap-1 text-[11px] font-medium",
+                  "flex h-16 flex-col items-center justify-center gap-1 text-[12.5px] font-medium",
                   active ? "font-bold text-foreground" : "text-muted-foreground",
                 )}
               >

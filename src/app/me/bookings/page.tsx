@@ -5,7 +5,7 @@ import { CalendarDays, CalendarPlus, MapPin, Navigation } from "lucide-react";
 import { ActionForm } from "@/components/forms/action-form";
 import { StatusPill } from "@/components/forms/controls";
 import { SampleBadge } from "@/components/meetups/badges";
-import { Dusk } from "@/components/layout/dusk";
+import { Night } from "@/components/layout/night";
 import { SiteHeader } from "@/components/site-header";
 import { Button } from "@/components/ui/button";
 import { requireMember } from "@/lib/auth/guards";
@@ -30,9 +30,9 @@ function BookingCard({ b, highlight }: { b: MyBooking; highlight: boolean }) {
   const upcoming = isFuture(b.starts_at);
   const confirmed = b.status === "confirmed";
   return (
-    <li className={`rounded-[22px] border bg-card p-5 ${highlight || (confirmed && upcoming) ? "border-amber/70" : "border-border"} ${highlight ? "ring-1 ring-amber" : ""}`} data-testid="booking-card" data-status={b.status}>
+    <li className={`rounded-[22px] border bg-card p-5 ${highlight || (confirmed && upcoming) ? "border-gold/70" : "border-border"} ${highlight ? "ring-1 ring-gold" : ""}`} data-testid="booking-card" data-status={b.status}>
       <div className="flex flex-wrap items-center gap-2">
-        {confirmed && upcoming && <span className="rounded-full bg-ember-glow px-2.5 py-0.5 font-num text-xs font-semibold text-ember-ink">{dDay(b.starts_at)}</span>}
+        {confirmed && upcoming && <span className="rounded-full bg-gold px-2.5 py-0.5 font-num text-[13px] font-semibold text-gold-ink">{dDay(b.starts_at)}</span>}
         {confirmed ? (
           <StatusPill tone={upcoming ? "ok" : "muted"}>{upcoming ? "참가 확정" : "참여 완료"}</StatusPill>
         ) : b.status === "pending_payment" ? (
@@ -66,7 +66,7 @@ function BookingCard({ b, highlight }: { b: MyBooking; highlight: boolean }) {
             <p className="sheet mt-3 rounded-xl px-3.5 py-2.5 text-sm" data-testid="booking-address"><b>상세 주소</b> · {b.address_detail} <span className="text-muted-foreground">(확정자에게만)</span></p>
           )}
           {/* 그날 바로 쓰는 버튼: 길찾기 · 내 캘린더에 추가(상세 주소 포함, 2시간 전 알림) */}
-          <div className="mt-3 flex flex-wrap gap-2 text-[13px]" data-testid="booking-tools">
+          <div className="mt-3 flex flex-wrap gap-2 text-[14px]" data-testid="booking-tools">
             {(b.address_detail || b.venue_name) && (
               <>
                 <a href={`https://map.naver.com/p/search/${encodeURIComponent(b.address_detail || `${b.area} ${b.venue_name}`)}`} target="_blank" rel="noopener noreferrer"
@@ -87,7 +87,7 @@ function BookingCard({ b, highlight }: { b: MyBooking; highlight: boolean }) {
             <ActionForm action={cancelBookingAction} hidden={{ bookingId: b.booking_id }} label="신청 취소" variant="ghost"
               confirmText={b.payment_status === "paid" ? refundConfirm(b.starts_at, b.total_price) : "신청을 취소할까요? 취소하면 자리가 다른 분께 돌아가요."} testId="cancel-booking" />
             {b.payment_status === "paid" && (
-              <p className="mt-1.5 text-xs text-muted-foreground" data-testid="refund-quote">
+              <p className="mt-1.5 text-[13px] text-muted-foreground" data-testid="refund-quote">
                 지금 취소하면 {refundPercent(b.starts_at)}% 환불 ({formatPrice(Math.floor((b.total_price * refundPercent(b.starts_at)) / 100))}) ·{" "}
                 <Link href="/refund" className="underline underline-offset-4">환불 기준</Link>
               </p>
@@ -116,10 +116,10 @@ export default async function MyBookingsPage({ searchParams }: PageProps<"/me/bo
   const past = bookings.filter((b) => !upcoming.includes(b));
 
   return (
-    <Dusk>
+    <Night>
       <SiteHeader />
       <main className="mx-auto w-full max-w-2xl flex-1 px-4 py-8 sm:px-6">
-        <h1 className="text-[30px] font-black tracking-[-0.04em] sm:text-[38px]">내 자리</h1>
+        <h1 className="text-[30px] font-display font-bold tracking-[-0.02em] sm:text-[38px]">내 자리</h1>
         {booked && (
           <p className="mt-4 rounded-xl bg-notice px-4 py-3 text-sm text-notice-foreground" data-testid="booked-notice">
             자리가 확정됐어요! 상세 주소와 일정을 확인해 주세요.
@@ -144,9 +144,9 @@ export default async function MyBookingsPage({ searchParams }: PageProps<"/me/bo
                 <li key={w.session_id} className="flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-border bg-card px-4 py-3">
                   <Link href={`/meetups/${w.meetup_id}`} className="min-w-0">
                     <span className="block truncate font-semibold hover:underline">{w.title}</span>
-                    <span className="block text-xs text-muted-foreground">{formatShortDateTime(w.starts_at)}</span>
+                    <span className="block text-[13px] text-muted-foreground">{formatShortDateTime(w.starts_at)}</span>
                   </Link>
-                  <span className={w.left_seats > 0 ? "text-sm font-semibold text-amber" : "text-sm text-muted-foreground"}>
+                  <span className={w.left_seats > 0 ? "text-sm font-semibold text-gold" : "text-sm text-muted-foreground"}>
                     {w.left_seats > 0 ? `자리 ${w.left_seats}개 생김 · 지금 신청하기` : "자리가 나면 알려 드려요"}
                   </span>
                 </li>
@@ -158,12 +158,12 @@ export default async function MyBookingsPage({ searchParams }: PageProps<"/me/bo
           <section className="mt-10">
             <div className="mb-3 flex items-end justify-between">
               <h2 className="text-lg font-extrabold">지난·취소한 자리</h2>
-              <Link href="/me/reviews" className="text-sm font-semibold text-amber underline-offset-4 hover:underline" data-testid="write-review-link">후기 남기기</Link>
+              <Link href="/me/reviews" className="text-sm font-semibold text-gold underline-offset-4 hover:underline" data-testid="write-review-link">후기 남기기</Link>
             </div>
             <ul className="flex flex-col gap-3">{past.map((b) => <BookingCard key={b.booking_id} b={b} highlight={false} />)}</ul>
           </section>
         )}
       </main>
-    </Dusk>
+    </Night>
   );
 }

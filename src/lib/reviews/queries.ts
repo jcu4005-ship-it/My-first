@@ -31,3 +31,10 @@ export async function getReviewSummary(by: { meetupId?: string; hostId?: string 
   const row = (data as { review_count: number; avg_rating: number | string | null }[] | null)?.[0];
   return { count: row?.review_count ?? 0, avg: row?.avg_rating == null ? null : Number(row.avg_rating) };
 }
+
+/** 여러 크리에이터의 후기 요약을 한 번에 (카드에 "★ 4.8 · 후기 12개"). 실제 공개 후기만. */
+export async function getHostReviewSummaries(hostIds: string[]): Promise<Record<string, ReviewSummary>> {
+  const ids = Array.from(new Set(hostIds)).slice(0, 40);
+  const rows = await Promise.all(ids.map(async (id) => [id, await getReviewSummary({ hostId: id }).catch(() => ({ count: 0, avg: null }))] as const));
+  return Object.fromEntries(rows);
+}

@@ -7,7 +7,7 @@ import { Photo } from "@/components/media/photo";
 import { ContentGrid } from "@/components/contents/content-card";
 import { FollowButton } from "@/components/hosts/follow-button";
 import { CircleGrid } from "@/components/meetups/circle-card";
-import { Dusk } from "@/components/layout/dusk";
+import { Night } from "@/components/layout/night";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { pillarInfo } from "@/config/pillars";
@@ -18,8 +18,12 @@ import { getFollowState } from "@/lib/hosting/follows";
 import {
   getHost,
   listCategories,
+  listHostActivity,
   listUpcomingMeetups,
 } from "@/lib/meetups/queries";
+import { ReviewSection } from "@/components/reviews/review-list";
+import { getReviewSummary, listPublicReviews } from "@/lib/reviews/queries";
+import { formatDate } from "@/lib/format";
 
 export const instant = false;
 
@@ -57,11 +61,14 @@ export default async function HostPage({ params }: PageProps<"/hosts/[slug]">) {
   if (UUID.test(slug) && host.slug) permanentRedirect(`/hosts/${host.slug}`);
 
   const member = await getCurrentMember();
-  const [meetups, categories, follow, contents] = await Promise.all([
+  const [meetups, categories, follow, contents, activity, reviews, reviewSummary] = await Promise.all([
     listUpcomingMeetups({ hostId: host.user_id }),
     listCategories(),
     getFollowState(host.user_id, member?.id ?? null),
     listPublishedContents({ hostId: host.user_id }),
+    listHostActivity(host.user_id, 10),
+    listPublicReviews({ hostId: host.user_id }, 10),
+    getReviewSummary({ hostId: host.user_id }),
   ]);
   const portfolio = contents.filter((c) => c.type === "portfolio");
   const stories = contents.filter((c) => c.type !== "portfolio");
@@ -98,33 +105,33 @@ export default async function HostPage({ params }: PageProps<"/hosts/[slug]">) {
   }[];
 
   const canFollow = member?.id !== host.user_id;
-  const title = (t: string) => <h2 className="mb-4 text-[22px] font-black tracking-[-0.03em] sm:text-[26px]">{t}</h2>;
+  const title = (t: string) => <h2 className="mb-4 font-display text-[23px] font-bold tracking-[-0.02em] sm:text-[27px]">{t}</h2>;
   const wrap = "mx-auto mt-12 w-full max-w-3xl px-4 sm:px-6";
 
   return (
-    <Dusk>
+    <Night>
       <SiteHeader />
       <main className="flex-1">
         {/* 1. 크리에이터: 큰 사진 + 이름 */}
         <div className="mx-auto w-full max-w-3xl sm:px-6 sm:pt-8">
-          <div className="relative aspect-[4/5] w-full overflow-hidden bg-dusk-2 sm:aspect-[16/11] sm:rounded-[28px]" data-testid="host-avatar">
+          <div className="relative aspect-[4/5] w-full overflow-hidden bg-navy-2 sm:aspect-[16/11] sm:rounded-[28px]" data-testid="host-avatar">
             <Photo
               src={avatar}
               alt={`${host.display_name} 프로필 사진`}
               priority
               sizes="(min-width: 768px) 720px, 100vw"
               className="object-[50%_18%] [filter:sepia(.12)]"
-              fallback={<span aria-hidden className="absolute inset-0 flex items-center justify-center bg-ember-glow text-[8rem] font-black text-ember-ink">{host.display_name.slice(0, 1)}</span>}
+              fallback={<span aria-hidden className="absolute inset-0 flex items-center justify-center bg-navy-3 font-display text-[8rem] font-bold text-lit">{host.display_name.slice(0, 1)}</span>}
             />
             <div aria-hidden className="absolute inset-0 bg-[linear-gradient(180deg,rgb(23_17_13/0.35),transparent_30%,transparent_50%,rgb(23_17_13/0.92))]" />
             <div className="absolute inset-x-0 bottom-0 p-5 sm:p-7">
               <div className="flex flex-wrap gap-1.5">
-                {pillar && <span className="rounded-full bg-cream px-2.5 py-1 text-[12px] font-extrabold text-ember-ink">{pillar.ko}</span>}
-                {host.is_sample && <span className="rounded-full border border-cream/50 px-2.5 py-1 text-[12px] font-semibold text-cream">샘플</span>}
+                {pillar && <span className="rounded-full bg-cream px-2.5 py-1 text-[13.5px] font-extrabold text-gold-ink">{pillar.ko}</span>}
+                {host.is_sample && <span className="rounded-full border border-cream/50 px-2.5 py-1 text-[13.5px] font-semibold text-cream">샘플</span>}
               </div>
-              <h1 className="mt-2 flex items-center gap-2 text-[40px] leading-none font-black tracking-[-0.05em] text-cream sm:text-[52px]">
+              <h1 className="mt-2 flex items-center gap-2 font-display text-[38px] leading-none font-bold tracking-[-0.02em] text-cream sm:text-[50px]">
                 <span data-testid="host-name">{host.display_name}</span>
-                {!introPending && <BadgeCheck aria-label="운영팀 심사를 통과한 호스트" className="size-6 shrink-0 text-amber" strokeWidth={2} />}
+                {!introPending && <BadgeCheck aria-label="운영팀 심사를 통과한 호스트" className="size-6 shrink-0 text-gold" strokeWidth={2} />}
               </h1>
               {host.occupation && (
                 <p className="mt-1.5 text-[15px] text-cream/85" data-testid="host-occupation">
@@ -175,18 +182,22 @@ export default async function HostPage({ params }: PageProps<"/hosts/[slug]">) {
             </ul>
           )}
           {/* 숫자는 모두 실제 데이터 */}
-          <dl className="mt-5 grid grid-cols-3 rounded-[20px] border border-border bg-card py-3 text-center">
+          <dl className="mt-5 grid grid-cols-4 rounded-[20px] border border-border bg-card py-3 text-center">
             <div className="flex flex-col-reverse">
-              <dt className="text-[11.5px] text-muted-foreground">열린 원</dt>
+              <dt className="text-[13px] text-muted-foreground">열린 원</dt>
               <dd className="font-num text-xl font-semibold">{meetups.length}</dd>
             </div>
+            <div className="flex flex-col-reverse border-l border-border">
+              <dt className="text-[13px] text-muted-foreground">지난 원</dt>
+              <dd className="font-num text-xl font-semibold">{activity.length}{activity.length >= 10 ? "+" : ""}</dd>
+            </div>
             <div className="flex flex-col-reverse border-x border-border">
-              <dt className="text-[11.5px] text-muted-foreground">팔로워</dt>
+              <dt className="text-[13px] text-muted-foreground">팔로워</dt>
               <dd className="font-num text-xl font-semibold">{follow.count.toLocaleString("ko-KR")}</dd>
             </div>
             <div className="flex flex-col-reverse">
-              <dt className="text-[11.5px] text-muted-foreground">글</dt>
-              <dd className="font-num text-xl font-semibold">{contents.length}</dd>
+              <dt className="text-[13px] text-muted-foreground">후기</dt>
+              <dd className="font-num text-xl font-semibold">{reviewSummary.count}</dd>
             </div>
           </dl>
           {/* 팔로워 수 (화면 읽기·검사용 문장) */}
@@ -201,7 +212,7 @@ export default async function HostPage({ params }: PageProps<"/hosts/[slug]">) {
           {meetups.length === 0 ? (
             <div className="rounded-[20px] border border-dashed border-border px-5 py-8 text-center">
               <p className="text-muted-foreground">지금 열린 원이 없어요. 팔로우하면 새 원이 열릴 때 알려 드려요.</p>
-              <Link href="/meetups" className="mt-3 inline-block text-sm font-semibold text-amber underline-offset-4 hover:underline">
+              <Link href="/meetups" className="mt-3 inline-block text-sm font-semibold text-gold underline-offset-4 hover:underline">
                 다른 원 둘러보기
               </Link>
             </div>
@@ -221,6 +232,31 @@ export default async function HostPage({ params }: PageProps<"/hosts/[slug]">) {
               )}
             </div>
           )}
+        </section>
+
+        {/* 2-1. 라운디 활동 기록 + 참가 후기 (실제 데이터만) */}
+        <section className={wrap} data-testid="host-activity">
+          {title("라운디 활동 기록")}
+          {activity.length ? (
+            <ul className="rounded-[20px] border border-border bg-card px-5 py-2 text-[15px]">
+              {activity.map((a) => (
+                <li key={`${a.meetup_id}-${a.starts_at}`} className="flex justify-between gap-3 border-b border-border py-3 last:border-0">
+                  <span className="min-w-0 truncate">
+                    <span className="text-muted-foreground">{formatDate(a.starts_at)}</span> · {a.title}
+                    {a.is_sample && " (샘플)"}
+                  </span>
+                  <span className="shrink-0 text-muted-foreground">{a.reserved_count}/{a.capacity}명 신청</span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="rounded-[20px] border border-dashed border-border px-5 py-6 text-center text-[15px] text-muted-foreground">아직 라운디에서 열린 원이 없어요.</p>
+          )}
+        </section>
+        <section className={wrap}>
+          <div className="sheet rounded-[22px] px-5 pb-6 sm:px-7 [&>section]:mt-0 [&>section]:pt-6">
+            <ReviewSection reviews={reviews} summary={reviewSummary} showProgram />
+          </div>
         </section>
 
         {/* 3. 이야기 — 읽는 글은 밝은 종이에 */}
@@ -275,7 +311,7 @@ export default async function HostPage({ params }: PageProps<"/hosts/[slug]">) {
             {title("포트폴리오")}
             <ContentGrid contents={portfolio} />
             {host.portfolio_url && (
-              <a href={host.portfolio_url} target="_blank" rel="noopener noreferrer nofollow" className="mt-4 inline-block text-sm font-semibold text-amber underline-offset-4 hover:underline">
+              <a href={host.portfolio_url} target="_blank" rel="noopener noreferrer nofollow" className="mt-4 inline-block text-sm font-semibold text-gold underline-offset-4 hover:underline">
                 외부 포트폴리오 보기
               </a>
             )}
@@ -289,6 +325,6 @@ export default async function HostPage({ params }: PageProps<"/hosts/[slug]">) {
         )}
       </main>
       <SiteFooter />
-    </Dusk>
+    </Night>
   );
 }

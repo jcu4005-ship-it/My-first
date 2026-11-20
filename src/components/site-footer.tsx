@@ -30,7 +30,7 @@ export function SiteFooter() {
             </Link>
           ))}
         </nav>
-        <p className="border-t border-border pt-5 text-xs leading-relaxed text-muted-foreground">
+        <p className="border-t border-border pt-5 text-[13px] leading-relaxed text-muted-foreground">
           서비스 준비 중입니다. 현재 보이는 프로그램은 &lsquo;샘플&rsquo;로 표시된 예시이며 실제로 신청할 수 없습니다.
           사업자 정보와 통신판매중개 고지는 정식 오픈 전 확정 후 표시됩니다.
         </p>

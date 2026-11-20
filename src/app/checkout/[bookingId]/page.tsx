@@ -5,7 +5,7 @@ import { notFound, redirect } from "next/navigation";
 
 import { ActionForm } from "@/components/forms/action-form";
 import { SeatCircle } from "@/components/brand/seat-circle";
-import { Dusk } from "@/components/layout/dusk";
+import { Night } from "@/components/layout/night";
 import { SiteHeader } from "@/components/site-header";
 import { creatorPhoto } from "@/lib/hosting/avatar";
 import { getMeetup } from "@/lib/meetups/queries";
@@ -36,10 +36,10 @@ export default async function CheckoutPage({ params }: PageProps<"/checkout/[boo
   const face = meetup?.host ? creatorPhoto(meetup.host) : null;
 
   return (
-    <Dusk>
+    <Night>
       <SiteHeader tabBar={false} />
       <main className="mx-auto w-full max-w-md flex-1 px-4 pt-6 pb-10" data-testid="checkout">
-        <h1 className="text-[28px] font-black tracking-[-0.04em]">자리에 앉기</h1>
+        <h1 className="text-[28px] font-display font-bold tracking-[-0.02em]">자리에 앉기</h1>
         {sess && (
           <div className="mx-auto mt-4 w-[min(62vw,240px)]">
             <SeatCircle
@@ -76,7 +76,7 @@ export default async function CheckoutPage({ params }: PageProps<"/checkout/[boo
                 </div>
               </>
             )}
-            <div className="flex justify-between"><dt className="text-muted-foreground">주문번호</dt><dd className="font-mono text-xs">{p.order_id}</dd></div>
+            <div className="flex justify-between"><dt className="text-muted-foreground">주문번호</dt><dd className="font-mono text-[13px]">{p.order_id}</dd></div>
             <div className="mt-2 flex items-end justify-between border-t border-border pt-4">
               <dt className="font-semibold">결제 금액</dt>
               <dd className="font-num text-2xl font-semibold">{formatPrice(p.amount)}</dd>
@@ -90,14 +90,14 @@ export default async function CheckoutPage({ params }: PageProps<"/checkout/[boo
         {expired ? (
           <div className="mt-6 rounded-2xl border border-destructive/40 bg-destructive/10 p-5">
             <p className="text-sm text-destructive">결제 시간이 지났거나 결제할 수 없는 신청이에요.</p>
-            <Link href={`/meetups/${p.meetup_id}`} className="mt-3 inline-block text-sm font-semibold text-amber underline-offset-4 hover:underline">
+            <Link href={`/meetups/${p.meetup_id}`} className="mt-3 inline-block text-sm font-semibold text-gold underline-offset-4 hover:underline">
               프로그램 페이지에서 다시 신청하기
             </Link>
           </div>
         ) : (
           <div className="mt-6 flex flex-col gap-3">
             <PayForm bookingId={bookingId} amount={p.amount} />
-            <p className="text-center text-xs text-muted-foreground">
+            <p className="text-center text-[13px] text-muted-foreground">
               이 자리는 {formatTime(p.hold_expires_at)}까지 맡아 둘게요. 그 전에 결제하지 않으면 자리가 다시 비어요.
             </p>
             <div className="flex justify-center">
@@ -106,6 +106,6 @@ export default async function CheckoutPage({ params }: PageProps<"/checkout/[boo
           </div>
         )}
       </main>
-    </Dusk>
+    </Night>
   );
 }
