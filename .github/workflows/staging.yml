@@ -83,6 +83,8 @@ jobs:
         run: npx supabase db query --remote --yes -f supabase/first-hosts.sql
       - name: "2-3f. 체험용 프로그램 (대표가 참가자로 직접 신청해 보기 · 스테이징 전용, 이미 있으면 일정만 보충)"
         run: npx supabase db query --remote --yes -f supabase/staging-demo-programs.sql
+      - name: "2-3g. 첫 호스트 3명 가상 소개 (시연용 · 모든 글에 '가상 소개' 표시 · 본인이 채운 내용은 덮어쓰지 않음)"
+        run: npx supabase db query --remote --yes -f supabase/staging-demo-creator-profiles.sql
       - name: "2-4. DB 권한 테스트 (pgTAP, 모두 ROLLBACK)"
         run: npx supabase test db --remote --yes
       - name: "2-5. DB 구조 검사"

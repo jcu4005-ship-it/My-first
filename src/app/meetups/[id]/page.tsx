@@ -25,6 +25,7 @@ import { myConfirmedSessionIds } from "@/lib/bookings/queries";
 import { durationLabel, formatDate, formatPrice, formatTime, secondsUntil } from "@/lib/format";
 import { getFollowState } from "@/lib/hosting/follows";
 import { getHost, getMeetup, listCategories, listHostActivity, listUpcomingMeetups } from "@/lib/meetups/queries";
+import { isDemoProfile } from "@/lib/hosting/demo";
 import { REFUND_RULES, refundNowLine } from "@/lib/payments/refund-policy";
 import { RefundLadder } from "@/components/trust/proofs";
 import { getAppSettings } from "@/lib/settings/queries";
@@ -124,7 +125,7 @@ export default async function MeetupDetailPage({ params }: PageProps<"/meetups/[
   const ctaShort = cannotBook ? (viewerState === "sample" ? "예시 프로그램 · 신청 불가" : "지금은 신청 불가 · 일정 보기") : anyOpen ? "이 자리에 앉기" : nextUnopened ? "열리면 알림 받기" : "대기 · 일정 보기";
   const cta = cannotBook ? ctaShort : anyOpen ? `이 자리에 앉기 · ${formatPrice(meetup.price)}` : nextUnopened ? `${opensLabel(nextUnopened.opens_at as string)}에 열려요` : "원이 가득 찼어요 · 일정 보기";
   // 소개를 아직 쓰지 않은 호스트(이름·분야만 등록)에게는 "심사 통과" 표시를 붙이지 않음
-  const hostVerified = Boolean(meetup.host && (meetup.host.bio || meetup.host.headline));
+  const hostVerified = Boolean(meetup.host && (meetup.host.bio || meetup.host.headline) && !isDemoProfile(meetup.host));
   const more = meetup.upcomingSessions.length - 1;
   // 맨 위 사진: 크리에이터 사진 우선(대표 결정), 없으면 프로그램 대표 사진
   const coverPhoto = avatar ?? meetup.cover_image_url;

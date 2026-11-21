@@ -15,6 +15,7 @@ import { pillarInfo } from "@/config/pillars";
 import { getCurrentMember } from "@/lib/auth/session";
 import { listPublishedContents } from "@/lib/contents/queries";
 import { creatorPhoto } from "@/lib/hosting/avatar";
+import { isDemoProfile } from "@/lib/hosting/demo";
 import { getFollowState } from "@/lib/hosting/follows";
 import {
   getHost,
@@ -79,6 +80,7 @@ export default async function HostPage({ params }: PageProps<"/hosts/[slug]">) {
   const avatar = creatorPhoto(host);
   // 이름·분야만 먼저 올린 호스트(소개 미작성): "심사 통과" 표시 대신 "소개 준비 중"
   const introPending = !host.philosophy && !host.bio && !host.headline;
+  const demo = isDemoProfile(host);
   const expertise = [
     host.career && {
       key: "career",
@@ -132,7 +134,7 @@ export default async function HostPage({ params }: PageProps<"/hosts/[slug]">) {
               </div>
               <h1 className="mt-2 flex items-center gap-2 font-display text-[38px] leading-none font-bold tracking-[-0.02em] text-cream sm:text-[50px]">
                 <span data-testid="host-name">{host.display_name}</span>
-                {!introPending && <BadgeCheck aria-label="운영팀 심사를 통과한 호스트" className="size-6 shrink-0 text-white" strokeWidth={2} />}
+                {!introPending && !demo && <BadgeCheck aria-label="운영팀 심사를 통과한 호스트" className="size-6 shrink-0 text-white" strokeWidth={2} />}
               </h1>
               {host.occupation && (
                 <p className="mt-1.5 text-[15px] text-cream/85" data-testid="host-occupation">
@@ -202,7 +204,12 @@ export default async function HostPage({ params }: PageProps<"/hosts/[slug]">) {
             </div>
           </dl>
           <p className="mt-2 px-1 text-[13.5px] leading-relaxed text-muted-foreground">숫자는 라운디에서 실제로 일어난 것만 보여요.</p>
-          {!introPending && !host.is_sample && <VerifiedChecklist className="mt-4" />}
+          {!introPending && !host.is_sample && !demo && <VerifiedChecklist className="mt-4" />}
+          {demo && (
+            <p className="mt-4 border border-border bg-muted px-4 py-3 text-[14px] leading-relaxed" data-testid="demo-profile-notice">
+              <b>가상 소개 (시연용)</b> — 이 크리에이터의 소개·경력·한 줄은 화면 확인용으로 만든 예시 문구예요. 실제 소개가 아니고, 운영팀이 확인한 내용도 아니에요.
+            </p>
+          )}
           {/* 팔로워 수 (화면 읽기·검사용 문장) */}
           <p className="sr-only" data-testid="follower-count">
             팔로워 {follow.count.toLocaleString("ko-KR")}명
@@ -279,7 +286,7 @@ export default async function HostPage({ params }: PageProps<"/hosts/[slug]">) {
                 </blockquote>
               )}
               <p className={`text-[15px] leading-[1.8] whitespace-pre-line ${host.philosophy ? "mt-4" : ""}`}>{host.bio}</p>
-              <p className="sign mt-3 text-right text-sm">— {host.display_name} 드림</p>
+              {!demo && <p className="sign mt-3 text-right text-sm">— {host.display_name} 드림</p>}
             </div>
           )}
         </section>

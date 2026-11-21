@@ -5,6 +5,7 @@ import { Photo } from "@/components/media/photo";
 import { SaveButton } from "@/components/saved";
 import { formatPrice, ticketDate } from "@/lib/format";
 import { creatorPhoto } from "@/lib/hosting/avatar";
+import { isVerifiedHost } from "@/lib/hosting/demo";
 import { isNotYetOpen, opensLabel } from "@/lib/meetups/drops";
 import type { MeetupCardData, Session } from "@/lib/meetups/queries";
 import type { ReviewSummary } from "@/lib/reviews/queries";
@@ -23,8 +24,8 @@ export function seatLine(s: Session): { text: string; closed: boolean; left: num
 }
 
 /** 운영팀 심사를 거쳐 소개까지 마친 크리에이터 (샘플·소개 준비 중은 아님) */
-export function hostVerified(h: { headline?: string | null; bio?: string | null; is_sample?: boolean } | null | undefined) {
-  return Boolean(h && !h.is_sample && (h.headline || h.bio));
+export function hostVerified(h: { headline?: string | null; bio?: string | null; philosophy?: string | null; career?: string | null; is_sample?: boolean } | null | undefined) {
+  return isVerifiedHost(h);
 }
 
 /**

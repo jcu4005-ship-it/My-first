@@ -346,3 +346,20 @@ test("로고 규칙(대표 지시): 머리글의 ROUNDI 글자 O는 시그니처
     expect(await logo.locator("path").count()).toBeGreaterThan(10);
   }
 });
+
+test("가상 소개(시연용): 가상임이 드러나고 '운영팀 확인' 표시·체크리스트·본인 서명은 켜지지 않는다", async ({ page }) => {
+  test.skip(isStaging, "로컬 전용 (호스트 소개를 잠시 바꿨다가 되돌림)");
+  const admin = adminApi();
+  const { data: before } = await admin.from("host_profiles").select("headline, bio, career, philosophy").eq("slug", "hong-jiwan").single();
+  test.skip(!before || before.headline !== "" || before.bio !== "", "이미 소개가 채워져 있어 건너뜀");
+  try {
+    await admin.from("host_profiles").update({ headline: "스피치 강사 (가상)", bio: "(가상 소개 · 시연용) 예시 소개입니다.", philosophy: "예시 한 줄 (가상 소개 · 시연용)" }).eq("slug", "hong-jiwan");
+    await page.goto("/hosts/hong-jiwan");
+    await expect(page.getByTestId("demo-profile-notice")).toBeVisible();
+    await expect(page.getByTestId("verified-checklist")).toHaveCount(0);
+    await expect(page.getByLabel("운영팀 심사를 통과한 호스트")).toHaveCount(0);
+    await expect(page.getByText("드림")).toHaveCount(0); // 본인 서명 없음
+  } finally {
+    await admin.from("host_profiles").update({ headline: "", bio: "", career: before?.career ?? "", philosophy: "" }).eq("slug", "hong-jiwan");
+  }
+});
