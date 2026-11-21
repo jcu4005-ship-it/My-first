@@ -363,3 +363,22 @@ test("가상 소개(시연용): 가상임이 드러나고 '운영팀 확인' 표
     await admin.from("host_profiles").update({ headline: "", bio: "", career: before?.career ?? "", philosophy: "" }).eq("slug", "hong-jiwan");
   }
 });
+
+test("홈 맨 위: ROUNDI 제호 바로 아래 프로그램 슬라이드, 크리에이터 사진이 2초마다 돌아가며 바뀐다", async ({ page }) => {
+  await page.goto("/");
+  const slider = page.getByTestId("home-slider");
+  await expect(slider).toBeVisible();
+  // 제호 바로 아래: 제호보다 아래, 첫 화면 안에서 사진이 보임
+  const wordmark = await page.getByTestId("wordmark-chair").boundingBox();
+  const box = await slider.boundingBox();
+  expect(box!.y).toBeGreaterThan(wordmark!.y);
+  expect(box!.y).toBeLessThan((page.viewportSize()?.height ?? 720) * 0.7);
+  const dots = page.getByTestId("home-slider-dots").getByRole("button");
+  test.skip((await dots.count()) < 2, "슬라이드가 1개뿐");
+  const first = await page.getByTestId("slider-title").textContent();
+  await expect.poll(async () => page.getByTestId("slider-title").textContent(), { timeout: 6000 }).not.toBe(first);
+  // 점을 누르면 그 프로그램으로
+  await dots.nth(0).click();
+  await expect(page.getByTestId("slider-title")).toHaveText(first!);
+  await expect(page.getByTestId("slider-cta")).toHaveAttribute("href", /^\/meetups\/[0-9a-f-]{36}$/);
+});
