@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ChevronRight, LayoutDashboard, Mail, ShieldCheck, Sparkles, Ticket } from "lucide-react";
 
 import { signOutAction } from "@/app/(auth)/actions";
+import { Blue } from "@/components/layout/blue";
 import { Photo } from "@/components/media/photo";
 import { RecentlyViewedList } from "@/components/recently-viewed";
 import { SiteHeader } from "@/components/site-header";
@@ -22,7 +23,7 @@ export const metadata: Metadata = { title: "마이페이지" };
 export const instant = false;
 
 const ROLE_LABEL = { participant: "참가자", host: "호스트", admin: "관리자" } as const;
-const sheet = "rounded-[20px] bg-card shadow-[0_2px_0_rgb(35_51_42/0.08),0_14px_24px_-14px_rgb(35_51_42/0.4)]";
+const sheet = "rounded-[20px] border border-border bg-card";
 
 function Heading({ children, href, linkLabel }: { children: React.ReactNode; href?: string; linkLabel?: string }) {
   return (
@@ -65,8 +66,8 @@ async function MyPage({ member }: { member: Awaited<ReturnType<typeof requireMem
   return (
     <div className="flex flex-col gap-7">
       {/* 1. 내 카드 */}
-      <section className={`flex items-center gap-3.5 p-4 sm:p-5 ${sheet}`}>
-        <span aria-hidden className="flex size-14 shrink-0 items-center justify-center rounded-full bg-forest font-display text-2xl text-cream">
+      <section className="on-deep flex items-center gap-3.5 rounded-[20px] p-4 sm:p-5">
+        <span aria-hidden className="flex size-14 shrink-0 items-center justify-center rounded-full bg-gold font-display text-2xl text-gold-ink">
           {profile?.nickname?.slice(0, 1)}
         </span>
         <div className="min-w-0 flex-1">
@@ -78,7 +79,7 @@ async function MyPage({ member }: { member: Awaited<ReturnType<typeof requireMem
             {joined && ` · 가입 ${joined.getFullYear()}.${joined.getMonth() + 1}`}
           </p>
         </div>
-        <a href="#my-info" className="shrink-0 rounded-full border-[1.5px] border-[#d6cdbc] px-3 py-1.5 text-[12.5px] font-bold hover:border-forest/50">
+        <a href="#my-info" className="shrink-0 rounded-full border-[1.5px] border-border px-3 py-1.5 text-[13px] font-bold hover:border-gold">
           프로필 수정
         </a>
       </section>
@@ -92,7 +93,7 @@ async function MyPage({ member }: { member: Awaited<ReturnType<typeof requireMem
       <section data-testid="me-upcoming">
         <Heading href="/me/bookings" linkLabel="전체 보기">다가오는 예약</Heading>
         {upcoming.length === 0 ? (
-          <div className="rounded-[18px] border-[1.5px] border-dashed border-[#cfc6b5] bg-card/60 px-5 py-6 text-center text-sm text-muted-foreground">
+          <div className="rounded-[18px] border-[1.5px] border-dashed border-border bg-card/60 px-5 py-6 text-center text-sm text-muted-foreground">
             아직 예약한 프로그램이 없어요.
             <Link href="/meetups" className="mt-2 block font-semibold text-forest underline-offset-4 hover:underline">
               프로그램 둘러보기
@@ -106,13 +107,13 @@ async function MyPage({ member }: { member: Awaited<ReturnType<typeof requireMem
               return (
                 <li key={b.booking_id}>
                   <Link href={confirmed ? "/me/bookings" : `/checkout/${b.booking_id}`} className="ticket grid grid-cols-[78px_1fr] overflow-hidden">
-                    <span className="flex flex-col items-center justify-center border-r-[1.5px] border-dashed border-[#cfc6b5] py-3.5 text-center">
+                    <span className="flex flex-col items-center justify-center border-r-[1.5px] border-dashed border-border py-3.5 text-center">
                       <b className="font-display text-[28px] leading-none">{d.day}</b>
                       <span className="mt-1 text-[10.5px] tracking-[0.14em] text-muted-foreground">{d.wdEn}</span>
                       <span className="mt-1.5 text-xs font-bold">{d.time}</span>
                     </span>
                     <span className="min-w-0 px-3.5 py-3">
-                      <span className={`pill ${confirmed ? "bg-forest text-white" : "bg-[#f6e7d9] text-clay"}`}>{confirmed ? "참가 확정" : "결제 대기"}</span>
+                      <span className={`pill ${confirmed ? "bg-forest text-white" : "bg-muted text-forest"}`}>{confirmed ? "참가 확정" : "결제 대기"}</span>
                       <span className="mt-1.5 block truncate text-[14.5px] font-bold">{b.title}</span>
                       <span className="mt-0.5 block truncate text-xs text-muted-foreground">
                         {b.area} · {b.quantity}명
@@ -158,7 +159,7 @@ async function MyPage({ member }: { member: Awaited<ReturnType<typeof requireMem
           팔로우한 호스트 <span className="font-sans text-sm font-normal text-muted-foreground">{followed.length}명</span>
         </Heading>
         {followed.length === 0 ? (
-          <div className="rounded-[18px] border-[1.5px] border-dashed border-[#cfc6b5] bg-card/60 px-5 py-6 text-sm text-muted-foreground">
+          <div className="rounded-[18px] border-[1.5px] border-dashed border-border bg-card/60 px-5 py-6 text-sm text-muted-foreground">
             아직 팔로우한 호스트가 없어요. 마음에 드는 호스트를 팔로우하면 새 프로그램을 여기서 바로 볼 수 있어요.
             <Link href="/hosts" className="mt-2 block font-semibold text-forest underline-offset-4 hover:underline">
               호스트 둘러보기
@@ -200,7 +201,7 @@ async function MyPage({ member }: { member: Awaited<ReturnType<typeof requireMem
       {/* 6. 내 정보 (눌러서 펼치기) */}
       <section id="my-info" className="scroll-mt-20">
         <Heading>내 정보</Heading>
-        <div className={`divide-y divide-dashed divide-[#ddd3c2] px-4 ${sheet}`}>
+        <div className={`divide-y divide-dashed divide-border px-4 ${sheet}`}>
           <details className="group py-1">
             <summary className="flex cursor-pointer list-none items-center justify-between py-3 text-sm font-medium">
               공개 프로필 (닉네임·소개)
@@ -240,11 +241,11 @@ async function MyPage({ member }: { member: Awaited<ReturnType<typeof requireMem
 export default async function Page() {
   const member = await requireMember("/me");
   return (
-    <>
+    <Blue>
       <SiteHeader />
       <main className="mx-auto w-full max-w-xl flex-1 px-4 py-6 sm:px-6 sm:py-10">
         <MyPage member={member} />
       </main>
-    </>
+    </Blue>
   );
 }

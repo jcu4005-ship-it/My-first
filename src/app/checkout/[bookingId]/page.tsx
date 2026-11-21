@@ -1,16 +1,18 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { CalendarDays, MapPin } from "lucide-react";
+import { CalendarCheck, CalendarDays, MapPin } from "lucide-react";
 import { notFound, redirect } from "next/navigation";
 
 import { ActionForm } from "@/components/forms/action-form";
 import { SeatCircle } from "@/components/brand/seat-circle";
-import { Night } from "@/components/layout/night";
+import { Blue } from "@/components/layout/blue";
 import { SiteHeader } from "@/components/site-header";
+import { CheckLine, RefundLadder } from "@/components/trust/proofs";
 import { creatorPhoto } from "@/lib/hosting/avatar";
 import { getMeetup } from "@/lib/meetups/queries";
 import { requireMember } from "@/lib/auth/guards";
 import { formatDate, formatPrice, formatTime, isFuture } from "@/lib/format";
+import { refundNowLine } from "@/lib/payments/refund-policy";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 import { cancelBookingAction } from "@/app/me/bookings/actions";
@@ -36,7 +38,7 @@ export default async function CheckoutPage({ params }: PageProps<"/checkout/[boo
   const face = meetup?.host ? creatorPhoto(meetup.host) : null;
 
   return (
-    <Night>
+    <Blue>
       <SiteHeader tabBar={false} />
       <main className="mx-auto w-full max-w-md flex-1 px-4 pt-6 pb-10" data-testid="checkout">
         <h1 className="text-[28px] font-display font-bold tracking-[-0.02em]">자리에 앉기</h1>
@@ -87,10 +89,24 @@ export default async function CheckoutPage({ params }: PageProps<"/checkout/[boo
           </p>
         </section>
 
+        <section className="mt-4 rounded-[22px] border border-border bg-card p-5" data-testid="checkout-assurance">
+          <p className="flex items-start gap-2 text-[16px] leading-snug font-bold">
+            <CalendarCheck aria-hidden className="mt-0.5 size-5 shrink-0 text-forest" strokeWidth={1.8} />
+            <span data-testid="checkout-refund-line">{refundNowLine(p.starts_at)}</span>
+          </p>
+          <RefundLadder startsAt={p.starts_at} className="mt-3" />
+          <div className="mt-4 grid gap-2">
+            <CheckLine>결제는 라운디 안에서만 이뤄져요</CheckLine>
+            <CheckLine>크리에이터가 취소하면 날짜와 상관없이 전액 환불돼요</CheckLine>
+            <CheckLine>문제가 생기면 1:1 문의로 운영팀이 도와요</CheckLine>
+          </div>
+          <p className="mt-4 text-[13px] leading-relaxed text-muted-foreground">사업자 정보는 정식 오픈 전 확정 후 여기에 표시돼요.</p>
+        </section>
+
         {expired ? (
           <div className="mt-6 rounded-2xl border border-destructive/40 bg-destructive/10 p-5">
             <p className="text-sm text-destructive">결제 시간이 지났거나 결제할 수 없는 신청이에요.</p>
-            <Link href={`/meetups/${p.meetup_id}`} className="mt-3 inline-block text-sm font-semibold text-gold underline-offset-4 hover:underline">
+            <Link href={`/meetups/${p.meetup_id}`} className="mt-3 inline-block text-sm font-semibold text-forest underline-offset-4 hover:underline">
               프로그램 페이지에서 다시 신청하기
             </Link>
           </div>
@@ -106,6 +122,6 @@ export default async function CheckoutPage({ params }: PageProps<"/checkout/[boo
           </div>
         )}
       </main>
-    </Night>
+    </Blue>
   );
 }

@@ -39,18 +39,18 @@ export function DropList({
         return (
           <li key={session.id} className="rounded-[20px] border border-border bg-card p-4 sm:p-5" data-testid="drop-item">
             <div className="flex items-start gap-3.5">
-              <span className="font-num w-[4.25rem] shrink-0 pt-0.5 text-[22px] leading-none font-semibold text-gold">{kstTime(session.opens_at as string)}</span>
+              <span className="font-num w-[4.25rem] shrink-0 pt-0.5 text-[22px] leading-none font-semibold text-forest">{kstTime(session.opens_at as string)}</span>
               <div className="min-w-0 flex-1">
                 <Link href={`/meetups/${meetup.id}`} className="block text-[17px] leading-snug font-bold tracking-[-0.02em] break-keep hover:underline hover:underline-offset-4">
                   {meetup.title}
                 </Link>
                 <p className="mt-1.5 flex min-w-0 items-center gap-2 text-[14.5px] text-muted-foreground">
-                  <span className="relative flex size-6 shrink-0 items-center justify-center overflow-hidden rounded-full bg-navy-3 text-[12px] font-bold text-lit">
+                  <span className="relative flex size-6 shrink-0 items-center justify-center overflow-hidden rounded-full bg-muted text-[12px] font-bold text-forest">
                     {photo ? <Photo src={photo} alt="" sizes="24px" fallback={null} className="object-[50%_18%]" /> : <span aria-hidden>{host?.display_name.slice(0, 1)}</span>}
                   </span>
                   <span className="truncate">{host?.display_name}</span>
-                  {hostVerified(host) && <BadgeCheck aria-label="운영팀 심사를 통과한 크리에이터" className="size-4 shrink-0 text-gold" strokeWidth={2} />}
-                  {followed && <span className="shrink-0 rounded-full border border-gold/60 px-2 py-0.5 text-[12.5px] font-semibold text-gold">팔로우 중</span>}
+                  {hostVerified(host) && <BadgeCheck aria-label="운영팀 심사를 통과한 크리에이터" className="size-4 shrink-0 text-forest" strokeWidth={2} />}
+                  {followed && <span className="shrink-0 rounded-full border border-gold/60 px-2 py-0.5 text-[13.5px] font-semibold text-forest">팔로우 중</span>}
                 </p>
                 <p className="mt-1 text-[14.5px] text-muted-foreground">
                   프로그램 {opensLabel(session.starts_at)} · {session.area} · 정원 {session.capacity}명

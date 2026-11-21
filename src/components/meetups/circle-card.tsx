@@ -45,21 +45,21 @@ export function CircleCard({ meetup, categoryName, trust }: { meetup: MeetupCard
     <div className="relative h-full">
       <Link
         href={`/meetups/${meetup.id}`}
-        className="group grid h-full grid-cols-[1fr_76px] gap-x-3 rounded-[20px] border border-border bg-card p-4 transition-colors hover:border-gold/60 sm:grid-cols-[1fr_88px] sm:p-5"
+        className="group grid h-full grid-cols-[1fr_76px] gap-x-3 rounded-[20px] border border-border bg-card p-4 transition-colors hover:border-navy/40 sm:grid-cols-[1fr_88px] sm:p-5"
         data-testid="meetup-card"
       >
         <div className="min-w-0">
           {/* 크리에이터 */}
           <div className="flex min-w-0 items-center gap-2.5">
-            <span className="relative flex size-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-navy-3 font-display text-[14px] font-bold text-lit">
+            <span className="relative flex size-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-muted font-display text-[14px] font-bold text-forest">
               {host && creatorPhoto(host) ? <Photo src={creatorPhoto(host)} alt="" sizes="36px" fallback={null} className="object-[50%_18%]" /> : <span aria-hidden>{host?.display_name.slice(0, 1)}</span>}
             </span>
             <span className="min-w-0 leading-tight">
               <span className="flex items-center gap-1">
                 <b className="truncate text-[15px] font-bold">{host?.display_name}</b>
-                {verified && <BadgeCheck aria-label="운영팀 심사를 통과한 크리에이터" className="size-4 shrink-0 text-gold" strokeWidth={2} />}
+                {verified && <BadgeCheck aria-label="운영팀 심사를 통과한 크리에이터" className="size-4 shrink-0 text-forest" strokeWidth={2} />}
               </span>
-              {host?.occupation && <span className="block truncate text-[13.5px] text-muted-foreground">{host.occupation}</span>}
+              {host?.occupation && <span className="block truncate text-[14.5px] text-muted-foreground">{host.occupation}</span>}
             </span>
           </div>
           {/* 프로그램 */}
@@ -97,8 +97,8 @@ export function CircleCard({ meetup, categoryName, trust }: { meetup: MeetupCard
           <b className="font-num text-[17px] font-semibold">{meetup.price > 0 ? formatPrice(meetup.price) : "무료"}</b>
           <span
             className={cn(
-              "rounded-full px-2.5 py-1 text-[13.5px] font-bold",
-              line.closed ? "bg-navy-3 text-muted-foreground" : line.left <= 2 ? "bg-gold text-gold-ink" : "border border-gold/50 text-gold",
+              "rounded-full px-2.5 py-1 text-[14.5px] font-bold",
+              line.closed ? "bg-muted text-muted-foreground" : line.left <= 2 ? "bg-gold text-gold-ink" : "border border-gold bg-gold/20 text-forest",
             )}
             data-testid="card-seats"
           >
@@ -106,7 +106,7 @@ export function CircleCard({ meetup, categoryName, trust }: { meetup: MeetupCard
             <span className="sr-only"> · 정원 {s.capacity}명</span>
           </span>
           {trust && trust.count > 0 && trust.avg != null && (
-            <span className="inline-flex w-full items-center gap-1 text-[13.5px] text-muted-foreground" data-testid="card-reviews">
+            <span className="inline-flex w-full items-center gap-1 text-[14.5px] text-muted-foreground" data-testid="card-reviews">
               <Star aria-hidden className="size-3.5 fill-gold text-gold" />
               <b className="text-foreground">{trust.avg.toFixed(1)}</b> · 이 크리에이터 후기 {trust.count}개
             </span>

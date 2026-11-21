@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 import { ActionForm } from "@/components/forms/action-form";
-import { Night } from "@/components/layout/night";
+import { Blue } from "@/components/layout/blue";
 import { SiteHeader } from "@/components/site-header";
 import { requireMember } from "@/lib/auth/guards";
 import { formatShortDateTime } from "@/lib/format";
@@ -25,7 +25,7 @@ export default async function NotificationsPage() {
   const items = data ?? [];
   const unread = items.filter((n) => !n.read_at).length;
   return (
-    <Night>
+    <Blue>
       <SiteHeader />
       <main className="mx-auto w-full max-w-2xl flex-1 px-4 py-8 sm:px-6">
         <div className="flex items-end justify-between gap-4">
@@ -38,7 +38,7 @@ export default async function NotificationsPage() {
           <ul className="mt-6 flex flex-col gap-2" data-testid="notification-list">
             {items.map((n) => (
               <li key={n.id} data-testid="notification" data-kind={n.kind}>
-                <Link href={n.link ?? "/me"} className={`block rounded-2xl border p-4 transition-colors hover:border-gold/60 ${n.read_at ? "border-border bg-card/50" : "border-gold/50 bg-card"}`}>
+                <Link href={n.link ?? "/me"} className={`block rounded-2xl border p-4 transition-colors hover:border-navy/40 ${n.read_at ? "border-border bg-card/50" : "border-gold/50 bg-card"}`}>
                   <div className="flex justify-between gap-3">
                     <p className={n.read_at ? "font-medium text-foreground/80" : "font-semibold"}>{!n.read_at && <span className="mr-2 inline-block h-[3px] w-3 rounded-full bg-gold align-middle" aria-label="읽지 않음" />}{n.title}</p>
                     <time className="shrink-0 text-[13px] text-muted-foreground">{formatShortDateTime(n.created_at)}</time>
@@ -50,6 +50,6 @@ export default async function NotificationsPage() {
           </ul>
         )}
       </main>
-    </Night>
+    </Blue>
   );
 }

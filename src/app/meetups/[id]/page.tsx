@@ -4,7 +4,7 @@ import { BadgeCheck, CalendarDays, CircleHelp, CreditCard, MapPin, Package, User
 import { notFound } from "next/navigation";
 
 import { SeatCircle, SeatLegend } from "@/components/brand/seat-circle";
-import { Night } from "@/components/layout/night";
+import { Blue } from "@/components/layout/blue";
 import { brand } from "@/config/brand";
 import { FollowButton } from "@/components/hosts/follow-button";
 import { SampleBadge, seatsLeft } from "@/components/meetups/badges";
@@ -25,7 +25,8 @@ import { myConfirmedSessionIds } from "@/lib/bookings/queries";
 import { durationLabel, formatDate, formatPrice, formatTime, secondsUntil } from "@/lib/format";
 import { getFollowState } from "@/lib/hosting/follows";
 import { getHost, getMeetup, listCategories, listHostActivity, listUpcomingMeetups } from "@/lib/meetups/queries";
-import { REFUND_RULES } from "@/lib/payments/refund-policy";
+import { REFUND_RULES, refundNowLine } from "@/lib/payments/refund-policy";
+import { RefundLadder } from "@/components/trust/proofs";
 import { getAppSettings } from "@/lib/settings/queries";
 import { CLASS_LEVEL_LABEL } from "@/lib/validation/meetup";
 
@@ -148,30 +149,30 @@ export default async function MeetupDetailPage({ params }: PageProps<"/meetups/[
         />
       </div>
       <SeatLegend className="mt-3" closed={nextNotOpen} />
-      <p className={`mt-3 text-center text-[17px] font-bold tracking-[-0.02em] ${nextLine?.closed ? "text-muted-foreground" : "text-gold"}`} data-testid="seat-line">
+      <p className={`mt-3 text-center text-[17px] font-bold tracking-[-0.02em] ${nextLine?.closed ? "text-muted-foreground" : "text-forest"}`} data-testid="seat-line">
         {nextLine?.text}
       </p>
     </div>
   );
 
   return (
-    <Night>
+    <Blue>
       <SiteHeader tabBar={false} />
       <RecordRecentlyViewed item={{ kind: "program", href: `/meetups/${meetup.id}`, title: meetup.title }} />
       <main className="flex-1 pb-28 lg:pb-0">
         <div className="mx-auto grid w-full max-w-6xl gap-8 sm:px-6 lg:grid-cols-[1fr_430px] lg:gap-11 lg:pt-8">
           <div className="min-w-0">
             {/* 1. 표지: 크리에이터 사진(없으면 프로그램 대표 사진) + 제목 */}
-            <div className="relative aspect-[4/3] w-full overflow-hidden bg-navy-2 sm:rounded-[28px] lg:aspect-[16/11]">
+            <div className="relative aspect-[4/3] w-full overflow-hidden bg-muted sm:rounded-[28px] lg:aspect-[16/11]">
               <Photo
                 src={coverPhoto}
                 alt={coverIsCreator ? `${meetup.host?.display_name ?? ""} 사진` : meetup.title}
                 priority
                 sizes="(min-width: 1024px) 58vw, 100vw"
-                className={coverIsCreator ? "object-[50%_18%] [filter:sepia(.12)]" : undefined}
+                className={coverIsCreator ? "object-[50%_18%]" : undefined}
                 fallback={<EditorialCover category={meetup.category_slug} title={meetup.title} size="hero" showTitle={false} showLabel={false} className="!bg-navy-2 !text-cream" />}
               />
-              <div aria-hidden className="absolute inset-0 bg-[linear-gradient(180deg,rgb(23_17_13/0.35),transparent_30%,transparent_45%,rgb(23_17_13/0.92))]" />
+              <div aria-hidden className="absolute inset-0 bg-[linear-gradient(180deg,rgb(16_29_56/0.35),transparent_30%,transparent_45%,rgb(16_29_56/0.94))]" />
               <SaveButton
                 item={{ id: meetup.id, title: meetup.title, meta: next ? `${formatDate(next.starts_at)} · ${next.area}` : "" }}
                 tone="dark"
@@ -198,13 +199,13 @@ export default async function MeetupDetailPage({ params }: PageProps<"/meetups/[
               {meetup.host && (
                 <div className="mt-5 flex items-center gap-3">
                   <Link href={hostHref(meetup.host)} className="group flex min-w-0 flex-1 items-center gap-2.5" data-testid="host-link">
-                    <span className="relative flex size-11 shrink-0 items-center justify-center overflow-hidden rounded-full bg-navy-3 font-display text-base font-bold text-lit">
+                    <span className="relative flex size-11 shrink-0 items-center justify-center overflow-hidden rounded-full bg-muted font-display text-base font-bold text-forest">
                       {avatar ? <Photo src={avatar} alt="" sizes="44px" fallback={null} className="object-[50%_15%]" /> : <span aria-hidden>{initial}</span>}
                     </span>
                     <span className="min-w-0 text-[15px]">
                       <span className="flex items-center gap-1">
                         <b className="truncate group-hover:underline group-hover:underline-offset-4">{meetup.host.display_name}</b>
-                        {hostVerified && <BadgeCheck aria-label="운영팀 심사를 통과한 크리에이터" className="size-4 shrink-0 text-gold" strokeWidth={2} />}
+                        {hostVerified && <BadgeCheck aria-label="운영팀 심사를 통과한 크리에이터" className="size-4 shrink-0 text-forest" strokeWidth={2} />}
                       </span>
                       <span className="block truncate text-[13.5px] text-muted-foreground">
                         {meetup.host.occupation || meetup.host.headline}
@@ -262,7 +263,7 @@ export default async function MeetupDetailPage({ params }: PageProps<"/meetups/[
                       <Users aria-hidden className="mt-0.5 size-[18px] text-muted-foreground" strokeWidth={1.7} />
                       <dt className="font-semibold text-muted-foreground">인원</dt>
                       <dd>
-                        정원 {next.capacity}명 · {next.status !== "open" || nextLeft === 0 ? "마감" : <b className="text-gold">{next.reserved_count > 0 ? `${next.reserved_count}명 신청 · ` : "아직 신청 전 · "}{nextLeft}자리 남음</b>}
+                        정원 {next.capacity}명 · {next.status !== "open" || nextLeft === 0 ? "마감" : <b className="text-forest">{next.reserved_count > 0 ? `${next.reserved_count}명 신청 · ` : "아직 신청 전 · "}{nextLeft}자리 남음</b>}
                         <span className="block text-[14px] text-muted-foreground">난이도 {CLASS_LEVEL_LABEL[meetup.level] ?? "누구나"} · 한 번에 최대 {meetup.max_quantity_per_booking}명 신청</span>
                       </dd>
                     </div>
@@ -290,8 +291,16 @@ export default async function MeetupDetailPage({ params }: PageProps<"/meetups/[
                     <CircleHelp aria-hidden className="mt-0.5 size-[18px] text-muted-foreground" strokeWidth={1.7} />
                     <dt className="font-semibold text-muted-foreground">취소</dt>
                     <dd>
-                      3일 전까지 100% · 2~1일 전 50% · 당일 환불 없음
-                      <span className="block text-[14px] text-muted-foreground">
+                      {next ? (
+                        <>
+                          <b data-testid="refund-now-line">{refundNowLine(next.starts_at)}</b>
+                          <RefundLadder startsAt={next.starts_at} className="mt-2.5" />
+                          <span className="mt-1.5 block text-[13.5px] text-muted-foreground">프로그램 날짜 기준(한국 시간)</span>
+                        </>
+                      ) : (
+                        "3일 전까지 100% · 2~1일 전 50% · 당일 환불 없음"
+                      )}
+                      <span className="mt-1 block text-[14px] text-muted-foreground">
                         크리에이터 사정으로 취소되면 전액 환불 ·{" "}
                         <a href="#refund" className="underline underline-offset-4">자세히</a> · <Link href="/help/contact" className="underline underline-offset-4">문의하기</Link>
                       </span>
@@ -321,7 +330,7 @@ export default async function MeetupDetailPage({ params }: PageProps<"/meetups/[
                   )}
                   {unopened.length > 0 && !cannotBook && (
                     <div className="mb-5 rounded-[22px] border border-gold/50 bg-card p-5" data-testid="drop-panel">
-                      <p className="text-[13.5px] font-bold text-gold">정해진 시각에 열려요</p>
+                      <p className="text-[13.5px] font-bold text-forest">정해진 시각에 열려요</p>
                       <p className="mt-1 font-display text-[22px] font-bold tracking-[-0.02em]" data-testid="drop-opens-label">
                         {opensLabel(nextUnopened!.opens_at as string)}에 열려요
                       </p>
@@ -423,13 +432,13 @@ export default async function MeetupDetailPage({ params }: PageProps<"/meetups/[
                 <section className="sheet mt-6 rounded-[24px] px-5 py-7 sm:px-8 sm:py-9" data-testid="host-intro">
                   <p className="text-[14px] font-semibold text-muted-foreground">크리에이터 소개</p>
                   <div className="mt-3 flex items-center gap-4">
-                    <span className="relative flex size-[72px] shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#e6dfd0] font-display text-2xl font-bold text-[#14213d]">
+                    <span className="relative flex size-[72px] shrink-0 items-center justify-center overflow-hidden rounded-full bg-muted font-display text-2xl font-bold text-forest">
                       {avatar ? <Photo src={avatar} alt={`${meetup.host.display_name} 사진`} sizes="72px" fallback={null} className="object-[50%_15%]" /> : <span aria-hidden>{initial}</span>}
                     </span>
                     <div className="min-w-0">
                       <p className="flex items-center gap-1.5 text-[21px] font-bold tracking-[-0.02em]">
                         {meetup.host.display_name}
-                        {hostVerified && <BadgeCheck aria-label="운영팀 심사를 통과한 크리에이터" className="size-5 shrink-0 text-[#7a5a22]" strokeWidth={2} />}
+                        {hostVerified && <BadgeCheck aria-label="운영팀 심사를 통과한 크리에이터" className="size-5 shrink-0 text-forest" strokeWidth={2} />}
                       </p>
                       <p className="text-[15px] text-muted-foreground">{hostFull?.occupation || meetup.host.occupation || meetup.host.headline}</p>
                       {hostReviews.count > 0 && hostReviews.avg != null && (
@@ -555,7 +564,7 @@ export default async function MeetupDetailPage({ params }: PageProps<"/meetups/[
                 <b className="font-num text-[26px] font-semibold">{meetup.price > 0 ? formatPrice(meetup.price) : "무료"}</b>
                 {next && <span className="text-[14px] text-muted-foreground">{formatDate(next.starts_at)} {formatTime(next.starts_at)}</span>}
               </div>
-              <Button asChild size="lg" variant={cannotBook ? "outline" : "default"} className="mt-4 h-14 w-full rounded-xl text-[16px] font-bold">
+              <Button asChild size="lg" variant={cannotBook ? "outline" : "default"} className={`mt-4 h-14 w-full rounded-xl text-[16px] font-bold ${cannotBook ? "" : "bg-gold text-gold-ink hover:bg-gold/90"}`}>
                 <a href="#booking">{cta}</a>
               </Button>
               <p className="mt-3 text-center text-[13px] text-muted-foreground">결제는 {brand.name}에서만 · 지금은 테스트 결제</p>
@@ -569,13 +578,13 @@ export default async function MeetupDetailPage({ params }: PageProps<"/meetups/[
             <p className="shrink-0 text-[13px] text-muted-foreground">
               1인<b className="block font-num text-base font-semibold text-foreground">{meetup.price > 0 ? formatPrice(meetup.price) : "무료"}</b>
             </p>
-            <Button asChild size="lg" variant={cannotBook ? "outline" : "default"} className="h-12 flex-1 rounded-xl text-[16px] font-bold">
+            <Button asChild size="lg" variant={cannotBook ? "outline" : "default"} className={`h-12 flex-1 rounded-xl text-[16px] font-bold ${cannotBook ? "" : "bg-gold text-gold-ink hover:bg-gold/90"}`}>
               <a href="#booking">{ctaShort}</a>
             </Button>
           </div>
         </div>
       </main>
       <SiteFooter />
-    </Night>
+    </Blue>
   );
 }

@@ -130,11 +130,11 @@ export function BookingForm({
                 {s.mine ? (
                   <span className="pill bg-gold text-gold-ink" data-testid="session-mine">내 자리</span>
                 ) : s.notYetOpen && s.opensAt ? (
-                  <span className="font-bold text-gold" data-testid="session-not-open">{opensLabel(s.opensAt)} 오픈</span>
+                  <span className="font-bold text-forest" data-testid="session-not-open">{opensLabel(s.opensAt)} 오픈</span>
                 ) : !s.open || s.left === 0 ? (
                   <span className="text-muted-foreground" data-testid="seats-full">마감</span>
                 ) : s.left <= 3 ? (
-                  <span className="font-bold text-gold">{s.left}자리 남음</span>
+                  <span className="font-bold text-forest">{s.left}자리 남음</span>
                 ) : (
                   <span className="text-muted-foreground">{s.left}자리 남음</span>
                 )}
@@ -186,7 +186,7 @@ export function BookingForm({
       <FormMessage message={result.message} />
 
       {viewerState === "guest" ? (
-        <Button asChild size="lg" className="h-14 w-full rounded-xl text-[16px] font-bold">
+        <Button asChild size="lg" className="h-14 w-full rounded-xl bg-gold text-[16px] font-bold text-gold-ink hover:bg-gold/90">
           <Link href={`/login?next=/meetups/${meetupId}`}>로그인하고 신청하기</Link>
         </Button>
       ) : viewerState === "beta_paid" ? (
@@ -199,7 +199,7 @@ export function BookingForm({
       ) : viewerState === "own" ? (
         <Button size="lg" className={INFO_BUTTON} disabled>내가 연 프로그램이에요</Button>
       ) : firstAvailable ? (
-        <Button type="submit" size="lg" className="h-14 w-full rounded-xl text-[16px] font-bold" disabled={pending || !sessionId} data-testid="book-submit">
+        <Button type="submit" size="lg" className="h-14 w-full rounded-xl bg-gold text-[16px] font-bold text-gold-ink hover:bg-gold/90" disabled={pending || !sessionId} data-testid="book-submit">
           {pending ? "자리 잡는 중…" : `이 자리에 앉기 · ${formatPrice(applied ? applied.total : price * quantity)}`}
         </Button>
       ) : (

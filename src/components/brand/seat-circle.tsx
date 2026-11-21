@@ -9,8 +9,8 @@ import { cn } from "@/lib/utils";
 /** 그림으로 그리는 최대 의자 수. 정원이 더 크면 비율대로 줄여 그리고, 정확한 숫자는 글자로 알려 줌 */
 const MAX_DRAWN = 12;
 
-/** 모닥불 원 색 (색 D안 2026-11-20): 하늘빛 = 먼저 앉은 사람, 금빛 = 당신 자리, 짙은 남색 = 빈 자리·열리기 전 */
-export const SEAT_COLORS = { lit: "#8ea3c4", you: "#e2b872", dim: "#36446a" } as const;
+/** 모닥불 원 색 (블루 시스템): Deep Blue(밝은 바탕에서)·하늘빛(Deep Blue 위에서) = 먼저 앉은 사람, 골드 = 당신 자리, 옅은 파랑 = 빈 자리·열리기 전. 실제 색은 globals.css 의 --seat-* 토큰 */
+export const SEAT_COLORS = { lit: "var(--seat-lit)", you: "var(--seat-you)", dim: "var(--seat-dim)" } as const;
 
 // 로고 심볼의 아래쪽 의자(7번째 선)를 의자 한 개로 쓰고, 고리 중심(581,621)을 기준으로 돌려 배치 (ChairRing과 같은 좌표)
 const CHAIR = SYMBOL.paths[6];
@@ -97,7 +97,7 @@ export function SeatCircle({
         <defs>
           <filter id={glowId} x="-60%" y="-60%" width="220%" height="220%">
             <feGaussianBlur in="SourceGraphic" stdDeviation="28" result="b" />
-            <feFlood floodColor="#e9c27f" floodOpacity="0.6" />
+            <feFlood floodColor="#d6b77a" floodOpacity="0.6" />
             <feComposite in2="b" operator="in" result="c" />
             <feMerge>
               <feMergeNode in="c" />
@@ -114,13 +114,13 @@ export function SeatCircle({
             className={state === "you" ? "seat-glow" : undefined}
           >
             <g transform={SYMBOL.transform}>
-              <path d={CHAIR} fill={SEAT_COLORS[state]} />
+              <path d={CHAIR} style={{ fill: SEAT_COLORS[state] }} />
             </g>
           </g>
         ))}
       </svg>
       <div
-        className="@container absolute overflow-hidden rounded-full bg-navy-3 shadow-[0_0_0_4px_var(--navy-2),0_0_0_5px_#2e3b5c,0_16px_40px_-16px_rgb(0_0_0/0.6)]"
+        className="@container absolute overflow-hidden rounded-full bg-muted shadow-[0_0_0_4px_var(--card),0_0_0_5px_var(--border),0_16px_40px_-16px_rgb(16_29_56/0.35)]"
         style={{
           width: `${faceSize}%`,
           height: `${(faceSize * VIEW.w) / VIEW.h}%`,
@@ -134,7 +134,7 @@ export function SeatCircle({
           sizes="240px"
           className="object-[center_18%]"
           fallback={
-            <span aria-hidden className="flex size-full items-center justify-center bg-navy-3 font-display text-[clamp(14px,30cqw,64px)] font-bold text-lit">
+            <span aria-hidden className="flex size-full items-center justify-center bg-muted font-display text-[clamp(14px,30cqw,64px)] font-bold text-forest">
               {initial}
             </span>
           }
@@ -143,7 +143,7 @@ export function SeatCircle({
       {labelPos && (
         <span
           aria-hidden
-          className="absolute -translate-x-1/2 -translate-y-1/2 rounded-full bg-gold px-2.5 py-1 text-[12px] font-black whitespace-nowrap text-gold-ink shadow-[0_6px_20px_-4px_rgb(226_184_114/0.28)]"
+          className="absolute -translate-x-1/2 -translate-y-1/2 rounded-full bg-gold px-2.5 py-1 text-[12px] font-black whitespace-nowrap text-gold-ink shadow-[0_6px_20px_-4px_rgb(214_183_122/0.45)]"
           style={labelPos}
         >
           {label}
@@ -157,7 +157,7 @@ export function SeatCircle({
 export function SeatLegend({ closed = false, className }: { closed?: boolean; className?: string }) {
   const item = (color: string, text: string, glow = false) => (
     <span className="flex items-center gap-1.5">
-      <i aria-hidden className="size-3 rounded-[3px]" style={{ background: color, boxShadow: glow ? "0 0 6px #e9c27f" : undefined }} />
+      <i aria-hidden className="size-3 rounded-[3px]" style={{ background: color, boxShadow: glow ? "0 0 6px #d6b77a" : undefined }} />
       {text}
     </span>
   );

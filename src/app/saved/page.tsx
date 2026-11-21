@@ -5,6 +5,7 @@ import { listMySavedMeetups } from "@/app/saved/actions";
 
 import { SavedList } from "@/components/saved";
 import { SiteFooter } from "@/components/site-footer";
+import { Blue } from "@/components/layout/blue";
 import { SiteHeader } from "@/components/site-header";
 
 export const metadata: Metadata = { title: "저장한 프로그램" };
@@ -15,7 +16,7 @@ export default async function SavedPage() {
   // 계정 목록은 서버에서 바로 읽어 보여 줌 (다른 기기에서 저장한 것도 첫 화면부터 보임)
   const account = member ? await listMySavedMeetups().catch(() => null) : null;
   return (
-    <>
+    <Blue>
       <SiteHeader />
       <main className="mx-auto w-full max-w-2xl flex-1 px-4 pt-8 pb-14 sm:px-6 sm:pt-12">
         <p className="text-[11px] font-semibold tracking-[0.24em] text-muted-foreground">SAVED</p>
@@ -26,6 +27,6 @@ export default async function SavedPage() {
         <SavedList account={account ?? undefined} />
       </main>
       <SiteFooter />
-    </>
+    </Blue>
   );
 }

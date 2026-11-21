@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
-import { Night } from "@/components/layout/night";
+import { Blue } from "@/components/layout/blue";
 import { collectDrops, DropList, type DropItem } from "@/components/meetups/drop-list";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
@@ -50,7 +50,7 @@ export default async function DropsPage() {
   const days = [...byDay.entries()];
 
   return (
-    <Night>
+    <Blue>
       <SiteHeader />
       <main className="mx-auto w-full max-w-3xl flex-1 px-4 pt-8 pb-10 sm:px-6 sm:pt-12">
         <h1 className="font-display text-[32px] leading-tight font-bold tracking-[-0.02em] sm:text-[44px]">곧 열리는 원</h1>
@@ -71,7 +71,7 @@ export default async function DropsPage() {
                   <>
                     <span className="text-[13px] text-muted-foreground">{wd}</span>
                     <b className="font-num text-[19px] font-semibold">{day}</b>
-                    <span className="mt-0.5 h-4 text-[12.5px] font-bold text-gold">{entry ? `${entry[1].length}개` : ""}</span>
+                    <span className="mt-0.5 h-4 text-[12.5px] font-bold text-forest">{entry ? `${entry[1].length}개` : ""}</span>
                   </>
                 );
                 return key ? (
@@ -115,7 +115,7 @@ export default async function DropsPage() {
             <ul className="flex flex-col gap-2 text-[15px]">
               {myAlerts.map((a) => (
                 <li key={a.session_id}>
-                  <Link href={`/meetups/${a.meetup_id}`} className="flex flex-wrap justify-between gap-2 rounded-2xl border border-border bg-card px-4 py-3 hover:border-gold/60">
+                  <Link href={`/meetups/${a.meetup_id}`} className="flex flex-wrap justify-between gap-2 rounded-2xl border border-border bg-card px-4 py-3 hover:border-navy/40">
                     <span className="font-semibold">{a.title}</span>
                     <span className="text-muted-foreground">{new Intl.DateTimeFormat("ko-KR", { timeZone: "Asia/Seoul", month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).format(new Date(a.opens_at))} 오픈</span>
                   </Link>
@@ -126,6 +126,6 @@ export default async function DropsPage() {
         )}
       </main>
       <SiteFooter />
-    </Night>
+    </Blue>
   );
 }

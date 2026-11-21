@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 import { StatusPill } from "@/components/forms/controls";
+import { Blue } from "@/components/layout/blue";
 import { SiteHeader } from "@/components/site-header";
 import { Button } from "@/components/ui/button";
 import { requireMember } from "@/lib/auth/guards";
@@ -16,7 +17,7 @@ export default async function MySupportPage() {
   const member = await requireMember("/me/support");
   const tickets = await listMyTickets(member.id);
   return (
-    <>
+    <Blue>
       <SiteHeader />
       <main className="mx-auto w-full max-w-xl flex-1 px-4 py-8 sm:px-6">
         <div className="flex items-end justify-between gap-3">
@@ -24,7 +25,7 @@ export default async function MySupportPage() {
           <Button asChild size="sm"><Link href="/help/contact">새 문의</Link></Button>
         </div>
         {tickets.length === 0 ? (
-          <div className="mt-6 rounded-[18px] border-[1.5px] border-dashed border-[#cfc6b5] bg-card/60 px-5 py-8 text-center text-sm text-muted-foreground" data-testid="empty-state">
+          <div className="mt-6 rounded-[18px] border-[1.5px] border-dashed border-border bg-card/60 px-5 py-8 text-center text-sm text-muted-foreground" data-testid="empty-state">
             아직 남긴 문의가 없어요.
             <Link href="/help" className="mt-2 block font-semibold text-forest underline-offset-4 hover:underline">자주 묻는 질문 보기</Link>
           </div>
@@ -45,6 +46,6 @@ export default async function MySupportPage() {
           </ul>
         )}
       </main>
-    </>
+    </Blue>
   );
 }

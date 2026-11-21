@@ -3,6 +3,7 @@ import Link from "next/link";
 
 import { Stars } from "@/components/reviews/review-list";
 import { SiteFooter } from "@/components/site-footer";
+import { Blue } from "@/components/layout/blue";
 import { SiteHeader } from "@/components/site-header";
 import { requireMember } from "@/lib/auth/guards";
 import { formatShortDateTime } from "@/lib/format";
@@ -30,7 +31,7 @@ export default async function MyReviewsPage() {
   const { data } = await supabase.rpc("my_reviewable_bookings");
   const rows = (data as Row[] | null) ?? [];
   return (
-    <>
+    <Blue>
       <SiteHeader />
       <main className="mx-auto w-full max-w-2xl flex-1 px-4 pt-8 pb-14 sm:px-6 sm:pt-12">
         <p className="text-[11px] font-semibold tracking-[0.24em] text-muted-foreground">REVIEWS</p>
@@ -70,6 +71,6 @@ export default async function MyReviewsPage() {
         )}
       </main>
       <SiteFooter />
-    </>
+    </Blue>
   );
 }

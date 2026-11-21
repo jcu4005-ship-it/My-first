@@ -3,7 +3,7 @@ import Link from "next/link";
 import { Suspense } from "react";
 
 import { HostCard } from "@/components/hosts/host-card";
-import { Night } from "@/components/layout/night";
+import { Blue } from "@/components/layout/blue";
 import { chipClass } from "@/components/meetups/category-chips";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
@@ -76,7 +76,7 @@ async function HostList({ pillar, q }: { pillar?: "knowledge" | "creators" | "ex
             <p className="mt-3 text-sm text-muted-foreground">
               {q ? "다른 이름이나 분야로 검색해 보세요." : "이 분야의 전문가라면 크리에이터로 함께해 주세요."}
             </p>
-            <Link href={q ? "/hosts" : "/become-a-host"} className="mt-5 inline-block text-sm font-semibold text-gold underline-offset-4 hover:underline">
+            <Link href={q ? "/hosts" : "/become-a-host"} className="mt-5 inline-block text-sm font-semibold text-forest underline-offset-4 hover:underline">
               {q ? "전체 크리에이터 보기" : "크리에이터 지원 안내"}
             </Link>
           </div>
@@ -92,7 +92,7 @@ export default async function HostsPage({ searchParams }: PageProps<"/hosts">) {
   const q = typeof sp.q === "string" ? sp.q.trim().slice(0, 40) : "";
   const info = pillarInfo(pillar);
   return (
-    <Night>
+    <Blue>
       <SiteHeader />
       <main className="flex-1">
         <section className="mx-auto w-full max-w-6xl px-4 pt-8 sm:px-6 sm:pt-12">
@@ -130,6 +130,6 @@ export default async function HostsPage({ searchParams }: PageProps<"/hosts">) {
         </div>
       </main>
       <SiteFooter />
-    </Night>
+    </Blue>
   );
 }

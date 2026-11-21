@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
-import { Night } from "@/components/layout/night";
+import { Blue } from "@/components/layout/blue";
 import { CategoryChips } from "@/components/meetups/category-chips";
 import { CircleGrid } from "@/components/meetups/circle-card";
 import { SiteFooter } from "@/components/site-footer";
@@ -34,7 +34,7 @@ export default async function MeetupsPage({ searchParams }: PageProps<"/meetups"
   const trust = await getHostReviewSummaries(meetups.flatMap((m) => (m.host ? [m.host.user_id] : [])));
 
   return (
-    <Night>
+    <Blue>
       <SiteHeader />
       <main className="flex-1">
         <section className="mx-auto w-full max-w-6xl px-4 pt-8 sm:px-6 sm:pt-12">
@@ -114,7 +114,7 @@ export default async function MeetupsPage({ searchParams }: PageProps<"/meetups"
               <p className="mt-2 text-sm text-muted-foreground">
                 곧 새로운 프로그램이 열립니다. 이 분야의 전문가라면 호스트로 신청해 주세요.
               </p>
-              <Link href="/become-a-host/apply" className="mt-5 inline-block text-sm font-semibold text-gold underline-offset-4 hover:underline">
+              <Link href="/become-a-host/apply" className="mt-5 inline-block text-sm font-semibold text-forest underline-offset-4 hover:underline">
                 호스트 지원하기
               </Link>
             </div>
@@ -122,6 +122,6 @@ export default async function MeetupsPage({ searchParams }: PageProps<"/meetups"
         </div>
       </main>
       <SiteFooter />
-    </Night>
+    </Blue>
   );
 }

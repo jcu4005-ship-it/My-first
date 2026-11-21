@@ -5,7 +5,7 @@ import { CalendarDays, CalendarPlus, MapPin, Navigation } from "lucide-react";
 import { ActionForm } from "@/components/forms/action-form";
 import { StatusPill } from "@/components/forms/controls";
 import { SampleBadge } from "@/components/meetups/badges";
-import { Night } from "@/components/layout/night";
+import { Blue } from "@/components/layout/blue";
 import { SiteHeader } from "@/components/site-header";
 import { Button } from "@/components/ui/button";
 import { requireMember } from "@/lib/auth/guards";
@@ -116,7 +116,7 @@ export default async function MyBookingsPage({ searchParams }: PageProps<"/me/bo
   const past = bookings.filter((b) => !upcoming.includes(b));
 
   return (
-    <Night>
+    <Blue>
       <SiteHeader />
       <main className="mx-auto w-full max-w-2xl flex-1 px-4 py-8 sm:px-6">
         <h1 className="text-[30px] font-display font-bold tracking-[-0.02em] sm:text-[38px]">내 자리</h1>
@@ -146,7 +146,7 @@ export default async function MyBookingsPage({ searchParams }: PageProps<"/me/bo
                     <span className="block truncate font-semibold hover:underline">{w.title}</span>
                     <span className="block text-[13px] text-muted-foreground">{formatShortDateTime(w.starts_at)}</span>
                   </Link>
-                  <span className={w.left_seats > 0 ? "text-sm font-semibold text-gold" : "text-sm text-muted-foreground"}>
+                  <span className={w.left_seats > 0 ? "text-sm font-semibold text-forest" : "text-sm text-muted-foreground"}>
                     {w.left_seats > 0 ? `자리 ${w.left_seats}개 생김 · 지금 신청하기` : "자리가 나면 알려 드려요"}
                   </span>
                 </li>
@@ -158,12 +158,12 @@ export default async function MyBookingsPage({ searchParams }: PageProps<"/me/bo
           <section className="mt-10">
             <div className="mb-3 flex items-end justify-between">
               <h2 className="text-lg font-extrabold">지난·취소한 자리</h2>
-              <Link href="/me/reviews" className="text-sm font-semibold text-gold underline-offset-4 hover:underline" data-testid="write-review-link">후기 남기기</Link>
+              <Link href="/me/reviews" className="text-sm font-semibold text-forest underline-offset-4 hover:underline" data-testid="write-review-link">후기 남기기</Link>
             </div>
             <ul className="flex flex-col gap-3">{past.map((b) => <BookingCard key={b.booking_id} b={b} highlight={false} />)}</ul>
           </section>
         )}
       </main>
-    </Night>
+    </Blue>
   );
 }

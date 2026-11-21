@@ -39,77 +39,118 @@
   --ring: var(--forest);
   --radius: 1rem;
   color-scheme: light;
-  /* 드롭 × 모닥불 원 · 색 D안 "미드나잇 네이비 & 골드" (2026-11-20 승인) — 참가자 화면은 .theme-night 안에서만 */
-  --navy: #0f1626;     /* 바탕 */
-  --navy-2: #18223a;   /* 카드 */
-  --navy-3: #202c49;   /* 한 단계 위 카드·입력 */
-  --gold: #e2b872;     /* 핵심 강조만: 당신 자리 · 주요 버튼 · 남은 자리 */
-  --gold-ink: #0f1626; /* 골드 위 글자 */
-  --lit: #8ea3c4;      /* 먼저 앉은 사람 */
-  --ivory: #f7f3ea;    /* 길게 읽는 정보 시트 */
+  /* 프리미엄 블루 디자인 시스템 (대표 지정 2026-11-21 2차) — 기준 색. 코드를 바꾸지 말고 여기서만 관리합니다. */
+  --navy: #101d38;     /* Midnight Blue: 헤더·탭 막대·브랜드 영역 */
+  --slate: #263d63;    /* Slate Blue: 깊이감을 주는 보조 카드 */
+  --ice: #f5f2ea;      /* Warm Ivory: 콘텐츠 바탕 (이름은 예전 그대로) */
+  --white: #ffffff;    /* Pure White: 정보 카드 */
+  --gold: #c6a46a;     /* Champagne Gold: 핵심 버튼·선택 상태에만 */
+  --gold-ink: #101d38; /* 골드 위 글자 */
+  --text-main: #17243a;
+  --text-sub: #5e6879; /* 지정 #737D8D 는 아이보리 바탕에서 3.7:1 이라 같은 계열로 진하게 (5:1) */
+  --line: #e5e2da;
+  --soft: #faf8f3;
+  --navy-2: color-mix(in srgb, #101d38 55%, #263d63);
+  --navy-3: #263d63;
+  --lit: #aab9d6;
+  --ivory: #ffffff;
 }
 
 /*
- * 미드나잇 네이비 테마 (참가자 화면, 색 D안). 네이비가 메인, 골드는 핵심 강조에만.
- * 대비: 본문 #eef1f7 · 보조 #b4bed1 (바탕 #0f1626·카드 #18223a 모두 7:1 안팎). 저대비 글자 쓰지 않음.
- * 결제·환불·소개처럼 길게 읽는 정보는 .sheet(아이보리)로 — 답답함을 줄이고 읽기 편하게.
+ * BLUE 테마 (참가자 화면). 바탕 Ice Blue · 카드 White · 헤더/탭/브랜드 영역 Deep Blue · 골드는 핵심 버튼·선택 상태에만.
+ * 대비(WCAG): 본문 #18243A 는 Ice/White 위 12:1 이상, 보조 #596780 은 Ice 위 4.9:1, Deep Blue 위 글자는 #f3f6fc(11:1) / #c4d0ea(8:1).
+ * 골드 글자는 밝은 바탕에서 읽히지 않으므로, 밝은 바탕의 강조 글자는 Deep Blue 로 씁니다 (골드는 면/테두리/Deep Blue 위 글자에만).
  */
-.theme-night {
-  --background: var(--navy);
-  --foreground: #eef1f7;
-  --card: var(--navy-2);
-  --muted: var(--navy-3);
-  --muted-foreground: #b4bed1;
-  --border: #2e3b5c;
-  --primary: var(--gold);
-  --primary-foreground: var(--gold-ink);
-  --secondary: var(--navy-3);
-  --secondary-foreground: #eef1f7;
-  --accent: var(--gold);
-  --accent-foreground: var(--gold-ink);
-  --destructive: #ff9b8f;
-  --notice: var(--navy-3);
-  --notice-foreground: #dfe5f0;
-  --ring: var(--gold);
-  --forest: var(--gold);
-  --forest-deep: #0a101d;
-  --forest-soft: #2e3b5c;
-  --linen: var(--navy-3);
-  --cream: #eef1f7;
-  --clay: var(--gold);
-  --fog: #b4bed1;
-  --sage: #8ea3c4;
-  --mint: #2e3b5c;
-  color-scheme: dark;
-  background-color: var(--navy);
-  background-image: radial-gradient(110% 45% at 50% 0%, rgb(142 163 196 / 0.1), transparent 65%);
-  background-repeat: no-repeat;
+.theme-blue {
+  --background: var(--ice);
+  --foreground: var(--text-main);
+  --card: var(--white);
+  --muted: var(--soft);
+  --muted-foreground: var(--text-sub);
+  --border: var(--line);
+  --primary: var(--navy);
+  --primary-foreground: #ffffff;
+  --secondary: var(--soft);
+  --secondary-foreground: var(--text-main);
+  --accent: var(--line);
+  --accent-foreground: var(--text-main);
+  --destructive: #b3382b;
+  --notice: var(--soft);
+  --notice-foreground: var(--text-main);
+  --ring: var(--navy);
+  --forest: var(--navy);
+  --forest-deep: var(--navy);
+  --forest-soft: var(--line);
+  --linen: var(--soft);
+  --cream: var(--ice);
+  --clay: var(--navy);
+  --fog: var(--text-sub);
+  --sage: var(--text-sub);
+  --mint: var(--line);
+  --seat-lit: var(--navy);
+  --seat-you: var(--gold);
+  --seat-dim: #d8d3c4;
+  color-scheme: light;
+  background-color: var(--ice);
   color: var(--foreground);
 }
-.theme-night ::selection { background: var(--gold); color: var(--gold-ink); }
-/* 네이비 화면 안의 아이보리 시트 (길게 읽는 정보) */
-.theme-night .sheet,
+.theme-blue ::selection { background: var(--gold); color: var(--gold-ink); }
+/* Deep Blue 영역: 헤더 · 아래 탭 막대 · 브랜드 영역(.on-deep). 안의 글자는 밝게, 골드는 강조에 */
+.theme-blue > header,
+.theme-blue > [data-tabbar],
+.on-deep {
+  --background: var(--navy);
+  --foreground: #f5f2ea;
+  --card: var(--navy-2);
+  --muted: var(--navy-3);
+  --muted-foreground: #c3cbdc;
+  --border: color-mix(in srgb, white 16%, transparent);
+  --secondary: var(--navy-3);
+  --secondary-foreground: #f5f2ea;
+  --accent: var(--navy-3);
+  --accent-foreground: #f5f2ea;
+  --destructive: #ffb1a8;
+  --notice: var(--navy-3);
+  --notice-foreground: #f5f2ea;
+  --ring: var(--gold);
+  --forest: var(--gold);
+  --linen: var(--navy-3);
+  --clay: var(--gold);
+  --fog: #c3cbdc;
+  --sage: #c3cbdc;
+  --seat-lit: #aab9d6;
+  --seat-dim: color-mix(in srgb, white 24%, #101d38);
+  color-scheme: dark;
+  color: var(--foreground);
+}
+.on-deep { background-color: var(--navy); }
+.theme-blue > [data-tabbar] { --card: var(--navy); }
+.theme-blue > [data-tabbar] [aria-current="page"] { color: var(--gold); }
+.theme-blue > header [data-testid="unread-count"] { color: var(--gold-ink); }
+/* 긴 정보 패널: 흰색 카드 (Ice Blue 바탕 위) */
+.theme-blue .sheet,
 .sheet {
-  --background: var(--ivory);
-  --foreground: #14213d;
-  --card: #ffffff;
-  --muted: #efe9dc;
-  --muted-foreground: #4f5a70;
-  --border: #e2dacb;
-  --secondary: #efe9dc;
-  --secondary-foreground: #14213d;
-  --notice: #efe9dc;
-  --notice-foreground: #2b3550;
-  --forest: #7a5a22;
-  --clay: #7a5a22;
-  --linen: #efe9dc;
-  --destructive: #a33a2a;
-  --primary: #14213d;
-  --primary-foreground: #f7f3ea;
-  --ring: #14213d;
+  --background: var(--white);
+  --foreground: var(--text-main);
+  --card: var(--soft);
+  --muted: var(--soft);
+  --muted-foreground: var(--text-sub);
+  --border: var(--line);
+  --secondary: var(--soft);
+  --secondary-foreground: var(--text-main);
+  --notice: var(--soft);
+  --notice-foreground: var(--text-main);
+  --forest: var(--navy);
+  --clay: var(--navy);
+  --linen: var(--soft);
+  --destructive: #b3382b;
+  --primary: var(--navy);
+  --primary-foreground: #ffffff;
+  --ring: var(--navy);
   color-scheme: light;
-  background-color: var(--ivory);
-  color: #14213d;
+  background-color: var(--white);
+  border: 1px solid var(--line);
+  color: var(--text-main);
 }
 
 @theme inline {
@@ -202,10 +243,10 @@
   /* 초대장 티켓: 카드 + 절취선(.perf, 양 끝 반원 홈) */
   .ticket {
     @apply relative rounded-[18px] bg-card;
-    box-shadow: 0 2px 0 rgb(35 51 42 / 0.06), 0 14px 26px -16px rgb(35 51 42 / 0.5);
+    border: 1px solid var(--border);
   }
   .perf {
-    @apply relative mx-3 border-t-[1.5px] border-dashed border-[#cfc6b5];
+    @apply relative mx-3 border-t-[1.5px] border-dashed border-border;
   }
   .perf::before,
   .perf::after {

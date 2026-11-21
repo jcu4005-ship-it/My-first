@@ -7,7 +7,8 @@ import { Photo } from "@/components/media/photo";
 import { ContentGrid } from "@/components/contents/content-card";
 import { FollowButton } from "@/components/hosts/follow-button";
 import { CircleGrid } from "@/components/meetups/circle-card";
-import { Night } from "@/components/layout/night";
+import { Blue } from "@/components/layout/blue";
+import { VerifiedChecklist } from "@/components/trust/proofs";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { pillarInfo } from "@/config/pillars";
@@ -109,21 +110,21 @@ export default async function HostPage({ params }: PageProps<"/hosts/[slug]">) {
   const wrap = "mx-auto mt-12 w-full max-w-3xl px-4 sm:px-6";
 
   return (
-    <Night>
+    <Blue>
       <SiteHeader />
       <main className="flex-1">
         {/* 1. 크리에이터: 큰 사진 + 이름 */}
         <div className="mx-auto w-full max-w-3xl sm:px-6 sm:pt-8">
-          <div className="relative aspect-[4/5] w-full overflow-hidden bg-navy-2 sm:aspect-[16/11] sm:rounded-[28px]" data-testid="host-avatar">
+          <div className="relative aspect-[4/5] w-full overflow-hidden bg-muted sm:aspect-[16/11] sm:rounded-[28px]" data-testid="host-avatar">
             <Photo
               src={avatar}
               alt={`${host.display_name} 프로필 사진`}
               priority
               sizes="(min-width: 768px) 720px, 100vw"
-              className="object-[50%_18%] [filter:sepia(.12)]"
+              className="object-[50%_18%] "
               fallback={<span aria-hidden className="absolute inset-0 flex items-center justify-center bg-navy-3 font-display text-[8rem] font-bold text-lit">{host.display_name.slice(0, 1)}</span>}
             />
-            <div aria-hidden className="absolute inset-0 bg-[linear-gradient(180deg,rgb(23_17_13/0.35),transparent_30%,transparent_50%,rgb(23_17_13/0.92))]" />
+            <div aria-hidden className="absolute inset-0 bg-[linear-gradient(180deg,rgb(16_29_56/0.35),transparent_30%,transparent_45%,rgb(16_29_56/0.94))]" />
             <div className="absolute inset-x-0 bottom-0 p-5 sm:p-7">
               <div className="flex flex-wrap gap-1.5">
                 {pillar && <span className="rounded-full bg-cream px-2.5 py-1 text-[13.5px] font-extrabold text-gold-ink">{pillar.ko}</span>}
@@ -200,6 +201,8 @@ export default async function HostPage({ params }: PageProps<"/hosts/[slug]">) {
               <dd className="font-num text-xl font-semibold">{reviewSummary.count}</dd>
             </div>
           </dl>
+          <p className="mt-2 px-1 text-[13.5px] leading-relaxed text-muted-foreground">숫자는 라운디에서 실제로 일어난 것만 보여요.</p>
+          {!introPending && !host.is_sample && <VerifiedChecklist className="mt-4" />}
           {/* 팔로워 수 (화면 읽기·검사용 문장) */}
           <p className="sr-only" data-testid="follower-count">
             팔로워 {follow.count.toLocaleString("ko-KR")}명
@@ -212,7 +215,7 @@ export default async function HostPage({ params }: PageProps<"/hosts/[slug]">) {
           {meetups.length === 0 ? (
             <div className="rounded-[20px] border border-dashed border-border px-5 py-8 text-center">
               <p className="text-muted-foreground">지금 열린 원이 없어요. 팔로우하면 새 원이 열릴 때 알려 드려요.</p>
-              <Link href="/meetups" className="mt-3 inline-block text-sm font-semibold text-gold underline-offset-4 hover:underline">
+              <Link href="/meetups" className="mt-3 inline-block text-sm font-semibold text-forest underline-offset-4 hover:underline">
                 다른 원 둘러보기
               </Link>
             </div>
@@ -266,6 +269,7 @@ export default async function HostPage({ params }: PageProps<"/hosts/[slug]">) {
             <div className="rounded-[20px] border border-dashed border-border px-5 py-8 text-center" data-testid="host-intro-pending">
               <p className="font-semibold">소개 준비 중</p>
               <p className="mt-1 text-sm text-muted-foreground">{host.display_name} 크리에이터가 직접 소개를 쓰고 있어요.</p>
+              <Link href="/help" className="mt-3 inline-block text-sm font-semibold text-forest underline underline-offset-4">궁금한 점은 운영팀에 1:1로 물어보세요</Link>
             </div>
           ) : (
             <div className="sheet rounded-[22px] px-5 py-6 sm:px-7">
@@ -311,7 +315,7 @@ export default async function HostPage({ params }: PageProps<"/hosts/[slug]">) {
             {title("포트폴리오")}
             <ContentGrid contents={portfolio} />
             {host.portfolio_url && (
-              <a href={host.portfolio_url} target="_blank" rel="noopener noreferrer nofollow" className="mt-4 inline-block text-sm font-semibold text-gold underline-offset-4 hover:underline">
+              <a href={host.portfolio_url} target="_blank" rel="noopener noreferrer nofollow" className="mt-4 inline-block text-sm font-semibold text-forest underline-offset-4 hover:underline">
                 외부 포트폴리오 보기
               </a>
             )}
@@ -325,6 +329,6 @@ export default async function HostPage({ params }: PageProps<"/hosts/[slug]">) {
         )}
       </main>
       <SiteFooter />
-    </Night>
+    </Blue>
   );
 }
