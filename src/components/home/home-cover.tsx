@@ -50,7 +50,7 @@ export function HomeCover({ meetups, people }: { meetups: MeetupCardData[]; peop
         <LogoWordmarkChair className="mt-3 w-full text-brand" />
         <div className="mt-3 border-t border-foreground" />
 
-        {/* 제호 바로 아래: 프로그램(주인공)과 크리에이터 사진이 2초마다 돌아가며 바뀜 */}
+        {/* 제호 바로 아래: 크리에이터 사진(위)과 프로그램(아래)이 2초마다 돌아가며 바뀜 */}
         <div className="mt-6 -mx-5 sm:mx-0">
           <ProgramSlider slides={slides} />
         </div>

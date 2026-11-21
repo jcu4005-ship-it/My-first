@@ -62,8 +62,37 @@ export function ProgramSlider({ slides }: { slides: ProgramSlide[] }) {
       onFocus={() => setPaused(true)}
       onBlur={() => setPaused(false)}
     >
-      <div className="grid md:grid-cols-[1fr_1.05fr]">
-        {/* 프로그램 (주인공): 제목·날짜·장소·참가비·남은 자리 */}
+      <div className="grid md:grid-cols-[1.05fr_1fr]">
+        {/* 크리에이터 사진 (맨 위) */}
+        <Link
+          href={cur.hostHref}
+          className="group relative block aspect-[4/4.6] overflow-hidden bg-muted md:aspect-auto md:min-h-[420px]"
+          data-testid="cover-story"
+          aria-label={`${cur.name} — ${cur.role}`}
+        >
+          {slides.map((s, n) => (
+            <Image
+              key={s.href}
+              src={s.photo}
+              alt=""
+              fill
+              priority={n === 0}
+              sizes="(min-width: 768px) 600px, 100vw"
+              unoptimized={/^https?:\/\//.test(s.photo)}
+              className={cn(
+                "object-cover object-[50%_14%] transition-[opacity,transform] duration-700 ease-out group-hover:scale-[1.02]",
+                n === at ? "opacity-100" : "opacity-0",
+              )}
+            />
+          ))}
+          <span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-[#252b33]/75 to-transparent px-5 pt-14 pb-4 text-white sm:px-6" aria-hidden>
+            <span className="cap cap-kr block text-[11.5px] opacity-85">with</span>
+            <span className="font-display mt-0.5 block text-[28px] leading-tight">{cur.name}</span>
+            <span className="block text-[13.5px] opacity-90">{cur.role}</span>
+          </span>
+        </Link>
+
+        {/* 프로그램: 제목·날짜·장소·참가비·남은 자리 (사진 아래) */}
         <div key={at} className="fade-in flex flex-col justify-between bg-soft px-5 py-5 sm:px-9 sm:py-10">
           <p className="cap cap-kr text-[12px] text-brand">
             Program {String(at + 1).padStart(2, "0")} / {String(slides.length).padStart(2, "0")}
@@ -90,35 +119,6 @@ export function ProgramSlider({ slides }: { slides: ProgramSlide[] }) {
             </div>
           </div>
         </div>
-
-        {/* 크리에이터 사진 (프로그램과 함께 보이게) */}
-        <Link
-          href={cur.hostHref}
-          className="group relative block aspect-[4/3.1] overflow-hidden bg-muted md:aspect-auto md:min-h-[420px]"
-          data-testid="cover-story"
-          aria-label={`${cur.name} — ${cur.role}`}
-        >
-          {slides.map((s, n) => (
-            <Image
-              key={s.href}
-              src={s.photo}
-              alt=""
-              fill
-              priority={n === 0}
-              sizes="(min-width: 768px) 600px, 100vw"
-              unoptimized={/^https?:\/\//.test(s.photo)}
-              className={cn(
-                "object-cover object-[50%_14%] transition-[opacity,transform] duration-700 ease-out group-hover:scale-[1.02]",
-                n === at ? "opacity-100" : "opacity-0",
-              )}
-            />
-          ))}
-          <span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-[#252b33]/75 to-transparent px-5 pt-14 pb-4 text-white sm:px-6" aria-hidden>
-            <span className="cap cap-kr block text-[11.5px] opacity-85">with</span>
-            <span className="font-display mt-0.5 block text-[28px] leading-tight">{cur.name}</span>
-            <span className="block text-[13.5px] opacity-90">{cur.role}</span>
-          </span>
-        </Link>
       </div>
 
       {slides.length > 1 && (
