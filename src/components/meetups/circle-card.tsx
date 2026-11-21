@@ -1,13 +1,13 @@
 import Link from "next/link";
-import { BadgeCheck, CalendarDays, MapPin, Star } from "lucide-react";
+import { BadgeCheck, Check, Star } from "lucide-react";
 
-import { SeatCircle } from "@/components/brand/seat-circle";
 import { Photo } from "@/components/media/photo";
 import { SaveButton } from "@/components/saved";
 import { formatPrice, ticketDate } from "@/lib/format";
 import { creatorPhoto } from "@/lib/hosting/avatar";
 import { isNotYetOpen, opensLabel } from "@/lib/meetups/drops";
 import type { MeetupCardData, Session } from "@/lib/meetups/queries";
+import { refundNowLine } from "@/lib/payments/refund-policy";
 import type { ReviewSummary } from "@/lib/reviews/queries";
 import { cn } from "@/lib/utils";
 
@@ -29,8 +29,8 @@ export function hostVerified(h: { headline?: string | null; bio?: string | null;
 }
 
 /**
- * 프로그램 카드 (색 D안): 크리에이터(얼굴·이름·하는 일·심사) → 프로그램명 → 날짜·장소 → 참가비·남은 자리 → 후기.
- * 오른쪽 작은 원은 꾸밈(같은 내용을 글자로 알려 줌). 후기는 실제 공개 후기가 있을 때만.
+ * 프로그램 카드 (갤러리 스타일): 큰 사진(크리에이터) → 제목 → 크리에이터·날짜·장소 → 참가비·남은 자리 → 환불 날짜 → 후기.
+ * 후기는 실제 공개 후기가 있을 때만. 샘플은 "샘플" 표시.
  */
 export function CircleCard({ meetup, categoryName, trust }: { meetup: MeetupCardData; categoryName: string; trust?: ReviewSummary }) {
   const s = meetup.nextSession;
@@ -41,79 +41,51 @@ export function CircleCard({ meetup, categoryName, trust }: { meetup: MeetupCard
   const more = meetup.upcomingSessions.length - 1;
   const meta = `${d.md} ${d.time} · ${s.area}`;
   const verified = hostVerified(host);
+  const showRefund = !line.closed && !line.notOpen;
   return (
     <div className="relative h-full">
-      <Link
-        href={`/meetups/${meetup.id}`}
-        className="group grid h-full grid-cols-[1fr_76px] gap-x-3 rounded-[20px] border border-border bg-card p-4 transition-colors hover:border-navy/40 sm:grid-cols-[1fr_88px] sm:p-5"
-        data-testid="meetup-card"
-      >
-        <div className="min-w-0">
-          {/* 크리에이터 */}
-          <div className="flex min-w-0 items-center gap-2.5">
-            <span className="relative flex size-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-muted font-display text-[14px] font-bold text-forest">
-              {host && creatorPhoto(host) ? <Photo src={creatorPhoto(host)} alt="" sizes="36px" fallback={null} className="object-[50%_18%]" /> : <span aria-hidden>{host?.display_name.slice(0, 1)}</span>}
-            </span>
-            <span className="min-w-0 leading-tight">
-              <span className="flex items-center gap-1">
-                <b className="truncate text-[15px] font-bold">{host?.display_name}</b>
-                {verified && <BadgeCheck aria-label="운영팀 심사를 통과한 크리에이터" className="size-4 shrink-0 text-forest" strokeWidth={2} />}
+      <Link href={`/meetups/${meetup.id}`} className="group block h-full" data-testid="meetup-card">
+        <span className="relative block aspect-[4/5] overflow-hidden rounded-[18px] bg-[linear-gradient(160deg,#cfdad2,#b9c9bf)]">
+          <Photo
+            src={face}
+            alt={host ? `${host.display_name} 크리에이터 사진` : meetup.title}
+            sizes="(min-width: 1024px) 25vw, (min-width: 640px) 33vw, 50vw"
+            className="object-[50%_12%] transition-transform duration-300 group-hover:scale-[1.03]"
+            fallback={
+              <span aria-hidden className="absolute inset-0 flex items-center justify-center font-display text-[6rem] font-bold text-white/60">
+                {host?.display_name.slice(0, 1) ?? meetup.title.slice(0, 1)}
               </span>
-              {host?.occupation && <span className="block truncate text-[14.5px] text-muted-foreground">{host.occupation}</span>}
-            </span>
-          </div>
-          {/* 프로그램 */}
-          <h3 className="mt-2.5 line-clamp-2 text-[17px] leading-snug font-bold tracking-[-0.02em] break-keep group-hover:underline group-hover:underline-offset-4 sm:text-[18px]">
-            {meetup.title}
-          </h3>
-          {meetup.is_sample && <SampleBadge className="mt-1.5" />}
-          {/* 날짜·장소 */}
-          <p className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[14px] text-muted-foreground">
-            <span className="inline-flex items-center gap-1.5">
-              <CalendarDays aria-hidden className="size-4" strokeWidth={1.7} />
-              {d.md} ({d.wd}) {d.time}
-              {more > 0 && ` · 외 ${more}회`}
-            </span>
-            <span className="inline-flex items-center gap-1.5">
-              <MapPin aria-hidden className="size-4" strokeWidth={1.7} />
-              {s.area}
-            </span>
-            <span className="sr-only">{categoryName}</span>
-          </p>
-        </div>
-        <div className="row-span-2 self-start pt-1">
-          <SeatCircle
-            decorative
-            capacity={s.capacity}
-            taken={s.reserved_count}
-            closed={Boolean(line.notOpen)}
-            you={line.closed || line.notOpen ? false : "open"}
-            face={face}
-            initial={host?.display_name.slice(0, 1) ?? meetup.title.slice(0, 1)}
+            }
           />
-        </div>
-        {/* 참가비 · 남은 자리 · 후기 */}
-        <div className="col-span-2 mt-3.5 flex flex-wrap items-center justify-between gap-x-3 gap-y-2 border-t border-border pt-3.5 pl-11">
-          <b className="font-num text-[17px] font-semibold">{meetup.price > 0 ? formatPrice(meetup.price) : "무료"}</b>
-          <span
-            className={cn(
-              "rounded-full px-2.5 py-1 text-[14.5px] font-bold",
-              line.closed ? "bg-muted text-muted-foreground" : line.left <= 2 ? "bg-gold text-gold-ink" : "border border-gold bg-gold/20 text-forest",
-            )}
-            data-testid="card-seats"
-          >
+          {meetup.is_sample && <SampleBadge className="absolute top-2.5 left-2.5" />}
+        </span>
+        <h3 className="mt-3 line-clamp-2 text-[16.5px] leading-snug font-extrabold tracking-[-0.025em] break-keep group-hover:underline group-hover:underline-offset-4">{meetup.title}</h3>
+        <p className="mt-1 flex flex-wrap items-center gap-x-1.5 text-[14px] leading-snug text-muted-foreground">
+          {host && <span className="inline-flex items-center gap-1 font-semibold text-foreground">{host.display_name}{verified && <BadgeCheck aria-label="운영팀 심사를 통과한 크리에이터" className="size-4 text-forest" strokeWidth={2} />}</span>}
+          <span>· {d.md} ({d.wd}) {d.time}{more > 0 && ` 외 ${more}회`} · {s.area}</span>
+          <span className="sr-only">{categoryName}</span>
+        </p>
+        <p className="mt-1.5 flex items-baseline justify-between gap-2 text-[15.5px]">
+          <b className="font-num font-semibold">{meetup.price > 0 ? formatPrice(meetup.price) : "무료"}</b>
+          <b className={cn("text-right text-[14.5px]", line.closed ? "text-muted-foreground" : "text-forest")} data-testid="card-seats">
             {line.text}
             <span className="sr-only"> · 정원 {s.capacity}명</span>
-          </span>
-          {trust && trust.count > 0 && trust.avg != null && (
-            <span className="inline-flex w-full items-center gap-1 text-[14.5px] text-muted-foreground" data-testid="card-reviews">
-              <Star aria-hidden className="size-3.5 fill-gold text-gold" />
-              <b className="text-foreground">{trust.avg.toFixed(1)}</b> · 이 크리에이터 후기 {trust.count}개
-            </span>
-          )}
-        </div>
+          </b>
+        </p>
+        {showRefund && (
+          <p className="mt-1.5 flex items-start gap-1.5 text-[13.5px] leading-snug text-muted-foreground" data-testid="card-refund">
+            <Check aria-hidden className="mt-0.5 size-3.5 shrink-0 text-forest" strokeWidth={2.6} />
+            {refundNowLine(s.starts_at)}
+          </p>
+        )}
+        {trust && trust.count > 0 && trust.avg != null && (
+          <p className="mt-1.5 inline-flex items-center gap-1 text-[13.5px] text-muted-foreground" data-testid="card-reviews">
+            <Star aria-hidden className="size-3.5 fill-gold text-gold" />
+            <b className="text-foreground">{trust.avg.toFixed(1)}</b> · 이 크리에이터 후기 {trust.count}개
+          </p>
+        )}
       </Link>
-      <SaveButton item={{ id: meetup.id, title: meetup.title, meta }} tone="dark" className="absolute bottom-3 left-3 size-8 sm:bottom-4 sm:left-4" />
+      <SaveButton item={{ id: meetup.id, title: meetup.title, meta }} tone="dark" className="absolute top-2.5 right-2.5 size-9" />
     </div>
   );
 }
@@ -129,7 +101,7 @@ export function CircleGrid({
   trust?: Record<string, ReviewSummary>;
 }) {
   return (
-    <div className="grid gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3" data-testid="meetup-grid">
+    <div className="grid grid-cols-2 gap-x-3 gap-y-7 sm:gap-x-4 lg:grid-cols-4" data-testid="meetup-grid">
       {meetups.map((m) => (
         <CircleCard key={m.id} meetup={m} categoryName={categoryNames[m.category_slug] ?? m.category_slug} trust={m.host ? trust?.[m.host.user_id] : undefined} />
       ))}

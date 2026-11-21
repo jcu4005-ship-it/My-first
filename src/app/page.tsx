@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, CalendarDays, Check, MapPin } from "lucide-react";
+import { ArrowRight, CalendarDays, Check, MapPin, Search } from "lucide-react";
 
 import { SeatCircle } from "@/components/brand/seat-circle";
 import { HostCard } from "@/components/hosts/host-card";
@@ -10,6 +10,7 @@ import { collectDrops, DropList } from "@/components/meetups/drop-list";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { HomeProofs, VerifiedChip } from "@/components/trust/proofs";
+import { PILLARS } from "@/config/pillars";
 import { getCurrentMember } from "@/lib/auth/session";
 import { formatPrice, ticketDate } from "@/lib/format";
 import { creatorPhoto, hostHref } from "@/lib/hosting/avatar";
@@ -58,7 +59,7 @@ export default async function Home() {
     [...openOnes].sort(byFill)[0] ??
     null;
   const fromFollowed = Boolean(hero?.host && followedIds.has(hero.host.user_id));
-  const rest = [...openOnes].filter((m) => m.id !== hero?.id).sort(byFill).slice(0, 6);
+  const gallery = [...openOnes].sort((a, b) => a.nextSession.starts_at.localeCompare(b.nextSession.starts_at)).slice(0, 8);
   const homeDrops = [...drops]
     .sort((a, b) => Number(followedIds.has(b.meetup.host?.user_id ?? "")) - Number(followedIds.has(a.meetup.host?.user_id ?? "")) || (a.session.opens_at as string).localeCompare(b.session.opens_at as string))
     .slice(0, 3)
@@ -67,7 +68,7 @@ export default async function Home() {
   const repOf = (hostId: string) => all.find((m) => m.host?.user_id === hostId) ?? null;
   const [heroHost, trust] = await Promise.all([
     hero?.host ? getHost(hero.host.user_id).catch(() => null) : Promise.resolve(null),
-    getHostReviewSummaries([...rest, ...(hero ? [hero] : [])].flatMap((m) => (m.host ? [m.host.user_id] : []))),
+    getHostReviewSummaries([...gallery, ...(hero ? [hero] : [])].flatMap((m) => (m.host ? [m.host.user_id] : []))),
   ]);
 
   const s = hero?.nextSession;
@@ -80,23 +81,51 @@ export default async function Home() {
     <Blue>
       <SiteHeader />
       <main className="flex-1">
-        {/* 1. 브랜드 영역 (Deep Blue): 무엇을 하는 곳인지 */}
-        <section className="on-deep" data-testid="home-intro">
-          <div className="mx-auto w-full max-w-6xl px-4 pt-8 pb-24 sm:px-6 sm:pt-14 sm:pb-28">
-            <h1 className="max-w-3xl font-display text-[29px] leading-[1.32] font-bold tracking-[-0.025em] break-keep sm:text-[46px]">
-              한 사람을 만나러 가는
-              <br />
-              4~10명의 작은 자리
-            </h1>
-            <p className="mt-3 max-w-xl text-[16px] leading-relaxed text-muted-foreground sm:text-[17px]">
-              운영팀이 확인한 크리에이터와 둘러앉아 직접 배워요. 결제와 환불은 라운디 안에서만 해요.
-            </p>
+        {/* 1. 첫 화면: 굵은 큰 제목 + 검색 + 분야 (갤러리 스타일) */}
+        <section className="mx-auto w-full max-w-6xl px-4 pt-7 sm:px-6 sm:pt-12" data-testid="home-intro">
+          <h1 className="max-w-3xl font-display text-[34px] leading-[1.2] break-keep sm:text-[56px]">
+            한 사람의 세계를
+            <br />
+            만나는 작은 자리
+          </h1>
+          <p className="mt-3 max-w-xl text-[16px] leading-relaxed text-muted-foreground sm:text-[18px]">
+            자기만의 작업과 관점을 가진 사람과 4~10명이 둘러앉아요. 결제와 환불은 라운디 안에서만 해요.
+          </p>
+          <form action="/meetups" method="get" role="search" className="mt-5 flex h-14 max-w-xl items-center gap-2 rounded-full border border-border bg-card py-1.5 pr-1.5 pl-5 shadow-[0_8px_22px_-14px_rgb(16_29_56/0.45)]">
+            <label htmlFor="home-search" className="sr-only">프로그램 검색</label>
+            <input id="home-search" name="q" type="search" maxLength={40} placeholder="배우고 싶은 것, 크리에이터" className="h-full min-w-0 flex-1 bg-transparent text-[15.5px] outline-none placeholder:text-muted-foreground" />
+            <button type="submit" aria-label="검색" className="flex size-11 shrink-0 items-center justify-center rounded-full bg-navy text-white hover:bg-navy/90">
+              <Search aria-hidden className="size-5" strokeWidth={2.2} />
+            </button>
+          </form>
+          <nav aria-label="분야" className="no-scrollbar mt-4 flex gap-2 overflow-x-auto">
+            {[{ href: "/meetups", label: "전체" }, ...PILLARS.map((pl) => ({ href: `/meetups?pillar=${pl.slug}`, label: pl.ko }))].map((c, i) => (
+              <Link key={c.label} href={c.href} className={`inline-flex h-10 shrink-0 items-center rounded-full border px-4 text-[14.5px] font-semibold ${i === 0 ? "border-foreground bg-foreground text-background" : "border-border bg-card hover:border-foreground/40"}`}>
+                {c.label}
+              </Link>
+            ))}
+          </nav>
+        </section>
+
+        {/* 1-1. 이번 주 열리는 자리: 큰 사진 갤러리 */}
+        <section className="mx-auto mt-10 w-full max-w-6xl px-4 sm:px-6" data-testid="home-open">
+          <div className="mb-4 flex items-end justify-between gap-3">
+            <h2 className="font-display text-[24px] sm:text-[30px]">이번 주 열리는 자리</h2>
+            <Link href="/meetups" className="flex shrink-0 items-center gap-1 text-[14px] font-bold hover:underline">
+              {openOnes.length}개 · 전체 보기
+              <ArrowRight aria-hidden className="size-4" strokeWidth={1.8} />
+            </Link>
           </div>
+          {gallery.length ? (
+            <CircleGrid meetups={gallery} categoryNames={names} trust={trust} />
+          ) : (
+            <p className="rounded-[20px] border border-dashed border-border px-5 py-8 text-center text-[15px] text-muted-foreground">지금 열린 자리가 아직 없어요.</p>
+          )}
         </section>
 
         {/* 2. 크리에이터 얼굴 카드 (Deep Blue 영역 위로 겹침) + 시그니처 원 */}
-        <section className="mx-auto -mt-16 w-full max-w-6xl px-4 sm:-mt-20 sm:px-6" data-testid="home-circle">
-          <h2 className="sr-only">
+        <section className="mx-auto mt-14 w-full max-w-6xl px-4 sm:px-6" data-testid="home-circle">
+          <h2 className="mb-4 font-display text-[24px] sm:text-[30px]">
             {hero ? (fromFollowed ? "팔로우한 크리에이터의 원에 자리가 있어요" : "당신 자리가 비어 있어요") : "곧 첫 원이 열려요"}
           </h2>
           {hero && s && d && line ? (
@@ -197,22 +226,6 @@ export default async function Home() {
             <DropList items={homeDrops} alertOn={alertOn} loggedIn={loggedIn} followedIds={followedIds} />
           </section>
         )}
-
-        {/* 3. 지금 열린 원 */}
-        <section className="mx-auto mt-14 w-full max-w-6xl px-4 sm:px-6" data-testid="home-open">
-          <div className="mb-4 flex items-end justify-between gap-3">
-            <h2 className="font-display text-[24px] font-bold tracking-[-0.02em] sm:text-[30px]">지금 열린 원</h2>
-            <Link href="/meetups" className="flex shrink-0 items-center gap-1 text-[14px] font-semibold text-muted-foreground hover:text-foreground">
-              {openOnes.length}개 · 전체 보기
-              <ArrowRight aria-hidden className="size-4" strokeWidth={1.8} />
-            </Link>
-          </div>
-          {rest.length ? (
-            <CircleGrid meetups={rest} categoryNames={names} trust={trust} />
-          ) : (
-            <p className="rounded-[20px] border border-dashed border-border px-5 py-8 text-center text-[15px] text-muted-foreground">다른 열린 원이 아직 없어요.</p>
-          )}
-        </section>
 
         {/* 4. 크리에이터 */}
         {featured.length > 0 && (

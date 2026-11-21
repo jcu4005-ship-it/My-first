@@ -66,8 +66,8 @@ async function MyPage({ member }: { member: Awaited<ReturnType<typeof requireMem
   return (
     <div className="flex flex-col gap-7">
       {/* 1. 내 카드 */}
-      <section className="on-deep flex items-center gap-3.5 rounded-[20px] p-4 sm:p-5">
-        <span aria-hidden className="flex size-14 shrink-0 items-center justify-center rounded-full bg-gold font-display text-2xl text-gold-ink">
+      <section className="flex items-center gap-3.5 rounded-[20px] border border-border bg-card p-4 sm:p-5">
+        <span aria-hidden className="flex size-14 shrink-0 items-center justify-center rounded-full bg-navy font-display text-2xl text-white">
           {profile?.nickname?.slice(0, 1)}
         </span>
         <div className="min-w-0 flex-1">

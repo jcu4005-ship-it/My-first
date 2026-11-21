@@ -57,100 +57,79 @@
 }
 
 /*
- * BLUE 테마 (참가자 화면). 바탕 Ice Blue · 카드 White · 헤더/탭/브랜드 영역 Deep Blue · 골드는 핵심 버튼·선택 상태에만.
- * 대비(WCAG): 본문 #18243A 는 Ice/White 위 12:1 이상, 보조 #596780 은 Ice 위 4.9:1, Deep Blue 위 글자는 #f3f6fc(11:1) / #c4d0ea(8:1).
- * 골드 글자는 밝은 바탕에서 읽히지 않으므로, 밝은 바탕의 강조 글자는 Deep Blue 로 씁니다 (골드는 면/테두리/Deep Blue 위 글자에만).
+ * 갤러리 테마 (참가자 화면, 대표 승인 2026-11-21): 흰 바탕 · 거의 검정 글자 · 크고 굵은 제목 · 큰 사진.
+ * 네이비(#101D38)는 버튼·강조에만, 골드(#C6A46A)는 "이 자리에 앉기"·결제·선택 상태에만.
+ * 대비: 본문 #111827 / 보조 #4b5563 는 흰 바탕 위 7:1 이상. 골드 글자는 쓰지 않음(밝은 바탕에서 안 읽힘).
  */
 .theme-blue {
-  --background: var(--ice);
-  --foreground: var(--text-main);
-  --card: var(--white);
-  --muted: var(--soft);
-  --muted-foreground: var(--text-sub);
-  --border: var(--line);
+  --background: #ffffff;
+  --foreground: #111827;
+  --card: #ffffff;
+  --muted: #f4f2ec;
+  --muted-foreground: #4b5563;
+  --border: #e7e4dc;
   --primary: var(--navy);
   --primary-foreground: #ffffff;
-  --secondary: var(--soft);
-  --secondary-foreground: var(--text-main);
-  --accent: var(--line);
-  --accent-foreground: var(--text-main);
+  --secondary: #f4f2ec;
+  --secondary-foreground: #111827;
+  --accent: #f4f2ec;
+  --accent-foreground: #111827;
   --destructive: #b3382b;
-  --notice: var(--soft);
-  --notice-foreground: var(--text-main);
+  --notice: #f4f2ec;
+  --notice-foreground: #111827;
   --ring: var(--navy);
   --forest: var(--navy);
   --forest-deep: var(--navy);
-  --forest-soft: var(--line);
-  --linen: var(--soft);
-  --cream: var(--ice);
+  --forest-soft: #e7e4dc;
+  --linen: #f4f2ec;
+  --cream: #ffffff;
   --clay: var(--navy);
-  --fog: var(--text-sub);
-  --sage: var(--text-sub);
-  --mint: var(--line);
+  --fog: #4b5563;
+  --sage: #4b5563;
+  --mint: #e7e4dc;
   --seat-lit: var(--navy);
   --seat-you: var(--gold);
-  --seat-dim: #d8d3c4;
+  --seat-dim: #d9d5c8;
   color-scheme: light;
-  background-color: var(--ice);
+  background-color: #ffffff;
   color: var(--foreground);
 }
 .theme-blue ::selection { background: var(--gold); color: var(--gold-ink); }
-/* Deep Blue 영역: 헤더 · 아래 탭 막대 · 브랜드 영역(.on-deep). 안의 글자는 밝게, 골드는 강조에 */
-.theme-blue > header,
-.theme-blue > [data-tabbar],
-.on-deep {
-  --background: var(--navy);
-  --foreground: #f5f2ea;
-  --card: var(--navy-2);
-  --muted: var(--navy-3);
-  --muted-foreground: #c3cbdc;
-  --border: color-mix(in srgb, white 16%, transparent);
-  --secondary: var(--navy-3);
-  --secondary-foreground: #f5f2ea;
-  --accent: var(--navy-3);
-  --accent-foreground: #f5f2ea;
-  --destructive: #ffb1a8;
-  --notice: var(--navy-3);
-  --notice-foreground: #f5f2ea;
-  --ring: var(--gold);
-  --forest: var(--gold);
-  --linen: var(--navy-3);
-  --clay: var(--gold);
-  --fog: #c3cbdc;
-  --sage: #c3cbdc;
-  --seat-lit: #aab9d6;
-  --seat-dim: color-mix(in srgb, white 24%, #101d38);
-  color-scheme: dark;
-  color: var(--foreground);
+/* 제목은 굵은 고딕 (갤러리 스타일) */
+.theme-blue .font-display {
+  font-family: var(--font-sans);
+  font-weight: 800;
+  letter-spacing: -0.04em;
 }
-.on-deep { background-color: var(--navy); }
-.theme-blue > [data-tabbar] { --card: var(--navy); }
-.theme-blue > [data-tabbar] [aria-current="page"] { color: var(--gold); }
-.theme-blue > header [data-testid="unread-count"] { color: var(--gold-ink); }
-/* 긴 정보 패널: 흰색 카드 (Ice Blue 바탕 위) */
+.theme-blue > header { border-bottom: 1px solid #eeebe3; }
+.theme-blue > [data-tabbar] [aria-current="page"] { color: var(--navy); }
+.theme-blue > header [data-testid="unread-count"] { color: #ffffff; }
+/* (예전 Deep Blue 영역 이름 — 이제 흰 바탕과 같은 모습) */
+.on-deep { background-color: transparent; }
+/* 긴 정보 패널: 흰색 + 얇은 테두리 */
 .theme-blue .sheet,
 .sheet {
-  --background: var(--white);
-  --foreground: var(--text-main);
-  --card: var(--soft);
-  --muted: var(--soft);
-  --muted-foreground: var(--text-sub);
-  --border: var(--line);
-  --secondary: var(--soft);
-  --secondary-foreground: var(--text-main);
-  --notice: var(--soft);
-  --notice-foreground: var(--text-main);
+  --background: #ffffff;
+  --foreground: #111827;
+  --card: #faf9f5;
+  --muted: #f4f2ec;
+  --muted-foreground: #4b5563;
+  --border: #e7e4dc;
+  --secondary: #f4f2ec;
+  --secondary-foreground: #111827;
+  --notice: #f4f2ec;
+  --notice-foreground: #111827;
   --forest: var(--navy);
   --clay: var(--navy);
-  --linen: var(--soft);
+  --linen: #f4f2ec;
   --destructive: #b3382b;
   --primary: var(--navy);
   --primary-foreground: #ffffff;
   --ring: var(--navy);
   color-scheme: light;
-  background-color: var(--white);
-  border: 1px solid var(--line);
-  color: var(--text-main);
+  background-color: #ffffff;
+  border: 1px solid #e7e4dc;
+  color: #111827;
 }
 
 @theme inline {

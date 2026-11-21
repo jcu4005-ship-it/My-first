@@ -170,28 +170,28 @@ export default async function MeetupDetailPage({ params }: PageProps<"/meetups/[
                 priority
                 sizes="(min-width: 1024px) 58vw, 100vw"
                 className={coverIsCreator ? "object-[50%_18%]" : undefined}
-                fallback={<EditorialCover category={meetup.category_slug} title={meetup.title} size="hero" showTitle={false} showLabel={false} className="!bg-navy-2 !text-cream" />}
+                fallback={<EditorialCover category={meetup.category_slug} title={meetup.title} size="hero" showTitle={false} showLabel={false} className="!bg-[#dfe6e0] !text-[#111827]" />}
               />
-              <div aria-hidden className="absolute inset-0 bg-[linear-gradient(180deg,rgb(16_29_56/0.35),transparent_30%,transparent_45%,rgb(16_29_56/0.94))]" />
               <SaveButton
                 item={{ id: meetup.id, title: meetup.title, meta: next ? `${formatDate(next.starts_at)} · ${next.area}` : "" }}
                 tone="dark"
                 className="absolute top-3 right-3"
               />
-              <div className="absolute inset-x-0 bottom-0 p-4 sm:p-7">
-                <div className="flex flex-wrap items-center gap-2">
-                  <Link href={`/meetups?category=${meetup.category_slug}`} className="rounded-full bg-cream px-2.5 py-1 text-[13.5px] font-extrabold text-gold-ink hover:bg-cream/90">
-                    {category?.name ?? style.label}
-                  </Link>
-                  <span className="rounded-full border border-cream/50 px-2.5 py-1 text-[13.5px] font-semibold text-cream" data-testid="class-level">
-                    {CLASS_LEVEL_LABEL[meetup.level] ?? "누구나"}
-                  </span>
-                  {meetup.is_sample && <SampleBadge />}
-                </div>
-                <h1 className="mt-2.5 text-[28px] leading-[1.15] font-display font-bold tracking-[-0.02em] break-keep text-cream sm:text-[44px]" data-testid="meetup-title">
-                  {meetup.title}
-                </h1>
+            </div>
+
+            <div className="px-4 pt-5 sm:px-0 sm:pt-6">
+              <div className="flex flex-wrap items-center gap-2">
+                <Link href={`/meetups?category=${meetup.category_slug}`} className="rounded-full border border-border bg-card px-3 py-1 text-[14px] font-bold hover:border-foreground/40">
+                  {category?.name ?? style.label}
+                </Link>
+                <span className="rounded-full border border-border bg-card px-3 py-1 text-[14px] font-semibold" data-testid="class-level">
+                  {CLASS_LEVEL_LABEL[meetup.level] ?? "누구나"}
+                </span>
+                {meetup.is_sample && <SampleBadge />}
               </div>
+              <h1 className="mt-3 font-display text-[29px] leading-[1.22] break-keep sm:text-[44px]" data-testid="meetup-title">
+                {meetup.title}
+              </h1>
             </div>
 
             {/* 2. 크리에이터 */}
