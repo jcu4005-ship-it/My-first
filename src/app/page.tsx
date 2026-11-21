@@ -137,7 +137,7 @@ export default async function Home() {
                     </p>
                   </div>
                   <div className="w-[72px] shrink-0 sm:w-[96px]">
-                    <SeatCircle decorative capacity={s.capacity} taken={s.reserved_count} you={hero.is_sample ? false : "open"} face={face} initial={hero.host?.display_name.slice(0, 1)} />
+                    <SeatCircle capacity={s.capacity} taken={s.reserved_count} you={hero.is_sample ? false : "open"} face={face} initial={hero.host?.display_name.slice(0, 1)} />
                   </div>
                 </div>
                 <div className="mt-4 flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
