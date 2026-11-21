@@ -8,6 +8,7 @@ import { SampleBadge, seatsLeft } from "@/components/meetups/badges";
 import { CircleGrid, hostVerified, seatLine } from "@/components/meetups/circle-card";
 import { collectDrops, DropList } from "@/components/meetups/drop-list";
 import { SiteFooter } from "@/components/site-footer";
+import { MagazineCover } from "@/components/home/magazine-cover";
 import { SiteHeader } from "@/components/site-header";
 import { HomeProofs, VerifiedChip } from "@/components/trust/proofs";
 import { PILLARS } from "@/config/pillars";
@@ -46,6 +47,8 @@ export default async function Home() {
     member ? listMyFollowedHosts(member.id).catch(() => []) : Promise.resolve([]),
     member && member.status === "active" ? listMyOpenAlerts() : Promise.resolve([]),
   ]);
+  // 표지 인물: 사진이 있는 크리에이터를 앞으로
+  const people = [...featured].sort((a, b) => Number(Boolean(creatorPhoto(b))) - Number(Boolean(creatorPhoto(a))));
   const loggedIn = Boolean(member && member.status === "active");
   const alertOn = new Set(myAlerts.map((a) => a.session_id));
   // 곧 열리는 원 (열림 시각이 정해진 회차, 가까운 순 3개 — 팔로우한 크리에이터 것이 있으면 먼저)
@@ -79,19 +82,14 @@ export default async function Home() {
 
   return (
     <Blue>
-      <SiteHeader />
+      <SiteHeader masthead />
       <main className="flex-1">
-        {/* 1. 첫 화면: 굵은 큰 제목 + 검색 + 분야 (갤러리 스타일) */}
-        <section className="mx-auto w-full max-w-6xl px-4 pt-7 sm:px-6 sm:pt-12" data-testid="home-intro">
-          <h1 className="max-w-3xl font-display text-[34px] leading-[1.2] break-keep sm:text-[56px]">
-            한 사람의 세계를
-            <br />
-            만나는 작은 자리
-          </h1>
-          <p className="mt-3 max-w-xl text-[16px] leading-relaxed text-muted-foreground sm:text-[18px]">
-            자기만의 작업과 관점을 가진 사람과 4~10명이 둘러앉아요. 결제와 환불은 라운디 안에서만 해요.
-          </p>
-          <form action="/meetups" method="get" role="search" className="mt-5 flex h-14 max-w-xl items-center gap-2 rounded-full border border-border bg-card py-1.5 pr-1.5 pl-5 shadow-[0_8px_22px_-14px_rgb(16_29_56/0.45)]">
+        {/* 1. 잡지 표지: 큰 제호(초록) · 호 정보 · 표지 인물 · 카피 · 이번 호 목차 (대표 선택 3번) */}
+        <MagazineCover meetups={all} people={people} />
+
+        {/* 1-0. 검색과 분야 (표지 아래, 가볍게) */}
+        <section className="mx-auto mt-12 w-full max-w-6xl px-4 sm:px-6" data-testid="home-intro">
+          <form action="/meetups" method="get" role="search" className="mt-5 flex h-14 max-w-xl items-center gap-2 rounded-full border border-border bg-card py-1.5 pr-1.5 pl-5 shadow-[0_8px_22px_-14px_rgb(20_24_28/0.45)]">
             <label htmlFor="home-search" className="sr-only">프로그램 검색</label>
             <input id="home-search" name="q" type="search" maxLength={40} placeholder="배우고 싶은 것, 크리에이터" className="h-full min-w-0 flex-1 bg-transparent text-[15.5px] outline-none placeholder:text-muted-foreground" />
             <button type="submit" aria-label="검색" className="flex size-11 shrink-0 items-center justify-center rounded-full bg-navy text-white hover:bg-navy/90">
@@ -129,7 +127,7 @@ export default async function Home() {
             {hero ? (fromFollowed ? "팔로우한 크리에이터의 원에 자리가 있어요" : "당신 자리가 비어 있어요") : "곧 첫 원이 열려요"}
           </h2>
           {hero && s && d && line ? (
-            <div className="grid overflow-hidden rounded-[24px] border border-border bg-card shadow-[0_18px_40px_-24px_rgb(16_29_56/0.45)] md:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)]">
+            <div className="grid overflow-hidden rounded-[24px] border border-border bg-card shadow-[0_18px_40px_-24px_rgb(20_24_28/0.45)] md:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)]">
               <div className="relative min-h-[260px] bg-navy-2 md:min-h-[340px]">
                 {face && (
                   // eslint-disable-next-line @next/next/no-img-element
@@ -140,7 +138,7 @@ export default async function Home() {
                     {hero.host?.display_name.slice(0, 1)}
                   </span>
                 )}
-                <div aria-hidden className="absolute inset-0 bg-gradient-to-t from-[#101d38]/95 via-[#101d38]/45 to-transparent" />
+                <div aria-hidden className="absolute inset-0 bg-gradient-to-t from-[#14181c]/95 via-[#14181c]/45 to-transparent" />
                 {hero.host && (
                   <Link href={hostHref(hero.host)} className="group absolute inset-x-4 bottom-4 flex items-end justify-between gap-2 text-white" data-testid="home-host">
                     <span className="flex flex-col">

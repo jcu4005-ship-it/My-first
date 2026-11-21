@@ -91,7 +91,7 @@ export function SiteHeader({ tabBar = true, masthead = false }: { tabBar?: boole
       <header className={`sticky top-0 z-30 bg-background/92 backdrop-blur ${masthead ? "" : "border-b border-border/70"}`}>
         <div className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between gap-3 px-4 sm:px-6">
           <div className="flex items-center gap-10 whitespace-nowrap">
-            <Link href="/" className="flex items-center text-foreground" aria-label={`${displayName()} 홈`} data-testid="site-logo">
+            <Link href="/" className="flex items-center text-brand" aria-label={`${displayName()} 홈`} data-testid="site-logo">
               {/* 메인은 아래에 큰 제호가 있으므로 심볼만 */}
               {masthead ? <LogoSymbol className="w-6" /> : <LogoInline />}
             </Link>

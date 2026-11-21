@@ -124,7 +124,7 @@ export default async function HostPage({ params }: PageProps<"/hosts/[slug]">) {
               className="object-[50%_18%] "
               fallback={<span aria-hidden className="absolute inset-0 flex items-center justify-center bg-navy-3 font-display text-[8rem] font-bold text-lit">{host.display_name.slice(0, 1)}</span>}
             />
-            <div aria-hidden className="absolute inset-0 bg-[linear-gradient(180deg,rgb(16_29_56/0.35),transparent_30%,transparent_45%,rgb(16_29_56/0.94))]" />
+            <div aria-hidden className="absolute inset-0 bg-[linear-gradient(180deg,rgb(20_24_28/0.35),transparent_30%,transparent_45%,rgb(20_24_28/0.94))]" />
             <div className="absolute inset-x-0 bottom-0 p-5 sm:p-7">
               <div className="flex flex-wrap gap-1.5">
                 {pillar && <span className="rounded-full bg-cream px-2.5 py-1 text-[13.5px] font-extrabold text-gold-ink">{pillar.ko}</span>}
@@ -132,7 +132,7 @@ export default async function HostPage({ params }: PageProps<"/hosts/[slug]">) {
               </div>
               <h1 className="mt-2 flex items-center gap-2 font-display text-[38px] leading-none font-bold tracking-[-0.02em] text-cream sm:text-[50px]">
                 <span data-testid="host-name">{host.display_name}</span>
-                {!introPending && <BadgeCheck aria-label="운영팀 심사를 통과한 호스트" className="size-6 shrink-0 text-gold" strokeWidth={2} />}
+                {!introPending && <BadgeCheck aria-label="운영팀 심사를 통과한 호스트" className="size-6 shrink-0 text-white" strokeWidth={2} />}
               </h1>
               {host.occupation && (
                 <p className="mt-1.5 text-[15px] text-cream/85" data-testid="host-occupation">

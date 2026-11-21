@@ -19,7 +19,8 @@ test("홈(모닥불 원): 크리에이터 얼굴 원 · 먼저 앉은 사람 · 
   await expect(cta).toHaveAttribute("href", /^\/meetups\/[0-9a-f-]{36}#booking$/);
   await page.getByTestId("home-about").click();
   await expect(page).toHaveURL(/\/about$/);
-  await expect(page.getByTestId("wordmark-chair")).toBeVisible();
+  // 홈에도 같은 제호가 있어 이전 화면이 숨겨진 채 남아 있음 → 보이는 것만 확인
+  await expect(page.getByTestId("wordmark-chair").filter({ visible: true })).toBeVisible();
 });
 
 test("라운디 이야기(예전 메인) 제호와 표지: O 자리에 의자 로고, 크리에이터 사진이 2초마다 바뀌고 점으로 넘길 수 있다", async ({ page }) => {

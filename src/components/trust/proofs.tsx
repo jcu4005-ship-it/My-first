@@ -15,7 +15,7 @@ export function VerifiedChip({ className, tone = "deep" }: { className?: string;
     <span
       className={cn(
         "inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[13px] font-bold",
-        tone === "deep" ? "border-gold bg-navy/80 text-gold" : "border-navy/30 bg-card text-forest",
+        tone === "deep" ? "border-white/70 bg-black/50 text-white" : "border-navy/30 bg-card text-forest",
         className,
       )}
       data-testid="verified-chip"

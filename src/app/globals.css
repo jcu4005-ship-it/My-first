@@ -39,21 +39,21 @@
   --ring: var(--forest);
   --radius: 1rem;
   color-scheme: light;
-  /* 프리미엄 블루 디자인 시스템 (대표 지정 2026-11-21 2차) — 기준 색. 코드를 바꾸지 말고 여기서만 관리합니다. */
-  --navy: #101d38;     /* Midnight Blue: 헤더·탭 막대·브랜드 영역 */
-  --slate: #263d63;    /* Slate Blue: 깊이감을 주는 보조 카드 */
-  --ice: #f5f2ea;      /* Warm Ivory: 콘텐츠 바탕 (이름은 예전 그대로) */
-  --white: #ffffff;    /* Pure White: 정보 카드 */
-  --gold: #c6a46a;     /* Champagne Gold: 핵심 버튼·선택 상태에만 */
-  --gold-ink: #101d38; /* 골드 위 글자 */
-  --text-main: #17243a;
-  --text-sub: #5e6879; /* 지정 #737D8D 는 아이보리 바탕에서 3.7:1 이라 같은 계열로 진하게 (5:1) */
-  --line: #e5e2da;
-  --soft: #faf8f3;
-  --navy-2: color-mix(in srgb, #101d38 55%, #263d63);
-  --navy-3: #263d63;
-  --lit: #aab9d6;
-  --ivory: #ffffff;
+  /* 3번 잡지 디자인 (대표 선택 2026-11-21): 아이보리 바탕 · 검정 글자/버튼 · 로고만 Forest Green */
+  --brand-green: #1c3a2c; /* 로고·제호·선택된 탭 — 초록은 여기에만 */
+  --navy: #14181c;     /* (예전 이름) 이제 "잉크 검정": 버튼·강조 */
+  --gold: #14181c;     /* (예전 이름) 핵심 버튼 = 검정. 골드는 쓰지 않음 */
+  --gold-ink: #f4f1ea; /* 검정 버튼 위 글자 */
+  --ice: #f4f1ea;
+  --white: #fffdf8;
+  --text-main: #14181c;
+  --text-sub: #4b5158;
+  --line: #d9d4c6;
+  --soft: #ebe7dc;
+  --navy-2: #232930;
+  --navy-3: #3a4048;
+  --lit: #8a9087;
+  --ivory: #fffdf8;
 }
 
 /*
@@ -62,36 +62,36 @@
  * 대비: 본문 #111827 / 보조 #4b5563 는 흰 바탕 위 7:1 이상. 골드 글자는 쓰지 않음(밝은 바탕에서 안 읽힘).
  */
 .theme-blue {
-  --background: #ffffff;
-  --foreground: #111827;
-  --card: #ffffff;
-  --muted: #f4f2ec;
-  --muted-foreground: #4b5563;
-  --border: #e7e4dc;
+  --background: #f4f1ea;
+  --foreground: #14181c;
+  --card: #fffdf8;
+  --muted: #ebe7dc;
+  --muted-foreground: #4b5158;
+  --border: #d9d4c6;
   --primary: var(--navy);
-  --primary-foreground: #ffffff;
-  --secondary: #f4f2ec;
-  --secondary-foreground: #111827;
-  --accent: #f4f2ec;
-  --accent-foreground: #111827;
+  --primary-foreground: #f4f1ea;
+  --secondary: #ebe7dc;
+  --secondary-foreground: #14181c;
+  --accent: #ebe7dc;
+  --accent-foreground: #14181c;
   --destructive: #b3382b;
-  --notice: #f4f2ec;
-  --notice-foreground: #111827;
+  --notice: #ebe7dc;
+  --notice-foreground: #14181c;
   --ring: var(--navy);
   --forest: var(--navy);
   --forest-deep: var(--navy);
-  --forest-soft: #e7e4dc;
-  --linen: #f4f2ec;
-  --cream: #ffffff;
+  --forest-soft: #d9d4c6;
+  --linen: #ebe7dc;
+  --cream: #f4f1ea;
   --clay: var(--navy);
-  --fog: #4b5563;
-  --sage: #4b5563;
-  --mint: #e7e4dc;
-  --seat-lit: var(--navy);
-  --seat-you: var(--gold);
-  --seat-dim: #d9d5c8;
+  --fog: #4b5158;
+  --sage: #4b5158;
+  --mint: #d9d4c6;
+  --seat-lit: #8a9087;
+  --seat-you: var(--brand-green);
+  --seat-dim: #d9d4c6;
   color-scheme: light;
-  background-color: #ffffff;
+  background-color: #f4f1ea;
   color: var(--foreground);
 }
 .theme-blue ::selection { background: var(--gold); color: var(--gold-ink); }
@@ -101,24 +101,24 @@
   font-weight: 800;
   letter-spacing: -0.04em;
 }
-.theme-blue > header { border-bottom: 1px solid #eeebe3; }
-.theme-blue > [data-tabbar] [aria-current="page"] { color: var(--navy); }
+.theme-blue > header { border-bottom: 0; }
+.theme-blue > [data-tabbar] [aria-current="page"] { color: var(--brand-green); }
 .theme-blue > header [data-testid="unread-count"] { color: #ffffff; }
 /* (예전 Deep Blue 영역 이름 — 이제 흰 바탕과 같은 모습) */
 .on-deep { background-color: transparent; }
 /* 긴 정보 패널: 흰색 + 얇은 테두리 */
 .theme-blue .sheet,
 .sheet {
-  --background: #ffffff;
-  --foreground: #111827;
-  --card: #faf9f5;
-  --muted: #f4f2ec;
-  --muted-foreground: #4b5563;
-  --border: #e7e4dc;
-  --secondary: #f4f2ec;
-  --secondary-foreground: #111827;
-  --notice: #f4f2ec;
-  --notice-foreground: #111827;
+  --background: #fffdf8;
+  --foreground: #14181c;
+  --card: #f7f4ec;
+  --muted: #ebe7dc;
+  --muted-foreground: #4b5158;
+  --border: #d9d4c6;
+  --secondary: #ebe7dc;
+  --secondary-foreground: #14181c;
+  --notice: #ebe7dc;
+  --notice-foreground: #14181c;
   --forest: var(--navy);
   --clay: var(--navy);
   --linen: #f4f2ec;
@@ -127,9 +127,9 @@
   --primary-foreground: #ffffff;
   --ring: var(--navy);
   color-scheme: light;
-  background-color: #ffffff;
-  border: 1px solid #e7e4dc;
-  color: #111827;
+  background-color: #fffdf8;
+  border: 1px solid #d9d4c6;
+  color: #14181c;
 }
 
 @theme inline {
@@ -174,6 +174,7 @@
   --color-gold: var(--gold);
   --color-gold-ink: var(--gold-ink);
   --color-lit: var(--lit);
+  --color-brand: var(--brand-green);
   --color-ivory: var(--ivory);
 }
 

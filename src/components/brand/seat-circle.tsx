@@ -97,7 +97,7 @@ export function SeatCircle({
         <defs>
           <filter id={glowId} x="-60%" y="-60%" width="220%" height="220%">
             <feGaussianBlur in="SourceGraphic" stdDeviation="28" result="b" />
-            <feFlood floodColor="#d6b77a" floodOpacity="0.6" />
+            <feFlood floodColor="#1c3a2c" floodOpacity="0.6" />
             <feComposite in2="b" operator="in" result="c" />
             <feMerge>
               <feMergeNode in="c" />
@@ -120,7 +120,7 @@ export function SeatCircle({
         ))}
       </svg>
       <div
-        className="@container absolute overflow-hidden rounded-full bg-muted shadow-[0_0_0_4px_var(--card),0_0_0_5px_var(--border),0_16px_40px_-16px_rgb(16_29_56/0.35)]"
+        className="@container absolute overflow-hidden rounded-full bg-muted shadow-[0_0_0_4px_var(--card),0_0_0_5px_var(--border),0_16px_40px_-16px_rgb(20_24_28/0.35)]"
         style={{
           width: `${faceSize}%`,
           height: `${(faceSize * VIEW.w) / VIEW.h}%`,
@@ -143,7 +143,7 @@ export function SeatCircle({
       {labelPos && (
         <span
           aria-hidden
-          className="absolute -translate-x-1/2 -translate-y-1/2 rounded-full bg-gold px-2.5 py-1 text-[12px] font-black whitespace-nowrap text-gold-ink shadow-[0_6px_20px_-4px_rgb(214_183_122/0.45)]"
+          className="absolute -translate-x-1/2 -translate-y-1/2 rounded-full bg-gold px-2.5 py-1 text-[12px] font-black whitespace-nowrap text-gold-ink shadow-[0_6px_20px_-4px_rgb(28_58_44/0.45)]"
           style={labelPos}
         >
           {label}
@@ -157,7 +157,7 @@ export function SeatCircle({
 export function SeatLegend({ closed = false, className }: { closed?: boolean; className?: string }) {
   const item = (color: string, text: string, glow = false) => (
     <span className="flex items-center gap-1.5">
-      <i aria-hidden className="size-3 rounded-[3px]" style={{ background: color, boxShadow: glow ? "0 0 6px #d6b77a" : undefined }} />
+      <i aria-hidden className="size-3 rounded-[3px]" style={{ background: color, boxShadow: glow ? "0 0 6px #1c3a2c" : undefined }} />
       {text}
     </span>
   );
