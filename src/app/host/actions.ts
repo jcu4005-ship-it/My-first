@@ -102,7 +102,7 @@ export async function addSessionAction(_prev: FormState, formData: FormData): Pr
   const member = await activeMember();
   if (!member) return LOGIN_REQUIRED;
   const meetupId = formValue(formData, "meetupId");
-  const values = Object.fromEntries(["date", "startTime", "endTime", "area", "venueName", "addressDetail", "capacity", "repeat", "count"].map((k) => [k, formValue(formData, k)]));
+  const values = Object.fromEntries(["date", "startTime", "endTime", "area", "venueName", "addressDetail", "capacity", "repeat", "count", "opensDate", "opensTime"].map((k) => [k, formValue(formData, k)]));
   const parsed = sessionFormSchema.safeParse(values);
   if (!parsed.success) return { status: "error", fieldErrors: fieldErrors(parsed.error), values };
   const v = parsed.data;
@@ -125,9 +125,26 @@ export async function addSessionAction(_prev: FormState, formData: FormData): Pr
     };
   }).filter((row) => !taken.has(new Date(row.starts_at).getTime()));
   if (!rows.length) return { status: "error", message: "이미 같은 시각에 일정이 있어요.", values };
-  const { error } = await supabase.from("meetup_sessions").insert(rows);
+  const { data: created, error } = await supabase.from("meetup_sessions").insert(rows).select("id, starts_at");
   if (error) {
     return { status: "error", message: error.code === "42501" ? "일정을 추가할 수 없는 프로그램입니다." : rpcErrorMessage(error), values };
+  }
+  // 열림 시각(드롭): 반복 일정이면 각 회차의 시작 시각과 같은 간격으로. 실패하면 그 일정은 바로 열리지 않게 모집 마감으로 두고 알려 줌
+  if (v.opensAt) {
+    const lead = new Date(v.startsAt).getTime() - new Date(v.opensAt).getTime();
+    const failed: string[] = [];
+    for (const row of created ?? []) {
+      const opens = new Date(new Date(row.starts_at).getTime() - lead).toISOString();
+      const { error: oe } = await supabase.rpc("host_set_session_opens_at", { p_session_id: row.id, p_opens_at: opens });
+      if (oe) {
+        await supabase.rpc("host_set_session_status", { p_session_id: row.id, p_action: "close" });
+        failed.push(rpcErrorMessage(oe));
+      }
+    }
+    if (failed.length) {
+      revalidatePath(`/host/meetups/${meetupId}`);
+      return { status: "error", message: `일정은 만들었지만 열림 시각을 정하지 못해 ${failed.length}개를 '모집 마감'으로 두었어요. (${failed[0]})`, values };
+    }
   }
   revalidatePath(`/host/meetups/${meetupId}`);
   const skipped = times - rows.length;
@@ -404,4 +421,34 @@ export async function duplicateMeetupAction(_prev: FormState, formData: FormData
   if (error || !data) return { status: "error", message: rpcErrorMessage(error) };
   revalidatePath("/host");
   redirect(`/host/meetups/${data.id}?saved=1&copied=1`);
+}
+
+const opensAtSchema = z.object({
+  sessionId: z.uuid(),
+  meetupId: z.uuid(),
+  opensDate: z.string().regex(/^(\d{4}-\d{2}-\d{2})?$/),
+  opensTime: z.string().regex(/^(\d{2}:\d{2})?$/),
+});
+
+/** 일정의 열림 시각 정하기·지우기 (둘 다 비우면 지움 = 바로 신청 가능). 규칙은 DB 함수가 최종 확인 */
+export async function setOpensAtAction(_prev: FormState, formData: FormData): Promise<FormState> {
+  const member = await activeMember();
+  if (!member) return LOGIN_REQUIRED;
+  const parsed = opensAtSchema.safeParse({
+    sessionId: formValue(formData, "sessionId"),
+    meetupId: formValue(formData, "meetupId"),
+    opensDate: formValue(formData, "opensDate"),
+    opensTime: formValue(formData, "opensTime"),
+  });
+  if (!parsed.success) return { status: "error", message: "오픈 일자와 시각을 확인해 주세요." };
+  const { sessionId, meetupId, opensDate, opensTime } = parsed.data;
+  if (Boolean(opensDate) !== Boolean(opensTime)) return { status: "error", message: "오픈 일자와 시각을 함께 입력하거나, 둘 다 비워 주세요." };
+  const opensAt = opensDate && opensTime ? new Date(`${opensDate}T${opensTime}:00+09:00`).toISOString() : null;
+  const supabase = await createSupabaseServerClient();
+  const { error } = await supabase.rpc("host_set_session_opens_at", { p_session_id: sessionId, p_opens_at: opensAt });
+  if (error) return { status: "error", message: rpcErrorMessage(error) };
+  revalidatePath(`/host/meetups/${meetupId}`);
+  revalidatePath(`/meetups/${meetupId}`);
+  revalidatePath("/drops");
+  return { status: "success", message: opensAt ? "열림 시각을 정했어요." : "열림 시각을 지웠어요. 지금부터 바로 신청할 수 있어요." };
 }

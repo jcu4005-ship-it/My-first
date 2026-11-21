@@ -88,3 +88,26 @@ export async function waitlistAction(_prev: FormState, formData: FormData): Prom
     message: parsed.data.op === "join" ? "대기 신청했어요. 자리가 나면 알림으로 알려 드려요." : "대기를 취소했어요.",
   };
 }
+
+const openAlertSchema = z.object({ meetupId: z.uuid(), sessionId: z.uuid(), op: z.enum(["on", "off"]) });
+
+/** 열리면 알림 받기 / 취소 — 본인만, 아직 열리지 않은 일정만 (DB가 확인) */
+export async function openAlertAction(_prev: FormState, formData: FormData): Promise<FormState> {
+  const member = await getCurrentMember();
+  if (!member || member.status !== "active") return { status: "error", message: "로그인이 필요합니다." };
+  const parsed = openAlertSchema.safeParse({
+    meetupId: formValue(formData, "meetupId"),
+    sessionId: formValue(formData, "sessionId"),
+    op: formValue(formData, "op"),
+  });
+  if (!parsed.success) return { status: "error", message: "잘못된 요청입니다." };
+  const supabase = await createSupabaseServerClient();
+  const { error } = await supabase.rpc("set_open_alert", { p_session_id: parsed.data.sessionId, p_on: parsed.data.op === "on" });
+  if (error) return { status: "error", message: rpcErrorMessage(error) };
+  revalidatePath(`/meetups/${parsed.data.meetupId}`);
+  revalidatePath("/drops");
+  return {
+    status: "success",
+    message: parsed.data.op === "on" ? "알림을 켰어요. 열리기 1시간 전과 열리는 순간에 알려 드려요." : "알림을 껐어요.",
+  };
+}

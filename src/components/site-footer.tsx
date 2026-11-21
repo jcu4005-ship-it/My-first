@@ -4,6 +4,7 @@ import { brand, displayName } from "@/config/brand";
 
 const LINKS = [
   { href: "/meetups", label: "프로그램" },
+  { href: "/drops", label: "곧 열리는 원" },
   { href: "/hosts", label: "크리에이터" },
   { href: "/journal", label: "저널" },
   { href: "/about", label: "라운디 이야기" },

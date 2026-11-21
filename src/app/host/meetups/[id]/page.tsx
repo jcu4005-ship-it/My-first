@@ -9,7 +9,7 @@ import { brand } from "@/config/brand";
 import { Button } from "@/components/ui/button";
 import { requireRole } from "@/lib/auth/guards";
 import { formatDate, formatPrice, formatTime, isFuture } from "@/lib/format";
-import { MEETUP_STATUS_LABEL, getHostSessionsAndParticipants, getMyMeetup, getWaitlistCounts, listMySessionNotices } from "@/lib/hosting/queries";
+import { MEETUP_STATUS_LABEL, getHostSessionsAndParticipants, getMyMeetup, getWaitlistCounts, listMySessionNotices, listSessionOpensAt } from "@/lib/hosting/queries";
 
 import {
   couponConsentAction,
@@ -21,7 +21,11 @@ import {
   sendSessionNoticeAction,
   sessionStatusAction,
 } from "../../actions";
-import { AddSessionForm, CapacityForm } from "./session-forms";
+import { AddSessionForm, CapacityForm, OpensAtForm } from "./session-forms";
+import { isNotYetOpen, kstDateKey, kstTime, opensLabel } from "@/lib/meetups/drops";
+
+/** 입력칸에 채울 한국 날짜·시각 */
+const kstDateTime = (iso: string) => ({ date: kstDateKey(iso), time: kstTime(iso) });
 
 export const metadata: Metadata = { title: "프로그램 관리" };
 export const instant = false;
@@ -34,10 +38,11 @@ export default async function ManageMeetupPage({ params, searchParams }: PagePro
   const member = await requireRole("host", `/host/meetups/${id}`);
   const meetup = await getMyMeetup(member.id, id);
   if (!meetup) notFound();
-  const [{ sessions, participants }, notices, waitCounts] = await Promise.all([
+  const [{ sessions, participants }, notices, waitCounts, opensAtBy] = await Promise.all([
     getHostSessionsAndParticipants(meetup.id),
     listMySessionNotices(meetup.id),
     getWaitlistCounts(meetup.id),
+    listSessionOpensAt(meetup.id),
   ]);
   const editable = ["draft", "pending_review", "rejected", "published"].includes(meetup.status);
 
@@ -145,6 +150,11 @@ export default async function ManageMeetupPage({ params, searchParams }: PagePro
                     <div>
                       <p className="font-semibold">{formatDate(s.starts_at)} {formatTime(s.starts_at)}</p>
                       <p className="text-sm text-muted-foreground">{s.area} · {s.venue_name}{s.address_detail ? ` · ${s.address_detail}` : ""}</p>
+                      {opensAtBy[s.id] && (
+                        <p className="mt-1 text-sm font-semibold" data-testid="session-opens-at">
+                          {isNotYetOpen({ opens_at: opensAtBy[s.id] }) ? `열림 시각 · ${opensLabel(opensAtBy[s.id])} (열리기 전)` : `열림 시각 · ${opensLabel(opensAtBy[s.id])} (열림)`}
+                        </p>
+                      )}
                     </div>
                     <div className="text-right">
                       {/* 시간이 지난 일정은 상태와 관계없이 "종료" (취소된 일정은 그대로 "취소됨") */}
@@ -213,6 +223,9 @@ export default async function ManageMeetupPage({ params, searchParams }: PagePro
                   {editable && future && s.status !== "cancelled" && (
                     <div className="mt-4 flex flex-wrap items-start gap-3 border-t pt-4">
                       <CapacityForm meetupId={meetup.id} sessionId={s.id} capacity={s.capacity} />
+                      {s.status === "open" && future && s.reserved_count === 0 && (
+                        <OpensAtForm meetupId={meetup.id} sessionId={s.id} current={opensAtBy[s.id] ? kstDateTime(opensAtBy[s.id]) : undefined} />
+                      )}
                       {s.status === "open" && <ActionForm action={sessionStatusAction} hidden={{ meetupId: meetup.id, sessionId: s.id, action: "close" }} label="모집 마감" variant="ghost" />}
                       {s.status === "closed" && <ActionForm action={sessionStatusAction} hidden={{ meetupId: meetup.id, sessionId: s.id, action: "open" }} label="모집 재개" variant="ghost" />}
                       <ActionForm action={hostCancelSessionAction} hidden={{ meetupId: meetup.id, sessionId: s.id }} label="일정 취소" variant="ghost"

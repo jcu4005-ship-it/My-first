@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { initialFormState } from "@/lib/forms";
 
-import { addSessionAction, updateCapacityAction } from "../../actions";
+import { addSessionAction, setOpensAtAction, updateCapacityAction } from "../../actions";
 
 export function AddSessionForm({ meetupId }: { meetupId: string }) {
   const [state, action, pending] = useActionState(addSessionAction, initialFormState);
@@ -50,6 +50,16 @@ export function AddSessionForm({ meetupId }: { meetupId: string }) {
         />
       </div>
       <p className="-mt-2 text-xs text-muted-foreground">반복을 고르면 첫 날짜부터 같은 시간·장소·정원으로 한 번에 추가돼요. 이미 같은 시각에 있는 일정은 건너뛰어요.</p>
+      <fieldset className="rounded-xl border border-dashed p-4" data-testid="opens-at-fields">
+        <legend className="px-1 text-sm font-semibold">열림 시각 (선택)</legend>
+        <p className="mb-3 text-xs text-muted-foreground">
+          정하면 그 시각 전에는 신청할 수 없고, 알림을 켜 둔 참가자와 팔로워에게 열리는 순간 알림이 가요. 비워 두면 지금처럼 바로 신청할 수 있어요. 반복 일정은 각 회차의 시작 시각과 같은 간격으로 정해져요.
+        </p>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Field name="opensDate" label="오픈 일자" type="date" defaultValue={v.opensDate} error={e.opensDate} />
+          <Field name="opensTime" label="오픈 시각" type="time" defaultValue={v.opensTime} error={e.opensTime} />
+        </div>
+      </fieldset>
       <Button type="submit" disabled={pending} className="self-start">{pending ? "추가 중…" : "일정 추가"}</Button>
     </form>
   );
@@ -63,6 +73,31 @@ export function CapacityForm({ meetupId, sessionId, capacity }: { meetupId: stri
       <input type="hidden" name="sessionId" value={sessionId} />
       <Input name="capacity" defaultValue={capacity} inputMode="numeric" aria-label="정원" className="h-9 w-20" />
       <Button type="submit" size="sm" variant="ghost" disabled={pending}>정원 변경</Button>
+      {state.message && (
+        <span className={state.status === "success" ? "text-xs text-muted-foreground" : "text-xs text-destructive"} role="status">
+          {state.message}
+        </span>
+      )}
+    </form>
+  );
+}
+
+/** 일정별 열림 시각 정하기·지우기 */
+export function OpensAtForm({ meetupId, sessionId, current }: { meetupId: string; sessionId: string; current?: { date: string; time: string } }) {
+  const [state, action, pending] = useActionState(setOpensAtAction, initialFormState);
+  return (
+    <form action={action} className="flex flex-wrap items-end gap-2" data-testid="opens-at-form">
+      <input type="hidden" name="meetupId" value={meetupId} />
+      <input type="hidden" name="sessionId" value={sessionId} />
+      <label className="flex flex-col gap-1 text-xs text-muted-foreground">
+        오픈 일자
+        <Input name="opensDate" type="date" defaultValue={current?.date} aria-label="오픈 일자" className="h-9 w-40" />
+      </label>
+      <label className="flex flex-col gap-1 text-xs text-muted-foreground">
+        오픈 시각
+        <Input name="opensTime" type="time" defaultValue={current?.time} aria-label="오픈 시각" className="h-9 w-32" />
+      </label>
+      <Button type="submit" size="sm" variant="ghost" disabled={pending}>열림 시각 저장</Button>
       {state.message && (
         <span className={state.status === "success" ? "text-xs text-muted-foreground" : "text-xs text-destructive"} role="status">
           {state.message}

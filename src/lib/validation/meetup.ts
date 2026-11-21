@@ -108,13 +108,26 @@ export const sessionFormSchema = z
     venueName: z.string().trim().min(2, "장소 이름을 입력해 주세요.").max(60),
     addressDetail: z.string().trim().max(200, "상세 주소는 200자 이내로 입력해 주세요."),
     capacity: z.coerce.number().int("정원을 숫자로 입력해 주세요.").min(1, "정원은 1명 이상이에요.").max(200, "정원은 200명 이하로 입력해 주세요."),
+    // 열림 시각(드롭, 선택): 둘 다 비우면 지금처럼 바로 신청. 날짜·시각은 같이 입력
+    opensDate: z.string().regex(/^(\d{4}-\d{2}-\d{2})?$/, "오픈 일자를 확인해 주세요.").default(""),
+    opensTime: z.string().regex(/^(\d{2}:\d{2})?$/, "오픈 시각을 확인해 주세요.").default(""),
   })
   .transform((v) => ({
     ...v,
     startsAt: new Date(`${v.date}T${v.startTime}:00${KST_OFFSET}`).toISOString(),
     endsAt: new Date(`${v.date}T${v.endTime}:00${KST_OFFSET}`).toISOString(),
+    opensAt: v.opensDate && v.opensTime ? new Date(`${v.opensDate}T${v.opensTime}:00${KST_OFFSET}`).toISOString() : null,
   }))
   .superRefine((v, ctx) => {
+    if (Boolean(v.opensDate) !== Boolean(v.opensTime)) {
+      ctx.addIssue({ code: "custom", path: ["opensTime"], message: "오픈 일자와 시각을 함께 입력하거나, 둘 다 비워 주세요." });
+    } else if (v.opensAt) {
+      if (new Date(v.opensAt).getTime() <= Date.now()) {
+        ctx.addIssue({ code: "custom", path: ["opensDate"], message: "열림 시각은 지금보다 뒤여야 해요." });
+      } else if (new Date(v.opensAt) >= new Date(v.startsAt)) {
+        ctx.addIssue({ code: "custom", path: ["opensDate"], message: "열림 시각은 프로그램 시작보다 앞이어야 해요." });
+      }
+    }
     if (new Date(v.endsAt) <= new Date(v.startsAt)) {
       ctx.addIssue({ code: "custom", path: ["endTime"], message: "끝나는 시간은 시작 시간보다 늦어야 해요." });
     }

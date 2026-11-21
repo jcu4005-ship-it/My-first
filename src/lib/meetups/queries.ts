@@ -14,6 +14,8 @@ export type Session = {
   capacity: number;
   reserved_count: number;
   status: "open" | "closed" | "cancelled" | "completed";
+  /** 열림 시각(드롭). 비어 있으면 바로 신청 가능 */
+  opens_at: string | null;
 };
 
 export type HostSummary = {
@@ -84,7 +86,7 @@ const HOST_DETAIL_SELECT =
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 const CARD_SELECT =
-  "id, title, summary, price, category_slug, cover_image_url, cover_path, is_sample, status, host:host_profiles(user_id, slug, display_name, headline, is_sample, is_test, avatar_path, occupation), sessions:meetup_sessions(id, starts_at, ends_at, area, venue_name, capacity, reserved_count, status)";
+  "id, title, summary, price, category_slug, cover_image_url, cover_path, is_sample, status, host:host_profiles(user_id, slug, display_name, headline, is_sample, is_test, avatar_path, occupation), sessions:meetup_sessions(id, starts_at, ends_at, area, venue_name, capacity, reserved_count, status, opens_at)";
 
 type Row = {
   id: string;
@@ -163,7 +165,7 @@ export async function getMeetup(id: string): Promise<MeetupDetail | null> {
   const { data, error } = await supabase
     .from("meetups")
     .select(
-      "id, title, summary, description, price, category_slug, cover_image_url, cover_path, meetup_type, is_sample, status, max_quantity_per_booking, target_audience, requirements, what_to_bring, agenda, refund_policy_text, level, learning_outcomes, materials_note, accept_coupons, host:host_profiles(user_id, slug, display_name, headline, bio, expertise, instagram_handle, career, occupation, avatar_path, is_sample), sessions:meetup_sessions(id, starts_at, ends_at, area, venue_name, capacity, reserved_count, status)",
+      "id, title, summary, description, price, category_slug, cover_image_url, cover_path, meetup_type, is_sample, status, max_quantity_per_booking, target_audience, requirements, what_to_bring, agenda, refund_policy_text, level, learning_outcomes, materials_note, accept_coupons, host:host_profiles(user_id, slug, display_name, headline, bio, expertise, instagram_handle, career, occupation, avatar_path, is_sample), sessions:meetup_sessions(id, starts_at, ends_at, area, venue_name, capacity, reserved_count, status, opens_at)",
     )
     .eq("id", id)
     .eq("status", "published")

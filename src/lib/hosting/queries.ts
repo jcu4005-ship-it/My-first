@@ -136,6 +136,13 @@ export async function getHostSessionsAndParticipants(meetupId: string) {
   return { sessions: (sessions.data ?? []) as HostSession[], participants: (participants.data ?? []) as Participant[] };
 }
 
+/** 일정별 열림 시각(드롭). 비어 있으면 바로 신청 가능 */
+export async function listSessionOpensAt(meetupId: string): Promise<Record<string, string>> {
+  const supabase = await createSupabaseServerClient();
+  const { data } = await supabase.from("meetup_sessions").select("id, opens_at").eq("meetup_id", meetupId).not("opens_at", "is", null);
+  return Object.fromEntries((data ?? []).map((r) => [r.id as string, r.opens_at as string]));
+}
+
 export type SessionNotice = { id: string; session_id: string; body: string; recipients: number; created_at: string };
 
 /** 내가 참가자에게 보낸 공지 기록 */

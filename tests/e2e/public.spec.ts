@@ -275,6 +275,25 @@ test("개인정보 처리방침: 바닥글·가입 화면에서 연결, 초안 �
   await expect(policy).toContainText("촬영 위치(GPS)");
 });
 
+test("화면을 옮겨도 글자가 보인다: 홈(네이비)에서 약관(밝은 화면)으로 이동해도 바탕·글자 대비 4.5 이상 (이전 화면이 숨겨져 남아도)", async ({ page }) => {
+  await page.goto("/");
+  await page.getByRole("contentinfo").getByRole("link", { name: "이용약관" }).click();
+  await expect(page).toHaveURL(/\/terms$/);
+  const ratio = await page.evaluate(() => {
+    const rgb = (c: string) => (c.match(/[\d.]+/g) ?? []).slice(0, 3).map(Number);
+    const lum = ([r, g, b]: number[]) => {
+      const f = (v: number) => { const x = v / 255; return x <= 0.03928 ? x / 12.92 : Math.pow((x + 0.055) / 1.055, 2.4); };
+      return 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b);
+    };
+    const h1 = document.querySelector("main h1:not([hidden])") as HTMLElement;
+    const text = rgb(getComputedStyle(h1).color);
+    const bg = rgb(getComputedStyle(document.body).backgroundColor);
+    const [a, b] = [lum(text), lum(bg)];
+    return (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
+  });
+  expect(ratio).toBeGreaterThanOrEqual(4.5);
+});
+
 test("약관·환불 정책: 바닥글에서 연결, 초안 표시, 환불 기준 3단계, 프로그램 상세에 같은 기준", async ({ page }) => {
   await page.goto("/");
   await page.getByRole("contentinfo").getByRole("link", { name: "이용약관" }).click();

@@ -6,12 +6,15 @@ import { HostCard } from "@/components/hosts/host-card";
 import { Night } from "@/components/layout/night";
 import { SampleBadge, seatsLeft } from "@/components/meetups/badges";
 import { CircleGrid, hostVerified, seatLine } from "@/components/meetups/circle-card";
+import { collectDrops, DropList } from "@/components/meetups/drop-list";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { getCurrentMember } from "@/lib/auth/session";
 import { formatPrice, ticketDate } from "@/lib/format";
 import { creatorPhoto, hostHref } from "@/lib/hosting/avatar";
 import { listMyFollowedHosts } from "@/lib/hosting/follows";
+import { isNotYetOpen } from "@/lib/meetups/drops";
+import { listMyOpenAlerts } from "@/lib/meetups/open-alerts";
 import { getHost, listCategories, listFeaturedHosts, listUpcomingMeetups, type MeetupCardData } from "@/lib/meetups/queries";
 import { REFUND_RULES } from "@/lib/payments/refund-policy";
 import { getHostReviewSummaries } from "@/lib/reviews/queries";
@@ -25,7 +28,8 @@ import { getHostReviewSummaries } from "@/lib/reviews/queries";
  */
 export const instant = false;
 
-const open = (m: MeetupCardData) => m.nextSession.status === "open" && seatsLeft(m.nextSession) > 0;
+// 지금 신청할 수 있는 원: 모집 중 + 자리 있음 + 열림 시각이 지났거나 없음
+const open = (m: MeetupCardData) => m.nextSession.status === "open" && seatsLeft(m.nextSession) > 0 && !isNotYetOpen(m.nextSession);
 /** 많이 찬 순, 같으면 가까운 일정 */
 const byFill = (a: MeetupCardData, b: MeetupCardData) =>
   b.nextSession.reserved_count / b.nextSession.capacity - a.nextSession.reserved_count / a.nextSession.capacity ||
@@ -33,12 +37,17 @@ const byFill = (a: MeetupCardData, b: MeetupCardData) =>
 
 export default async function Home() {
   const member = await getCurrentMember().catch(() => null);
-  const [all, categories, featured, followed] = await Promise.all([
+  const [all, categories, featured, followed, myAlerts] = await Promise.all([
     listUpcomingMeetups(),
     listCategories(),
     listFeaturedHosts(6),
     member ? listMyFollowedHosts(member.id).catch(() => []) : Promise.resolve([]),
+    member && member.status === "active" ? listMyOpenAlerts() : Promise.resolve([]),
   ]);
+  const loggedIn = Boolean(member && member.status === "active");
+  const alertOn = new Set(myAlerts.map((a) => a.session_id));
+  // 곧 열리는 원 (열림 시각이 정해진 회차, 가까운 순 3개 — 팔로우한 크리에이터 것이 있으면 먼저)
+  const drops = collectDrops(all, isNotYetOpen);
   const followedIds = new Set(followed.map((f) => f.host.user_id));
   const openOnes = all.filter(open);
   // 첫 화면 원: 팔로우한 크리에이터의 열린 원 → 신청할 수 있는(샘플 아닌) 원 중 많이 찬 것 → 샘플이라도
@@ -49,6 +58,10 @@ export default async function Home() {
     null;
   const fromFollowed = Boolean(hero?.host && followedIds.has(hero.host.user_id));
   const rest = [...openOnes].filter((m) => m.id !== hero?.id).sort(byFill).slice(0, 6);
+  const homeDrops = [...drops]
+    .sort((a, b) => Number(followedIds.has(b.meetup.host?.user_id ?? "")) - Number(followedIds.has(a.meetup.host?.user_id ?? "")) || (a.session.opens_at as string).localeCompare(b.session.opens_at as string))
+    .slice(0, 3)
+    .sort((a, b) => (a.session.opens_at as string).localeCompare(b.session.opens_at as string));
   const names = Object.fromEntries(categories.map((c) => [c.slug, c.name]));
   const repOf = (hostId: string) => all.find((m) => m.host?.user_id === hostId) ?? null;
   const [heroHost, trust] = await Promise.all([
@@ -169,6 +182,20 @@ export default async function Home() {
             </p>
           )}
         </section>
+
+        {/* 2-1. 곧 열리는 원 (열림 시각이 정해진 원이 있을 때만) */}
+        {homeDrops.length > 0 && (
+          <section className="mx-auto mt-14 w-full max-w-6xl px-4 sm:px-6" data-testid="home-drops">
+            <div className="mb-4 flex items-end justify-between gap-3">
+              <h2 className="font-display text-[24px] font-bold tracking-[-0.02em] sm:text-[30px]">곧 열리는 원</h2>
+              <Link href="/drops" className="flex shrink-0 items-center gap-1 text-[14px] font-semibold text-muted-foreground hover:text-foreground">
+                {drops.length}개 · 전체 보기
+                <ArrowRight aria-hidden className="size-4" strokeWidth={1.8} />
+              </Link>
+            </div>
+            <DropList items={homeDrops} alertOn={alertOn} loggedIn={loggedIn} followedIds={followedIds} />
+          </section>
+        )}
 
         {/* 3. 지금 열린 원 */}
         <section className="mx-auto mt-14 w-full max-w-6xl px-4 sm:px-6" data-testid="home-open">

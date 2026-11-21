@@ -6,6 +6,7 @@ import { Photo } from "@/components/media/photo";
 import { SaveButton } from "@/components/saved";
 import { formatPrice, ticketDate } from "@/lib/format";
 import { creatorPhoto } from "@/lib/hosting/avatar";
+import { isNotYetOpen, opensLabel } from "@/lib/meetups/drops";
 import type { MeetupCardData, Session } from "@/lib/meetups/queries";
 import type { ReviewSummary } from "@/lib/reviews/queries";
 import { cn } from "@/lib/utils";
@@ -13,8 +14,10 @@ import { cn } from "@/lib/utils";
 import { SampleBadge, seatsLeft } from "./badges";
 
 /** "몇 명이 먼저 앉았는지" 한 줄 — 실제 예약 수만 */
-export function seatLine(s: Session) {
+export function seatLine(s: Session): { text: string; closed: boolean; left: number; notOpen?: boolean } {
   const left = seatsLeft(s);
+  // 열림 시각(드롭) 전: 자리 수가 아니라 "언제 열리는지"
+  if (s.status === "open" && isNotYetOpen(s)) return { text: `${opensLabel(s.opens_at as string)}에 열려요`, closed: false, left, notOpen: true };
   if (s.status !== "open" || left === 0) return { text: "모집 마감 · 원이 가득 찼어요", closed: true, left: 0 };
   if (s.reserved_count === 0) return { text: `첫 번째 자리예요 · ${left}자리 남음`, closed: false, left };
   return { text: `${s.reserved_count}명 신청 · ${left}자리 남음`, closed: false, left };
@@ -83,7 +86,8 @@ export function CircleCard({ meetup, categoryName, trust }: { meetup: MeetupCard
             decorative
             capacity={s.capacity}
             taken={s.reserved_count}
-            you={line.closed ? false : "open"}
+            closed={Boolean(line.notOpen)}
+            you={line.closed || line.notOpen ? false : "open"}
             face={face}
             initial={host?.display_name.slice(0, 1) ?? meetup.title.slice(0, 1)}
           />

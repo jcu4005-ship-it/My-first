@@ -40,6 +40,11 @@ export function isFuture(iso: string): boolean {
   return new Date(iso).getTime() > Date.now();
 }
 
+/** 지금부터 그 시각까지 남은 초 (지났으면 0) — 서버가 첫 화면의 카운트다운 값을 정할 때 */
+export function secondsUntil(iso: string): number {
+  return Math.max(0, Math.ceil((new Date(iso).getTime() - Date.now()) / 1000));
+}
+
 /** 2026. 11. 9. */
 export function formatYmd(iso: string): string {
   return new Intl.DateTimeFormat("ko-KR", { timeZone: TZ, year: "numeric", month: "numeric", day: "numeric" }).format(new Date(iso));

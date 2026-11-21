@@ -7,10 +7,14 @@ import { SeatCircle } from "@/components/brand/seat-circle";
 import { FormMessage } from "@/components/forms/field";
 import { Button } from "@/components/ui/button";
 import { formatDate, formatPrice, formatTime } from "@/lib/format";
+import { opensLabel } from "@/lib/meetups/drops";
 import { initialFormState } from "@/lib/forms";
 import { cn } from "@/lib/utils";
 
 import { bookAction, previewCouponAction, type CouponPreview } from "./actions";
+
+/** 누를 수 없는 안내 버튼: 흐리게(투명) 말고 또렷한 글자로 */
+const INFO_BUTTON = "h-14 w-full rounded-xl border border-border bg-muted text-[15px] font-semibold text-foreground disabled:opacity-100";
 
 export type BookingSession = {
   id: string;
@@ -21,6 +25,9 @@ export type BookingSession = {
   reserved: number;
   open: boolean;
   mine: boolean;
+  /** 열림 시각(드롭) — 아직 안 됐으면 신청할 수 없음 */
+  opensAt?: string | null;
+  notYetOpen?: boolean;
 };
 
 export function BookingForm({
@@ -46,7 +53,7 @@ export function BookingForm({
   initial?: string;
 }) {
   const [result, action, pending] = useActionState(bookAction, initialFormState);
-  const firstAvailable = sessions.find((s) => s.open && s.left > 0 && !s.mine);
+  const firstAvailable = sessions.find((s) => s.open && s.left > 0 && !s.mine && !s.notYetOpen);
   const [sessionId, setSessionId] = useState(firstAvailable?.id ?? "");
   const [quantity, setQuantity] = useState(1);
   const selected = sessions.find((s) => s.id === sessionId);
@@ -74,14 +81,15 @@ export function BookingForm({
               decorative
               capacity={shown.capacity}
               taken={shown.reserved + (canBook && selected ? quantity - 1 : 0)}
-              you={!shown.open || shown.left === 0 ? false : canBook && selected ? "open" : false}
+              closed={Boolean(shown.notYetOpen)}
+              you={!shown.open || shown.left === 0 || shown.notYetOpen ? false : canBook && selected ? "open" : false}
               face={face}
               initial={initial}
             />
           </div>
           <div className="min-w-0">
             <p className="text-[20px] leading-tight font-bold tracking-[-0.02em] break-keep sm:text-[22px]">
-              {!shown.open || shown.left === 0 ? "모집 마감 · 원이 가득 찼어요" : shown.reserved === 0 ? "첫 번째 자리예요" : `${shown.left}자리 남았어요`}
+              {shown.notYetOpen && shown.opensAt ? `${opensLabel(shown.opensAt)}에 열려요` : !shown.open || shown.left === 0 ? "모집 마감 · 원이 가득 찼어요" : shown.reserved === 0 ? "첫 번째 자리예요" : `${shown.left}자리 남았어요`}
             </p>
             <p className="mt-1 text-[14.5px] text-muted-foreground">
               정원 {shown.capacity}명 · {shown.reserved}명 신청{shown.open && shown.left > 0 ? ` · ${shown.left}자리 남음` : ""}
@@ -92,7 +100,7 @@ export function BookingForm({
       <fieldset className="flex flex-col gap-2">
         <legend className="sr-only">일정 선택</legend>
         {sessions.map((s) => {
-          const disabled = !s.open || s.left === 0 || s.mine || viewerState !== "ok";
+          const disabled = !s.open || s.left === 0 || s.mine || s.notYetOpen || viewerState !== "ok";
           return (
             <label
               key={s.id}
@@ -121,6 +129,8 @@ export function BookingForm({
               <span className="text-[13px]">
                 {s.mine ? (
                   <span className="pill bg-gold text-gold-ink" data-testid="session-mine">내 자리</span>
+                ) : s.notYetOpen && s.opensAt ? (
+                  <span className="font-bold text-gold" data-testid="session-not-open">{opensLabel(s.opensAt)} 오픈</span>
                 ) : !s.open || s.left === 0 ? (
                   <span className="text-muted-foreground" data-testid="seats-full">마감</span>
                 ) : s.left <= 3 ? (
@@ -181,19 +191,19 @@ export function BookingForm({
         </Button>
       ) : viewerState === "beta_paid" ? (
         <div className="flex flex-col gap-2" data-testid="beta-paid-notice">
-          <Button size="lg" className="w-full" disabled>비공개 베타 기간에는 무료 프로그램만 신청할 수 있어요</Button>
+          <Button size="lg" className={INFO_BUTTON} disabled>비공개 베타 기간에는 무료 프로그램만 신청할 수 있어요</Button>
           <p className="text-center text-[13px] text-muted-foreground">결제 기능은 정식 오픈 때 열려요.</p>
         </div>
       ) : viewerState === "sample" ? (
-        <Button size="lg" className="w-full" disabled>샘플 프로그램은 신청할 수 없어요</Button>
+        <Button size="lg" className={INFO_BUTTON} disabled>샘플 프로그램은 신청할 수 없어요</Button>
       ) : viewerState === "own" ? (
-        <Button size="lg" className="w-full" disabled>내가 연 프로그램이에요</Button>
+        <Button size="lg" className={INFO_BUTTON} disabled>내가 연 프로그램이에요</Button>
       ) : firstAvailable ? (
         <Button type="submit" size="lg" className="h-14 w-full rounded-xl text-[16px] font-bold" disabled={pending || !sessionId} data-testid="book-submit">
           {pending ? "자리 잡는 중…" : `이 자리에 앉기 · ${formatPrice(applied ? applied.total : price * quantity)}`}
         </Button>
       ) : (
-        <Button size="lg" className="w-full" disabled>신청 가능한 일정이 없어요</Button>
+        <Button size="lg" className={INFO_BUTTON} disabled>{sessions.some((x) => x.notYetOpen) ? "아직 열리지 않았어요" : "신청 가능한 일정이 없어요"}</Button>
       )}
       {viewerState === "ok" && <p className="text-center text-[13px] text-muted-foreground">무료 프로그램은 바로 확정되고, 유료 프로그램은 테스트 결제 화면으로 이동해요. (지금은 실제 청구가 없는 테스트 모드)</p>}
     </form>

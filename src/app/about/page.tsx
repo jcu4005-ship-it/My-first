@@ -10,6 +10,7 @@ import { CoverRotator } from "@/components/home/cover-rotator";
 import { ContentCard } from "@/components/contents/content-card";
 import { Photo } from "@/components/media/photo";
 import { MeetupRow } from "@/components/meetups/meetup-card";
+import { Night } from "@/components/layout/night";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { PILLARS, pillarInfo } from "@/config/pillars";
@@ -48,9 +49,9 @@ function Head({ en, title, id, href, more }: { en: string; title: React.ReactNod
 
 /** 크리에이터 특집의 세 가지 색 (사람마다 다른 인상) */
 const TONES = [
-  { box: "bg-[#131a2b] text-[#eef0f5]", sub: "text-[#eef0f5]/70", line: "border-white/25" },
-  { box: "bg-[#e6d9c4] text-[#1e2b45]", sub: "text-[#1e2b45]/70", line: "border-black/20" },
-  { box: "bg-[#e7e4df] text-foreground", sub: "text-fog", line: "border-black/20" },
+  { box: "bg-[#18223a] text-[#eef1f7] ring-1 ring-white/10", sub: "text-[#c5cee0]", line: "border-white/25" },
+  { box: "bg-[#efe6d3] text-[#14213d]", sub: "text-[#4a5368]", line: "border-black/20" },
+  { box: "bg-[#e9e6e0] text-[#14213d]", sub: "text-[#4a5368]", line: "border-black/20" },
 ] as const;
 
 /** 인기순: 예약률이 높은 순 (같으면 가까운 일정 순) */
@@ -400,7 +401,7 @@ export const metadata = { title: "라운디 이야기" };
 
 export default function About() {
   return (
-    <>
+    <Night>
       <SiteHeader masthead />
       <main className="flex-1">
         <Suspense fallback={<CoverSkeleton />}>
@@ -412,6 +413,6 @@ export default function About() {
         <JoinBand />
       </main>
       <SiteFooter />
-    </>
+    </Night>
   );
 }

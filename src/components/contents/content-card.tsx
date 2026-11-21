@@ -22,7 +22,7 @@ export function ContentCard({ content, className = "" }: { content: ContentCardD
             </span>
           }
         />
-        <span className="pill relative bg-white/95 text-forest shadow-sm">{type?.label ?? "Journal"}</span>
+        <span className="pill relative border border-border bg-card text-foreground shadow-sm">{type?.label ?? "Journal"}</span>
       </span>
       <span className="flex flex-1 flex-col p-4">
       <span className="text-xs text-muted-foreground">

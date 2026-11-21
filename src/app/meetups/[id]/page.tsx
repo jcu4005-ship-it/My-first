@@ -22,7 +22,7 @@ import { SiteHeader } from "@/components/site-header";
 import { Button } from "@/components/ui/button";
 import { getCurrentMember } from "@/lib/auth/session";
 import { myConfirmedSessionIds } from "@/lib/bookings/queries";
-import { durationLabel, formatDate, formatPrice, formatTime } from "@/lib/format";
+import { durationLabel, formatDate, formatPrice, formatTime, secondsUntil } from "@/lib/format";
 import { getFollowState } from "@/lib/hosting/follows";
 import { getHost, getMeetup, listCategories, listHostActivity, listUpcomingMeetups } from "@/lib/meetups/queries";
 import { REFUND_RULES } from "@/lib/payments/refund-policy";
@@ -33,6 +33,10 @@ import { BookingForm } from "./booking-form";
 import { WaitlistPanel } from "./waitlist-panel";
 import { listMyWaitlist } from "@/lib/bookings/waitlist";
 import { creatorPhoto, hostHref } from "@/lib/hosting/avatar";
+import { isNotYetOpen, opensLabel } from "@/lib/meetups/drops";
+import { listMyOpenAlerts } from "@/lib/meetups/open-alerts";
+import { OpensCountdown } from "@/components/meetups/opens-countdown";
+import { OpenAlertButton } from "@/components/meetups/open-alert-button";
 
 export const instant = false;
 
@@ -72,7 +76,7 @@ export default async function MeetupDetailPage({ params }: PageProps<"/meetups/[
   const { id } = await params;
   const [meetup, categories, member, settings] = await Promise.all([getMeetup(id), listCategories(), getCurrentMember(), getAppSettings()]);
   if (!meetup) notFound();
-  const [mine, follow, reviews, reviewSummary, myWaitlist, hostPrograms, hostFull, activity, hostReviews] = await Promise.all([
+  const [mine, follow, reviews, reviewSummary, myWaitlist, hostPrograms, hostFull, activity, hostReviews, myAlerts] = await Promise.all([
     member ? myConfirmedSessionIds(member.id, meetup.upcomingSessions.map((s) => s.id)) : Promise.resolve(new Set<string>()),
     meetup.host ? getFollowState(meetup.host.user_id, member?.id ?? null) : Promise.resolve(null),
     listPublicReviews({ meetupId: meetup.id }),
@@ -82,7 +86,9 @@ export default async function MeetupDetailPage({ params }: PageProps<"/meetups/[
     meetup.host ? getHost(meetup.host.user_id).catch(() => null) : Promise.resolve(null),
     meetup.host ? listHostActivity(meetup.host.user_id, 6) : Promise.resolve([]),
     meetup.host ? getReviewSummary({ hostId: meetup.host.user_id }) : Promise.resolve({ count: 0, avg: null }),
+    member ? listMyOpenAlerts() : Promise.resolve([]),
   ]);
+  const alertOn = new Set(myAlerts.map((a) => a.session_id));
   const otherPrograms = hostPrograms.filter((m) => m.id !== meetup.id).slice(0, 3);
   const waiting = new Set(myWaitlist.map((w) => w.session_id));
   // 비공개 베타: 유료 프로그램 신청 막음 (DB도 한 번 더 막음)
@@ -97,10 +103,16 @@ export default async function MeetupDetailPage({ params }: PageProps<"/meetups/[
     reserved: s.reserved_count,
     open: s.status === "open",
     mine: mine.has(s.id),
+    opensAt: s.opens_at,
+    notYetOpen: isNotYetOpen(s),
   }));
   const category = categories.find((c) => c.slug === meetup.category_slug);
   const next = meetup.nextSession;
-  const anyOpen = meetup.upcomingSessions.some((s) => s.status === "open" && seatsLeft(s) > 0);
+  const anyOpen = meetup.upcomingSessions.some((s) => s.status === "open" && seatsLeft(s) > 0 && !isNotYetOpen(s));
+  // 열림 시각(드롭)이 아직 안 된 일정 — 가장 가까운 열림 순
+  const unopened = meetup.upcomingSessions.filter((s) => s.status === "open" && isNotYetOpen(s)).sort((a, b) => (a.opens_at as string).localeCompare(b.opens_at as string));
+  const nextUnopened = unopened[0] ?? null;
+  const loggedIn = Boolean(member && member.status === "active");
 
   const style = categoryStyle(meetup.category_slug);
   const outcomes = lines(meetup.learning_outcomes);
@@ -108,8 +120,8 @@ export default async function MeetupDetailPage({ params }: PageProps<"/meetups/[
   const avatar = meetup.host ? creatorPhoto(meetup.host) : null;
   // 신청할 수 없는 프로그램(샘플·베타 유료)은 버튼이 신청되는 것처럼 보이지 않게
   const cannotBook = viewerState === "sample" || viewerState === "beta_paid";
-  const ctaShort = cannotBook ? (viewerState === "sample" ? "예시 프로그램 · 신청 불가" : "지금은 신청 불가 · 일정 보기") : anyOpen ? "이 자리에 앉기" : "대기 · 일정 보기";
-  const cta = cannotBook ? ctaShort : anyOpen ? `이 자리에 앉기 · ${formatPrice(meetup.price)}` : "원이 가득 찼어요 · 일정 보기";
+  const ctaShort = cannotBook ? (viewerState === "sample" ? "예시 프로그램 · 신청 불가" : "지금은 신청 불가 · 일정 보기") : anyOpen ? "이 자리에 앉기" : nextUnopened ? "열리면 알림 받기" : "대기 · 일정 보기";
+  const cta = cannotBook ? ctaShort : anyOpen ? `이 자리에 앉기 · ${formatPrice(meetup.price)}` : nextUnopened ? `${opensLabel(nextUnopened.opens_at as string)}에 열려요` : "원이 가득 찼어요 · 일정 보기";
   // 소개를 아직 쓰지 않은 호스트(이름·분야만 등록)에게는 "심사 통과" 표시를 붙이지 않음
   const hostVerified = Boolean(meetup.host && (meetup.host.bio || meetup.host.headline));
   const more = meetup.upcomingSessions.length - 1;
@@ -117,7 +129,8 @@ export default async function MeetupDetailPage({ params }: PageProps<"/meetups/[
   const coverPhoto = avatar ?? meetup.cover_image_url;
   const coverIsCreator = Boolean(avatar);
   const nextLeft = next ? seatsLeft(next) : 0;
-  const nextLine = next ? seatLine(next) : null;
+  const nextNotOpen = next ? isNotYetOpen(next) : false;
+  const nextLine = next ? (nextNotOpen ? { text: `${opensLabel(next.opens_at as string)}에 열려요`, closed: false, left: nextLeft } : seatLine(next)) : null;
   const initial = meetup.host?.display_name.slice(0, 1) ?? meetup.title.slice(0, 1);
 
   /** 원 + 먼저 앉은 사람 (다음 일정 기준, 실제 예약 수) */
@@ -127,13 +140,14 @@ export default async function MeetupDetailPage({ params }: PageProps<"/meetups/[
         <SeatCircle
           capacity={next.capacity}
           taken={next.reserved_count}
-          you={nextLine?.closed || cannotBook ? false : "open"}
+          you={nextLine?.closed || cannotBook || nextNotOpen ? false : "open"}
+          closed={nextNotOpen}
           face={avatar ?? meetup.cover_image_url}
           initial={initial}
-          label={nextLine?.closed || cannotBook ? undefined : "당신 자리"}
+          label={nextLine?.closed || cannotBook || nextNotOpen ? undefined : "당신 자리"}
         />
       </div>
-      <SeatLegend className="mt-3" />
+      <SeatLegend className="mt-3" closed={nextNotOpen} />
       <p className={`mt-3 text-center text-[17px] font-bold tracking-[-0.02em] ${nextLine?.closed ? "text-muted-foreground" : "text-gold"}`} data-testid="seat-line">
         {nextLine?.text}
       </p>
@@ -304,6 +318,30 @@ export default async function MeetupDetailPage({ params }: PageProps<"/meetups/[
                     <p className="mb-4 rounded-xl bg-notice px-4 py-3 text-sm text-notice-foreground" data-testid="already-booked">
                       이 프로그램에 앉은 자리가 있어요. <Link href="/me/bookings" className="underline underline-offset-4">내 자리 보기</Link>
                     </p>
+                  )}
+                  {unopened.length > 0 && !cannotBook && (
+                    <div className="mb-5 rounded-[22px] border border-gold/50 bg-card p-5" data-testid="drop-panel">
+                      <p className="text-[13.5px] font-bold text-gold">정해진 시각에 열려요</p>
+                      <p className="mt-1 font-display text-[22px] font-bold tracking-[-0.02em]" data-testid="drop-opens-label">
+                        {opensLabel(nextUnopened!.opens_at as string)}에 열려요
+                      </p>
+                      <p className="mt-1 text-[15px] text-muted-foreground">
+                        열리기 전에는 신청할 수 없어요. 열리는 순간 먼저 신청한 분부터 자리가 정해져요. 자리 수는 실제 정원이에요.
+                      </p>
+                      <OpensCountdown className="mt-4" opensAt={nextUnopened!.opens_at as string} initialSeconds={secondsUntil(nextUnopened!.opens_at as string)} />
+                      {viewerState !== "own" && (
+                        <div className="mt-4 flex flex-col gap-2.5">
+                          {unopened.slice(0, 3).map((u) => (
+                            <div key={u.id} className="flex flex-wrap items-center justify-between gap-3" data-testid="drop-session">
+                              <span className="text-[15px]">
+                                {formatDate(u.starts_at)} {formatTime(u.starts_at)} 프로그램 · <b>{opensLabel(u.opens_at as string)}</b> 오픈
+                              </span>
+                              <OpenAlertButton meetupId={meetup.id} sessionId={u.id} on={alertOn.has(u.id)} loggedIn={loggedIn} size="sm" />
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
                   )}
                   {bookingSessions.length ? (
                     <BookingForm
