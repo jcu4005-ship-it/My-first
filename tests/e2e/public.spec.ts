@@ -138,18 +138,21 @@ test("저장: 카드의 북마크를 누르면 저장 화면에 모이고, 다�
   await expect(page.getByTestId("saved-empty")).toBeVisible();
 });
 
-test("첫 호스트(이름·분야만): 목록과 상세에 '소개 준비 중', 호스트에 샘플 표시 없음, 예시 프로그램은 샘플·신청 불가", async ({ page }) => {
+test("첫 호스트(이름·분야만): 목록과 상세에 '소개 준비 중'(가상 소개를 넣은 스테이징에서는 '가상 소개' 안내), 호스트에 샘플 표시 없음, 예시 프로그램은 샘플·신청 불가", async ({ page }) => {
   await page.goto("/hosts?q=" + encodeURIComponent("홍지완"));
   const card = page.getByTestId("host-card").filter({ visible: true });
   await expect(card).toHaveCount(1);
   await expect(card).toContainText("스피치 강사");
-  await expect(card.getByTestId("host-pending")).toHaveText("소개 준비 중");
+  // 스테이징은 시연용 가상 소개가 들어가 있을 수 있음(2-3g 단계). 그 경우 "소개 준비 중" 대신 가상 소개 안내가 보여야 함
+  const demo = (await card.getByTestId("host-pending").count()) === 0;
+  if (!demo) await expect(card.getByTestId("host-pending")).toHaveText("소개 준비 중");
   await expect(card).not.toContainText("샘플");
 
   await page.goto("/hosts/hong-jiwan");
   await expect(page.getByTestId("host-name")).toHaveText("홍지완");
   await expect(page.getByTestId("host-occupation")).toHaveText("스피치 강사");
-  await expect(page.getByTestId("host-intro-pending")).toContainText("소개 준비 중");
+  if (demo) await expect(page.getByTestId("demo-profile-notice")).toBeVisible();
+  else await expect(page.getByTestId("host-intro-pending")).toContainText("소개 준비 중");
   // 아직 지원·심사를 거치지 않았으므로 "심사 통과" 표시를 하지 않는다
   await expect(page.getByText("심사통과")).toHaveCount(0);
   await expect(page.getByLabel("운영팀 심사를 통과한 호스트")).toHaveCount(0);
