@@ -65,9 +65,9 @@ export function CircleCard({ meetup, categoryName, trust }: { meetup: MeetupCard
           <span>· {d.md} ({d.wd}) {d.time}{more > 0 && ` 외 ${more}회`} · {s.area}</span>
           <span className="sr-only">{categoryName}</span>
         </p>
-        <p className="mt-1.5 flex items-baseline justify-between gap-2 text-[15.5px]">
+        <p className="mt-1.5 text-[15.5px] leading-snug">
           <b className="font-num font-semibold">{meetup.price > 0 ? formatPrice(meetup.price) : "무료"}</b>
-          <b className={cn("text-right text-[14.5px]", line.closed ? "text-muted-foreground" : "text-forest")} data-testid="card-seats">
+          <b className={cn("block text-[14.5px]", line.closed ? "text-muted-foreground" : "text-forest")} data-testid="card-seats">
             {line.text}
             <span className="sr-only"> · 정원 {s.capacity}명</span>
           </b>
