@@ -336,3 +336,13 @@ test("프로그램 검색: 머리글 돋보기 → 검색창, 제목·크리에�
   await page.getByTestId("clear-search").click();
   await expect(page).toHaveURL(/\/meetups$/);
 });
+
+test("로고 규칙(대표 지시): 머리글의 ROUNDI 글자 O는 시그니처 의자 모양 (일반 글자 O 금지)", async ({ page }) => {
+  for (const url of ["/meetups", "/hosts", "/drops"]) {
+    await page.goto(url);
+    const logo = page.getByTestId("site-logo").filter({ visible: true }).first().getByTestId("header-wordmark");
+    await expect(logo).toBeVisible();
+    // 의자 심볼이 O 자리에 들어간 제호는 선이 글자(R·U·N·D·I) 외에 의자 조각을 함께 그린다 → path 개수로 확인
+    expect(await logo.locator("path").count()).toBeGreaterThan(10);
+  }
+});

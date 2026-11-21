@@ -29,12 +29,11 @@ export function LogoSymbol({ className }: { className?: string }) {
   return <Svg shape={SYMBOL} className={className} />;
 }
 
-/** 머리글용 가로 로고: 심볼 + 이름 글자 */
+/** 머리글용 가로 로고: 이름 글자의 O 가 시그니처 의자 (대표 지시 2026-11-21 — 모든 화면에서 이 모양) */
 export function LogoInline({ className }: { className?: string }) {
   return (
-    <span className={cn("inline-flex items-center gap-2", className)}>
-      <LogoSymbol className="w-[22px]" />
-      <Svg shape={WORDMARK} className="w-[92px]" title={displayName()} />
+    <span className={cn("inline-flex items-center", className)}>
+      <LogoWordmarkChair className="w-[116px]" testId="header-wordmark" />
     </span>
   );
 }
@@ -60,7 +59,7 @@ const SYM_BOX = { x: 24, y: 19, w: 1114, h: 1204 };
 const SYM_SCALE = O_BOX.h / SYM_BOX.h;
 
 /** 큰 제호 — "O" 대신 둥글게 놓인 의자 */
-export function LogoWordmarkChair({ className }: { className?: string }) {
+export function LogoWordmarkChair({ className, testId = "wordmark-chair" }: { className?: string; testId?: string }) {
   const tx = O_BOX.cx - (SYM_BOX.w * SYM_SCALE) / 2 - SYM_BOX.x * SYM_SCALE;
   const ty = O_BOX.top - SYM_BOX.y * SYM_SCALE;
   return (
@@ -70,7 +69,7 @@ export function LogoWordmarkChair({ className }: { className?: string }) {
       role="img"
       aria-label={displayName()}
       focusable="false"
-      data-testid="wordmark-chair"
+      data-testid={testId}
     >
       <g transform={WORDMARK.transform}>
         {WORDMARK.paths.slice(1).map((d, i) => (

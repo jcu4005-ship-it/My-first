@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, CalendarDays, Check, MapPin, Search } from "lucide-react";
+import { ArrowRight, CalendarDays, Check, MapPin } from "lucide-react";
 
 import { SeatCircle } from "@/components/brand/seat-circle";
 import { HostCard } from "@/components/hosts/host-card";
@@ -8,9 +8,10 @@ import { SampleBadge, seatsLeft } from "@/components/meetups/badges";
 import { CircleGrid, hostVerified, seatLine } from "@/components/meetups/circle-card";
 import { collectDrops, DropList } from "@/components/meetups/drop-list";
 import { SiteFooter } from "@/components/site-footer";
-import { MagazineCover } from "@/components/home/magazine-cover";
+import { HomeCover } from "@/components/home/home-cover";
 import { SiteHeader } from "@/components/site-header";
 import { HomeProofs, VerifiedChip } from "@/components/trust/proofs";
+import { brand } from "@/config/brand";
 import { PILLARS } from "@/config/pillars";
 import { getCurrentMember } from "@/lib/auth/session";
 import { formatPrice, ticketDate } from "@/lib/format";
@@ -37,6 +38,25 @@ const open = (m: MeetupCardData) => m.nextSession.status === "open" && seatsLeft
 const byFill = (a: MeetupCardData, b: MeetupCardData) =>
   b.nextSession.reserved_count / b.nextSession.capacity - a.nextSession.reserved_count / a.nextSession.capacity ||
   a.nextSession.starts_at.localeCompare(b.nextSession.starts_at);
+
+/** 섹션 머리: 작은 영문 라벨 + 얇은 세리프 제목 + 굵은 선 (고급 매거진 스타일) */
+function Head({ en, title, href, more }: { en: string; title: React.ReactNode; href?: string; more?: string }) {
+  return (
+    <div className="mb-6">
+      <p className="cap text-brand">{en}</p>
+      <div className="mt-2 flex items-end justify-between gap-3">
+        <h2 className="font-display text-[32px] leading-[1.2] sm:text-[46px]">{title}</h2>
+        {href && (
+          <Link href={href} className="cap cap-kr flex shrink-0 items-center gap-1.5 pb-1.5 hover:underline hover:underline-offset-4">
+            {more ?? "전체 보기"}
+            <ArrowRight aria-hidden className="size-3.5" strokeWidth={1.4} />
+          </Link>
+        )}
+      </div>
+      <div className="mt-4 border-t border-foreground" />
+    </div>
+  );
+}
 
 export default async function Home() {
   const member = await getCurrentMember().catch(() => null);
@@ -84,48 +104,41 @@ export default async function Home() {
     <Blue>
       <SiteHeader masthead />
       <main className="flex-1">
-        {/* 1. 잡지 표지: 큰 제호(초록) · 호 정보 · 표지 인물 · 카피 · 이번 호 목차 (대표 선택 3번) */}
-        <MagazineCover meetups={all} people={people} />
+        {/* 1. 표지 (대표 선택 10번 에디토리얼): 호 정보 · 큰 제호(O=의자) · 섞은 타이포 · 비대칭 표지 인물 */}
+        <HomeCover meetups={all} people={people} />
 
         {/* 1-0. 검색과 분야 (표지 아래, 가볍게) */}
         <section className="mx-auto mt-12 w-full max-w-6xl px-4 sm:px-6" data-testid="home-intro">
-          <form action="/meetups" method="get" role="search" className="mt-5 flex h-14 max-w-xl items-center gap-2 rounded-full border border-border bg-card py-1.5 pr-1.5 pl-5 shadow-[0_8px_22px_-14px_rgb(20_24_28/0.45)]">
-            <label htmlFor="home-search" className="sr-only">프로그램 검색</label>
+          <form action="/meetups" method="get" role="search" className="flex h-14 items-center gap-3 border-b-[1.5px] border-foreground">
+            <label htmlFor="home-search" className="it-serif text-[26px]">Search</label>
             <input id="home-search" name="q" type="search" maxLength={40} placeholder="배우고 싶은 것, 크리에이터" className="h-full min-w-0 flex-1 bg-transparent text-[15.5px] outline-none placeholder:text-muted-foreground" />
-            <button type="submit" aria-label="검색" className="flex size-11 shrink-0 items-center justify-center rounded-full bg-navy text-white hover:bg-navy/90">
-              <Search aria-hidden className="size-5" strokeWidth={2.2} />
+            <button type="submit" aria-label="검색" className="flex size-10 shrink-0 items-center justify-center hover:text-brand">
+              <ArrowRight aria-hidden className="size-5" strokeWidth={1.4} />
             </button>
           </form>
-          <nav aria-label="분야" className="no-scrollbar mt-4 flex gap-2 overflow-x-auto">
+          <nav aria-label="분야" className="mt-4 flex flex-wrap gap-x-2 gap-y-1 text-[15.5px] font-semibold tracking-[-0.02em]">
             {[{ href: "/meetups", label: "전체" }, ...PILLARS.map((pl) => ({ href: `/meetups?pillar=${pl.slug}`, label: pl.ko }))].map((c, i) => (
-              <Link key={c.label} href={c.href} className={`inline-flex h-10 shrink-0 items-center rounded-full border px-4 text-[14.5px] font-semibold ${i === 0 ? "border-foreground bg-foreground text-background" : "border-border bg-card hover:border-foreground/40"}`}>
-                {c.label}
-              </Link>
+              <span key={c.label} className="inline-flex items-center gap-2">
+                {i > 0 && <span aria-hidden className="text-brand">/</span>}
+                <Link href={c.href} className="hover:underline hover:underline-offset-4">{c.label}</Link>
+              </span>
             ))}
           </nav>
         </section>
 
         {/* 1-1. 이번 주 열리는 자리: 큰 사진 갤러리 */}
         <section className="mx-auto mt-10 w-full max-w-6xl px-4 sm:px-6" data-testid="home-open">
-          <div className="mb-4 flex items-end justify-between gap-3">
-            <h2 className="font-display text-[24px] sm:text-[30px]">이번 주 열리는 자리</h2>
-            <Link href="/meetups" className="flex shrink-0 items-center gap-1 text-[14px] font-bold hover:underline">
-              {openOnes.length}개 · 전체 보기
-              <ArrowRight aria-hidden className="size-4" strokeWidth={1.8} />
-            </Link>
-          </div>
+          <Head en="This week" title="이번 주 열리는 자리" href="/meetups" more={`${openOnes.length}개 · 전체 보기`} />
           {gallery.length ? (
-            <CircleGrid meetups={gallery} categoryNames={names} trust={trust} />
+            <CircleGrid meetups={gallery} categoryNames={names} trust={trust} editorial />
           ) : (
             <p className="rounded-[20px] border border-dashed border-border px-5 py-8 text-center text-[15px] text-muted-foreground">지금 열린 자리가 아직 없어요.</p>
           )}
         </section>
 
-        {/* 2. 크리에이터 얼굴 카드 (Deep Blue 영역 위로 겹침) + 시그니처 원 */}
+        {/* 2. 크리에이터 얼굴 카드 + 시그니처 원 */}
         <section className="mx-auto mt-14 w-full max-w-6xl px-4 sm:px-6" data-testid="home-circle">
-          <h2 className="mb-4 font-display text-[24px] sm:text-[30px]">
-            {hero ? (fromFollowed ? "팔로우한 크리에이터의 원에 자리가 있어요" : "당신 자리가 비어 있어요") : "곧 첫 원이 열려요"}
-          </h2>
+          <Head en="Your seat" title={hero ? (fromFollowed ? "팔로우한 크리에이터의 원에 자리가 있어요" : "당신 자리가 비어 있어요") : "곧 첫 원이 열려요"} />
           {hero && s && d && line ? (
             <div className="grid overflow-hidden rounded-[24px] border border-border bg-card shadow-[0_18px_40px_-24px_rgb(20_24_28/0.45)] md:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)]">
               <div className="relative min-h-[260px] bg-navy-2 md:min-h-[340px]">
@@ -138,7 +151,7 @@ export default async function Home() {
                     {hero.host?.display_name.slice(0, 1)}
                   </span>
                 )}
-                <div aria-hidden className="absolute inset-0 bg-gradient-to-t from-[#14181c]/95 via-[#14181c]/45 to-transparent" />
+                <div aria-hidden className="absolute inset-0 bg-gradient-to-t from-[#252b33]/95 via-[#252b33]/45 to-transparent" />
                 {hero.host && (
                   <Link href={hostHref(hero.host)} className="group absolute inset-x-4 bottom-4 flex items-end justify-between gap-2 text-white" data-testid="home-host">
                     <span className="flex flex-col">
@@ -207,19 +220,28 @@ export default async function Home() {
 
         {/* 2-0. 신청하기 전에, 직접 확인하세요 (약속 옆에 증거) */}
         <section className="mx-auto mt-12 w-full max-w-6xl px-4 sm:px-6">
-          <h2 className="mb-4 font-display text-[24px] font-bold tracking-[-0.02em] sm:text-[30px]">신청하기 전에, 직접 확인하세요</h2>
+          <Head en="Before you book" title="신청하기 전에, 직접 확인하세요" />
           <HomeProofs startsAt={hero?.nextSession.starts_at ?? null} />
+        </section>
+
+        {/* 2-0'. 신념 한 줄 (Soft Blue 띠 — 파란 면은 여기 하나) */}
+        <section className="mx-auto mt-16 w-full max-w-6xl pl-5 sm:mt-24 sm:px-6" data-testid="home-belief">
+          <div className="bg-soft px-6 py-11 sm:px-16 sm:py-20">
+            <p className="it-serif text-[68px] leading-[0.6] text-brand">“</p>
+            <p className="font-display mt-5 text-[31px] leading-[1.36] sm:text-[56px]" style={{ fontWeight: 600 }}>
+              개인적인 것이
+              <br />
+              가장 창의적이다.
+            </p>
+            <p className="cap cap-kr mt-7 text-brand">{brand.name} — 우리가 믿는 것</p>
+          </div>
         </section>
 
         {/* 2-1. 곧 열리는 원 (열림 시각이 정해진 원이 있을 때만) */}
         {homeDrops.length > 0 && (
           <section className="mx-auto mt-14 w-full max-w-6xl px-4 sm:px-6" data-testid="home-drops">
-            <div className="mb-4 flex items-end justify-between gap-3">
-              <h2 className="font-display text-[24px] font-bold tracking-[-0.02em] sm:text-[30px]">곧 열리는 원</h2>
-              <Link href="/drops" className="flex shrink-0 items-center gap-1 text-[14px] font-semibold text-muted-foreground hover:text-foreground">
-                {drops.length}개 · 전체 보기
-                <ArrowRight aria-hidden className="size-4" strokeWidth={1.8} />
-              </Link>
+            <div className="mb-0">
+              <Head en="Dropping soon" title="곧 열리는 원" href="/drops" more={`${drops.length}개 · 전체 보기`} />
             </div>
             <DropList items={homeDrops} alertOn={alertOn} loggedIn={loggedIn} followedIds={followedIds} />
           </section>
@@ -228,12 +250,8 @@ export default async function Home() {
         {/* 4. 크리에이터 */}
         {featured.length > 0 && (
           <section className="mx-auto mt-14 w-full max-w-6xl px-4 sm:px-6" data-testid="home-creators">
-            <div className="mb-4 flex items-end justify-between gap-3">
-              <h2 className="font-display text-[24px] font-bold tracking-[-0.02em] sm:text-[30px]">원을 여는 사람들</h2>
-              <Link href="/hosts" className="flex shrink-0 items-center gap-1 text-[14px] font-semibold text-muted-foreground hover:text-foreground">
-                전체 보기
-                <ArrowRight aria-hidden className="size-4" strokeWidth={1.8} />
-              </Link>
+            <div className="mb-0">
+              <Head en="The creators" title="원을 여는 사람들" href="/hosts" />
             </div>
             <div className="grid grid-cols-3 gap-x-2.5 gap-y-5 sm:grid-cols-4 sm:gap-x-4 lg:grid-cols-6">
               {featured.map((h) => (
@@ -245,8 +263,8 @@ export default async function Home() {
 
         {/* 5. 운영 방식 (흰색 패널) */}
         <section className="mx-auto mt-16 w-full max-w-6xl px-4 sm:px-6" data-testid="home-how">
-          <div className="sheet rounded-[26px] px-5 py-8 sm:px-10 sm:py-10">
-            <h2 className="font-display text-[24px] font-bold tracking-[-0.02em] sm:text-[30px]">라운디는 이렇게 운영해요</h2>
+          <div>
+            <Head en="How it works" title="라운디는 이렇게 운영해요" />
             <div className="mt-6 grid gap-6 md:grid-cols-3 md:gap-8">
               <div>
                 <b className="text-[17px]">1. 사람을 먼저 심사해요</b>

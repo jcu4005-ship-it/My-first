@@ -127,7 +127,7 @@ export default async function HostPage({ params }: PageProps<"/hosts/[slug]">) {
             <div aria-hidden className="absolute inset-0 bg-[linear-gradient(180deg,rgb(20_24_28/0.35),transparent_30%,transparent_45%,rgb(20_24_28/0.94))]" />
             <div className="absolute inset-x-0 bottom-0 p-5 sm:p-7">
               <div className="flex flex-wrap gap-1.5">
-                {pillar && <span className="rounded-full bg-cream px-2.5 py-1 text-[13.5px] font-extrabold text-gold-ink">{pillar.ko}</span>}
+                {pillar && <span className="cap cap-kr bg-cream px-2.5 py-1.5 text-foreground">{pillar.ko}</span>}
                 {host.is_sample && <span className="rounded-full border border-cream/50 px-2.5 py-1 text-[13.5px] font-semibold text-cream">샘플</span>}
               </div>
               <h1 className="mt-2 flex items-center gap-2 font-display text-[38px] leading-none font-bold tracking-[-0.02em] text-cream sm:text-[50px]">

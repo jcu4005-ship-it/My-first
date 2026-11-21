@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { BadgeCheck, CalendarCheck, Check, CreditCard, ShieldCheck, Star } from "lucide-react";
+import { BadgeCheck, Check } from "lucide-react";
 
 import { refundSchedule } from "@/lib/payments/refund-policy";
 import { cn } from "@/lib/utils";
@@ -71,53 +71,32 @@ export function VerifiedChecklist({ className }: { className?: string }) {
   );
 }
 
-/** 홈: 신청하기 전에, 직접 확인하세요 */
-export function HomeProofs({ startsAt }: { startsAt?: string | null }) {
-  const item = "rounded-[18px] border border-border bg-card px-4 py-4";
-  const head = "flex items-start gap-3";
-  const icon = "mt-0.5 size-5.5 shrink-0 text-forest";
+function ProofRow({ no, title, children }: { no: string; title: string; children: React.ReactNode }) {
   return (
-    <div className="grid gap-3 md:grid-cols-2" data-testid="home-trust">
-      <div className={item}>
-        <div className={head}>
-          <ShieldCheck aria-hidden className={icon} strokeWidth={1.8} />
-          <span>
-            <b className="block text-[16px]">운영팀이 확인한 사람만 열어요</b>
-            <span className="mt-1 block text-[14.5px] leading-relaxed text-muted-foreground">지원서와 프로그램 내용을 운영팀이 읽고 확인한 뒤에 공개해요.</span>
-            <Link href="/become-a-host" className="mt-2 inline-block text-[14px] font-bold text-forest underline underline-offset-4">
-              확인 기준 자세히
-            </Link>
-          </span>
-        </div>
+    <li className="grid grid-cols-[2.4rem_1fr] border-b border-border py-5">
+      <span className="cap pt-1 text-brand">{no}</span>
+      <div className="min-w-0">
+        <b className="block text-[17.5px] leading-snug tracking-[-0.02em]">{title}</b>
+        <div className="mt-1.5 text-[15px] leading-relaxed text-muted-foreground">{children}</div>
       </div>
-      <div className={item}>
-        <div className={head}>
-          <CreditCard aria-hidden className={icon} strokeWidth={1.8} />
-          <span>
-            <b className="block text-[16px]">결제는 라운디 안에서만</b>
-            <span className="mt-1 block text-[14.5px] leading-relaxed text-muted-foreground">개인 계좌로 보내 달라는 요청은 따르지 말고 운영팀에 알려 주세요.</span>
-          </span>
-        </div>
-      </div>
-      <div className={item}>
-        <div className={head}>
-          <CalendarCheck aria-hidden className={icon} strokeWidth={1.8} />
-          <span className="min-w-0 flex-1">
-            <b className="block text-[16px]">취소 규칙을 먼저 알려 드려요</b>
-            <span className="mt-1 block text-[14.5px] leading-relaxed text-muted-foreground">프로그램 날짜 기준으로 환불이 달라져요. 크리에이터가 취소하면 전액 환불돼요.</span>
-          </span>
-        </div>
+    </li>
+  );
+}
+
+/** 홈: 신청하기 전에, 직접 확인하세요 — 번호 + 가는 선 (상자 없이) */
+export function HomeProofs({ startsAt }: { startsAt?: string | null }) {
+  return (
+    <ol className="border-t border-foreground md:grid md:grid-cols-2 md:gap-x-12" data-testid="home-trust">
+      <ProofRow no="01" title="운영팀이 확인한 사람만 열어요">
+        지원서와 프로그램 내용을 운영팀이 읽고 확인한 뒤에 공개해요.{" "}
+        <Link href="/become-a-host" className="font-bold text-brand underline underline-offset-4">확인 기준 자세히</Link>
+      </ProofRow>
+      <ProofRow no="02" title="결제는 라운디 안에서만">개인 계좌로 보내 달라는 요청은 따르지 말고 운영팀에 알려 주세요.</ProofRow>
+      <ProofRow no="03" title="취소 규칙을 날짜로 알려 드려요">
+        프로그램 날짜 기준으로 환불이 달라져요. 크리에이터가 취소하면 전액 환불돼요.
         {startsAt ? <RefundLadder startsAt={startsAt} className="mt-3" /> : null}
-      </div>
-      <div className={item}>
-        <div className={head}>
-          <Star aria-hidden className={icon} strokeWidth={1.8} />
-          <span>
-            <b className="block text-[16px]">후기는 참가한 분만 써요</b>
-            <span className="mt-1 block text-[14.5px] leading-relaxed text-muted-foreground">아직 후기가 없다면 없다고 그대로 보여 드려요. 지어내지 않아요.</span>
-          </span>
-        </div>
-      </div>
-    </div>
+      </ProofRow>
+      <ProofRow no="04" title="후기는 참가한 분만 써요">아직 후기가 없다면 없다고 그대로 보여 드려요. 지어내지 않아요.</ProofRow>
+    </ol>
   );
 }

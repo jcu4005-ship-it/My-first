@@ -51,7 +51,7 @@ export async function generateMetadata({ params }: PageProps<"/meetups/[id]">): 
 function Block({ title, children, id, testId }: { title: string; children: React.ReactNode; id?: string; testId?: string }) {
   return (
     <section id={id} className="mb-10 scroll-mt-24 last:mb-0" data-testid={testId}>
-      <h2 className="border-t-2 border-foreground pt-3 text-[19px] font-extrabold tracking-[-0.02em]">{title}</h2>
+      <h2 className="font-display border-t border-foreground pt-3 text-[24px]">{title}</h2>
       <div className="mt-3">{children}</div>
     </section>
   );
@@ -181,10 +181,10 @@ export default async function MeetupDetailPage({ params }: PageProps<"/meetups/[
 
             <div className="px-4 pt-5 sm:px-0 sm:pt-6">
               <div className="flex flex-wrap items-center gap-2">
-                <Link href={`/meetups?category=${meetup.category_slug}`} className="rounded-full border border-border bg-card px-3 py-1 text-[14px] font-bold hover:border-foreground/40">
+                <Link href={`/meetups?category=${meetup.category_slug}`} className="cap cap-kr border border-border bg-card px-3 py-1.5 hover:border-foreground/40">
                   {category?.name ?? style.label}
                 </Link>
-                <span className="rounded-full border border-border bg-card px-3 py-1 text-[14px] font-semibold" data-testid="class-level">
+                <span className="cap cap-kr border border-border bg-card px-3 py-1.5" data-testid="class-level">
                   {CLASS_LEVEL_LABEL[meetup.level] ?? "누구나"}
                 </span>
                 {meetup.is_sample && <SampleBadge />}
@@ -236,7 +236,7 @@ export default async function MeetupDetailPage({ params }: PageProps<"/meetups/[
 
               {/* 4. 신청 전 확인하세요 — 결제 전에 필요한 정보 전부 */}
               <section className="mt-8 rounded-[22px] border border-border bg-card px-5 pt-5 pb-2" data-testid="before-you-pay">
-                <h2 className="text-[18px] font-bold tracking-[-0.02em]">신청 전 확인하세요</h2>
+                <h2 className="font-display text-[26px]">신청 전 확인하세요</h2>
                 <dl className="mt-2 text-[15px]">
                   {next && (
                     <div className="grid grid-cols-[1.5rem_5rem_1fr] items-start border-b border-border py-3.5">

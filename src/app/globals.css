@@ -39,21 +39,21 @@
   --ring: var(--forest);
   --radius: 1rem;
   color-scheme: light;
-  /* 3번 잡지 디자인 (대표 선택 2026-11-21): 아이보리 바탕 · 검정 글자/버튼 · 로고만 Forest Green */
-  --brand-green: #1c3a2c; /* 로고·제호·선택된 탭 — 초록은 여기에만 */
-  --navy: #14181c;     /* (예전 이름) 이제 "잉크 검정": 버튼·강조 */
-  --gold: #14181c;     /* (예전 이름) 핵심 버튼 = 검정. 골드는 쓰지 않음 */
-  --gold-ink: #f4f1ea; /* 검정 버튼 위 글자 */
-  --ice: #f4f1ea;
-  --white: #fffdf8;
-  --text-main: #14181c;
-  --text-sub: #4b5158;
-  --line: #d9d4c6;
-  --soft: #ebe7dc;
-  --navy-2: #232930;
-  --navy-3: #3a4048;
-  --lit: #8a9087;
-  --ivory: #fffdf8;
+  /* 10번 에디토리얼 매거진 (대표 선택 2026-11-21): Main Blue · Soft Blue · Warm Ivory · Charcoal. 로고의 O는 언제나 시그니처 의자. */
+  --brand-green: #193b63; /* (예전 이름) 브랜드 블루 = Main Blue: 로고·제호·강조 글자·주요 버튼 */
+  --navy: #193b63;     /* Main Blue: 주요 버튼 */
+  --gold: #193b63;     /* (예전 이름) 핵심 버튼 = Main Blue. 골드는 쓰지 않음 */
+  --gold-ink: #ffffff; /* 버튼 위 글자 */
+  --ice: #f7f7f3;
+  --white: #ffffff;
+  --text-main: #252b33;
+  --text-sub: #5b6470;
+  --line: #d9dbd6;
+  --soft: #e6eff8;     /* Soft Blue */
+  --navy-2: #254a78;
+  --navy-3: #3b5f8c;
+  --lit: #8fa3bd;
+  --ivory: #ffffff;
 }
 
 /*
@@ -62,45 +62,61 @@
  * 대비: 본문 #111827 / 보조 #4b5563 는 흰 바탕 위 7:1 이상. 골드 글자는 쓰지 않음(밝은 바탕에서 안 읽힘).
  */
 .theme-blue {
-  --background: #f4f1ea;
-  --foreground: #14181c;
-  --card: #fffdf8;
-  --muted: #ebe7dc;
-  --muted-foreground: #4b5158;
-  --border: #d9d4c6;
+  --background: #f7f7f3;
+  --foreground: #252b33;
+  --card: #ffffff;
+  --muted: #eceee9;
+  --muted-foreground: #5b6470;
+  --border: #d9dbd6;
   --primary: var(--navy);
-  --primary-foreground: #f4f1ea;
-  --secondary: #ebe7dc;
-  --secondary-foreground: #14181c;
-  --accent: #ebe7dc;
-  --accent-foreground: #14181c;
+  --primary-foreground: #f7f7f3;
+  --secondary: #eceee9;
+  --secondary-foreground: #252b33;
+  --accent: #eceee9;
+  --accent-foreground: #252b33;
   --destructive: #b3382b;
-  --notice: #ebe7dc;
-  --notice-foreground: #14181c;
+  --notice: #eceee9;
+  --notice-foreground: #252b33;
   --ring: var(--navy);
   --forest: var(--navy);
   --forest-deep: var(--navy);
-  --forest-soft: #d9d4c6;
-  --linen: #ebe7dc;
-  --cream: #f4f1ea;
+  --forest-soft: #d9dbd6;
+  --linen: #eceee9;
+  --cream: #f7f7f3;
   --clay: var(--navy);
-  --fog: #4b5158;
-  --sage: #4b5158;
-  --mint: #d9d4c6;
-  --seat-lit: #8a9087;
+  --fog: #5b6470;
+  --sage: #5b6470;
+  --mint: #d9dbd6;
+  --seat-lit: #8fa3bd;
   --seat-you: var(--brand-green);
-  --seat-dim: #d9d4c6;
+  --seat-dim: #d9dbd6;
   color-scheme: light;
-  background-color: #f4f1ea;
+  background-color: #f7f7f3;
   color: var(--foreground);
 }
 .theme-blue ::selection { background: var(--gold); color: var(--gold-ink); }
-/* 제목은 굵은 고딕 (갤러리 스타일) */
+/* 고급 매거진 (대표 승인 2026-11-21): 얇은 세리프 제목 · 간격 넓은 영문 라벨 · 직각 · 가는 선 */
 .theme-blue .font-display {
-  font-family: var(--font-sans);
-  font-weight: 800;
-  letter-spacing: -0.04em;
+  font-family: var(--font-display-serif), var(--font-pretendard), serif;
+  font-weight: 400;
+  letter-spacing: -0.045em;
 }
+.theme-blue .cap {
+  font-family: var(--font-dm), var(--font-pretendard), sans-serif;
+  font-size: 12px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  font-weight: 500;
+}
+.theme-blue .cap-kr { letter-spacing: 0.06em; text-transform: none; }
+.theme-blue .it-serif { font-family: var(--font-instrument), var(--font-display-serif), serif; font-style: italic; font-weight: 400; }
+/* 모서리는 직각에 가깝게 (동그란 아바타·아이콘 버튼은 그대로) */
+.theme-blue [class*="rounded-["],
+.theme-blue .rounded-xl,
+.theme-blue .rounded-2xl,
+.theme-blue .rounded-3xl,
+.theme-blue .rounded-lg { border-radius: 2px; }
+.theme-blue [class*="shadow-["]:not([data-testid="seat-table"]) { box-shadow: none; }
 .theme-blue > header { border-bottom: 0; }
 .theme-blue > [data-tabbar] [aria-current="page"] { color: var(--brand-green); }
 .theme-blue > header [data-testid="unread-count"] { color: #ffffff; }
@@ -109,16 +125,16 @@
 /* 긴 정보 패널: 흰색 + 얇은 테두리 */
 .theme-blue .sheet,
 .sheet {
-  --background: #fffdf8;
-  --foreground: #14181c;
-  --card: #f7f4ec;
-  --muted: #ebe7dc;
-  --muted-foreground: #4b5158;
-  --border: #d9d4c6;
-  --secondary: #ebe7dc;
-  --secondary-foreground: #14181c;
-  --notice: #ebe7dc;
-  --notice-foreground: #14181c;
+  --background: #ffffff;
+  --foreground: #252b33;
+  --card: #f7f7f3;
+  --muted: #eceee9;
+  --muted-foreground: #5b6470;
+  --border: #d9dbd6;
+  --secondary: #eceee9;
+  --secondary-foreground: #252b33;
+  --notice: #eceee9;
+  --notice-foreground: #252b33;
   --forest: var(--navy);
   --clay: var(--navy);
   --linen: #f4f2ec;
@@ -127,9 +143,9 @@
   --primary-foreground: #ffffff;
   --ring: var(--navy);
   color-scheme: light;
-  background-color: #fffdf8;
-  border: 1px solid #d9d4c6;
-  color: #14181c;
+  background-color: #ffffff;
+  border: 1px solid #d9dbd6;
+  color: #252b33;
 }
 
 @theme inline {
@@ -175,6 +191,7 @@
   --color-gold-ink: var(--gold-ink);
   --color-lit: var(--lit);
   --color-brand: var(--brand-green);
+  --color-soft: var(--soft);
   --color-ivory: var(--ivory);
 }
 
