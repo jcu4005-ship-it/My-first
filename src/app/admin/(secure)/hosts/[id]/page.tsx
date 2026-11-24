@@ -36,7 +36,9 @@ export default async function AdminApplicationPage({ params }: PageProps<"/admin
   const open = app.status === "submitted" || app.status === "reviewing";
 
   const rows: [string, string | null][] = [
-    ["호스트 이름", app.display_name],
+    ["활동 이름", app.display_name],
+    ["시간 가는 줄 모르고 하는 일", app.passion],
+    ["주변에서 자주 묻거나 부탁하는 것", app.often_asked],
     ["지원 분류", pillarInfo(app.pillar) ? `${pillarInfo(app.pillar)!.label} · ${pillarInfo(app.pillar)!.ko}` : null],
     ["활동 분야", app.fields.join(", ")],
     ["한 줄 소개", app.headline],
@@ -46,7 +48,7 @@ export default async function AdminApplicationPage({ params }: PageProps<"/admin
     ["가르친 경험", app.teaching_experience],
     ["포트폴리오", app.portfolio_url],
     ["인스타그램", app.instagram_handle ? `@${app.instagram_handle}` : null],
-    ["프로그램 기획안", app.program_proposal],
+    ["만들고 싶은 모임", app.program_proposal],
     ["참가자에게 줄 가치", app.value_to_participants],
     ["희망 운영 방식", app.preferred_format],
     ["자료 이용 동의", app.consented_at ? new Date(app.consented_at).toLocaleString("ko-KR") : "미동의"],

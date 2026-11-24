@@ -5,7 +5,6 @@ import { redirect } from "next/navigation";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { Button } from "@/components/ui/button";
-import { pillarInfo } from "@/config/pillars";
 import { requireActiveMember } from "@/lib/auth/guards";
 import { APPLICATION_STATUS_LABEL, getMyApplication, type HostApplicationRow } from "@/lib/hosting/applications";
 import { getMyHostProfile } from "@/lib/hosting/queries";
@@ -27,7 +26,7 @@ function toDefaults(a: HostApplicationRow | null): Record<string, string> {
   return {
     displayName: a.display_name, contactPhone: a.contact_phone ?? "", pillar: a.pillar ?? "", fields: a.fields.join(", "),
     headline: a.headline, bio: a.bio, career: a.career, credentials: a.credentials, portfolioUrl: a.portfolio_url ?? "",
-    teachingExperience: a.teaching_experience, instagram: a.instagram_handle ?? "", programProposal: a.program_proposal,
+    teachingExperience: a.teaching_experience, instagram: a.instagram_handle ?? "", passion: a.passion, oftenAsked: a.often_asked, programProposal: a.program_proposal,
     valueToParticipants: a.value_to_participants, preferredFormat: a.preferred_format, consent: a.consented_at ? "on" : "",
   };
 }
@@ -62,7 +61,7 @@ export default async function ApplyPage() {
         <p className="eyebrow text-muted-foreground">Become a Host</p>
         <h1 className="mt-2 font-display text-3xl font-medium sm:text-4xl">호스트 지원서</h1>
         <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-          입장료는 없어요. 운영팀이 경력과 기획안을 확인한 뒤 결과를 알려 드려요.{" "}
+          입장료는 없어요. 전문가가 아니어도 괜찮아요. 완벽한 답보다 솔직한 답을 기다려요. 운영팀이 확인한 뒤 결과를 알려 드려요.{" "}
           <Link href="/become-a-host" className="underline underline-offset-4">호스트 정책 보기</Link>
         </p>
 
@@ -101,13 +100,13 @@ export default async function ApplyPage() {
                   <p className="eyebrow text-muted-foreground">제출한 내용</p>
                   <dl className="flex flex-col">
                     {[
-                      ["호스트 이름", app.display_name],
-                      ["지원 분류", pillarInfo(app.pillar)?.label ?? "-"],
-                      ["한 줄 소개", app.headline],
-                      ["경력", app.career],
-                      ["프로그램 기획안", app.program_proposal],
-                      ["참가자에게 줄 가치", app.value_to_participants],
-                    ].map(([k, val]) => (
+                      ["활동 이름", app.display_name],
+                      ["시간 가는 줄 모르고 하는 일", app.passion],
+                      ["주변에서 자주 묻거나 부탁하는 것", app.often_asked],
+                      ["만들고 싶은 모임", app.program_proposal],
+                      ["경력·자격", app.career],
+                    ].filter(([, val]) => val)
+                    .map(([k, val]) => (
                       <div key={k} className="border-b py-3">
                         <dt className="text-xs text-muted-foreground">{k}</dt>
                         <dd className="mt-1 whitespace-pre-line">{val}</dd>

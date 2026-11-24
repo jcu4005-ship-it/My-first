@@ -37,6 +37,8 @@ export async function hostApplicationAction(_prev: FormState, formData: FormData
     p_value_to_participants: v.valueToParticipants,
     p_preferred_format: v.preferredFormat,
     p_consent: v.consent === "on",
+    p_passion: v.passion,
+    p_often_asked: v.oftenAsked,
   });
   if (error) return { status: "error", message: rpcErrorMessage(error), values };
   if (intent === "submit") {

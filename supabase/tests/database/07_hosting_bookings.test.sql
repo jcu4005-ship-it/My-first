@@ -12,10 +12,10 @@ select pg_temp.grant_role_direct(:'adm', 'admin');
 -- ---------- 호스트 신청 (지원서) ----------
 select pg_temp.login_as(:'h');
 select lives_ok($$ select public.save_host_application('테스트 호스트', '010-1234-5678', 'creators', array['글쓰기'], '한 줄 소개입니다', '자기소개를 스무 자 이상 적어 보는 테스트입니다.', '짧은 경력', '', '', '', null, '프로그램 기획안을 서른 자 이상 적어 보는 테스트 문장입니다.', '참가자는 글 한 편을 완성해요', '원데이', true) $$, '지원서 임시 저장');
-select throws_ok($$ select public.submit_host_application() $$, '22023', null, '경력을 20자 미만으로 쓰면 제출할 수 없다');
+select throws_ok($$ select public.submit_host_application() $$, '22023', null, '필수 이야기 항목이 비어 있으면 제출할 수 없다');
 select throws_ok($$ select public.save_host_application('테스트 호스트', '010-1234-5678', 'creators', array['글쓰기'], '한 줄 소개입니다', '자기소개를 스무 자 이상 적어 보는 테스트입니다.', '출판사 편집자 10년, 글쓰기 강의 5년 진행', '', 'http://insecure.example', '', null, '프로그램 기획안을 서른 자 이상 적어 보는 테스트 문장입니다.', '참가자는 글 한 편을 완성해요', '원데이', true) $$,
   '23514', null, '포트폴리오 링크는 https만 허용');
-select lives_ok($$ select public.save_host_application('테스트 호스트', '010-1234-5678', 'creators', array['글쓰기'], '한 줄 소개입니다', '자기소개를 스무 자 이상 적어 보는 테스트입니다.', '출판사 편집자 10년, 글쓰기 강의 5년 진행', '문예 공모전 입선', 'https://example.com/portfolio', '원데이 클래스 30회', null, '프로그램 기획안을 서른 자 이상 적어 보는 테스트 문장입니다.', '참가자는 글 한 편을 완성해요', '원데이', true) $$, '경력 보완 후 저장');
+select lives_ok($$ select public.save_host_application('테스트 호스트', '010-1234-5678', 'creators', array['글쓰기'], '한 줄 소개입니다', '자기소개를 스무 자 이상 적어 보는 테스트입니다.', '출판사 편집자 10년, 글쓰기 강의 5년 진행', '문예 공모전 입선', 'https://example.com/portfolio', '원데이 클래스 30회', null, '프로그램 기획안을 서른 자 이상 적어 보는 테스트 문장입니다.', '참가자는 글 한 편을 완성해요', '원데이', true, '시간 가는 줄 모르고 하는 일입니다', '주변에서 자주 물어보는 일입니다') $$, '경력 보완 후 저장');
 select lives_ok($$ select public.submit_host_application() $$, '회원은 지원서를 제출할 수 있다');
 select is((select career from public.host_applications where applicant_id = auth.uid()), '출판사 편집자 10년, 글쓰기 강의 5년 진행', '경력이 저장된다');
 select throws_ok($$ select public.save_host_application('다시', '', null, null, '', '', '', '', '', '', null, '', '', '', false) $$, '22023', null, '심사 중에는 고칠 수 없다');

@@ -10,7 +10,7 @@ select pg_temp.grant_role_direct(:'d', 'admin');
 
 -- 지원자 A: 저장 → 제출
 select pg_temp.login_as(:'a');
-select lives_ok($$ select public.save_host_application('지원자 에이', '01012345678', 'knowledge', array['철학'], '철학으로 생각 정리', '자기소개를 스무 자 이상 적는 테스트 문장입니다.', '대학 철학과 강사 8년, 기업 워크숍 4년 진행', '', 'https://example.com/a', '', null, '질문 사다리로 고민을 정리하는 두 시간 워크숍 기획안입니다.', '생각 지도를 완성해 가요', '원데이, 10명', true) $$, '임시 저장');
+select lives_ok($$ select public.save_host_application('지원자 에이', '01012345678', 'knowledge', array['철학'], '철학으로 생각 정리', '자기소개를 스무 자 이상 적는 테스트 문장입니다.', '대학 철학과 강사 8년, 기업 워크숍 4년 진행', '', 'https://example.com/a', '', null, '질문 사다리로 고민을 정리하는 두 시간 워크숍 기획안입니다.', '생각 지도를 완성해 가요', '원데이, 10명', true, '시간 가는 줄 모르고 하는 일입니다', '주변에서 자주 물어보는 일입니다') $$, '임시 저장');
 select throws_ok($$ select public.save_host_application('x', 'not-a-phone', null, null, '', '', '', '', '', '', null, '', '', '', false) $$, '23514', null, '휴대폰 번호 형식 검사');
 select lives_ok($$ select public.submit_host_application() $$, '제출');
 select is((select count(*)::int from public.host_applications where applicant_id = auth.uid()), 1, '진행 중 지원서는 1개');
@@ -42,7 +42,7 @@ select ok(exists(select 1 from public.notifications where user_id = :'a' and kin
 
 -- 지원자: 고쳐서 다시 제출
 select pg_temp.login_as(:'a');
-select lives_ok($$ select public.save_host_application('지원자 에이', '01012345678', 'knowledge', array['철학'], '철학으로 생각 정리', '자기소개를 스무 자 이상 적는 테스트 문장입니다.', '대학 철학과 강사 8년, 기업 워크숍 4년 진행', '', 'https://example.com/a', '', null, '대상: 직장인 / 준비물: 필기구. 질문 사다리로 고민을 정리하는 워크숍.', '생각 지도를 완성해 가요', '원데이, 10명', true) $$, '수정 요청 후 고칠 수 있다');
+select lives_ok($$ select public.save_host_application('지원자 에이', '01012345678', 'knowledge', array['철학'], '철학으로 생각 정리', '자기소개를 스무 자 이상 적는 테스트 문장입니다.', '대학 철학과 강사 8년, 기업 워크숍 4년 진행', '', 'https://example.com/a', '', null, '대상: 직장인 / 준비물: 필기구. 질문 사다리로 고민을 정리하는 워크숍.', '생각 지도를 완성해 가요', '원데이, 10명', true, '시간 가는 줄 모르고 하는 일입니다', '주변에서 자주 물어보는 일입니다') $$, '수정 요청 후 고칠 수 있다');
 select lives_ok($$ select public.submit_host_application() $$, '다시 제출');
 select pg_temp.logout();
 
@@ -55,7 +55,7 @@ select ok(exists(select 1 from public.user_roles where user_id = :'a' and role =
 
 -- 반려 후 재지원 가능 (회원 O)
 select pg_temp.login_as(:'o');
-select public.save_host_application('지원자 오', '01098765432', 'creators', array['사진'], '사진을 가르칩니다', '자기소개를 스무 자 이상 적는 테스트 문장입니다.', '사진 스튜디오 포토그래퍼 10년 경력입니다', '', '', '', null, '스마트폰 인물 사진 두 시간 실습 프로그램 기획안입니다.', '인생 사진 한 장을 완성해 가요', '원데이', true);
+select public.save_host_application('지원자 오', '01098765432', 'creators', array['사진'], '사진을 가르칩니다', '자기소개를 스무 자 이상 적는 테스트 문장입니다.', '사진 스튜디오 포토그래퍼 10년 경력입니다', '', '', '', null, '스마트폰 인물 사진 두 시간 실습 프로그램 기획안입니다.', '인생 사진 한 장을 완성해 가요', '원데이', true, '시간 가는 줄 모르고 하는 일입니다', '주변에서 자주 물어보는 일입니다');
 select public.submit_host_application();
 select pg_temp.logout();
 select pg_temp.login_as(:'d', 'aal2');

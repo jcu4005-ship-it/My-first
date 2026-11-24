@@ -29,6 +29,8 @@ export type HostApplicationRow = {
   portfolio_url: string | null;
   teaching_experience: string;
   instagram_handle: string | null;
+  passion: string;
+  often_asked: string;
   program_proposal: string;
   value_to_participants: string;
   preferred_format: string;
@@ -41,7 +43,7 @@ export type HostApplicationRow = {
 };
 
 const SELECT =
-  "id, applicant_id, status, display_name, pillar, fields, headline, bio, career, credentials, portfolio_url, teaching_experience, instagram_handle, program_proposal, value_to_participants, preferred_format, consented_at, review_note, reviewed_at, submitted_at, created_at, updated_at";
+  "id, applicant_id, status, display_name, pillar, fields, headline, bio, career, credentials, portfolio_url, teaching_experience, instagram_handle, passion, often_asked, program_proposal, value_to_participants, preferred_format, consented_at, review_note, reviewed_at, submitted_at, created_at, updated_at";
 
 /** 내 지원서: 진행 중인 것 우선, 없으면 가장 최근 것 (RLS: 본인 것만) */
 export async function getMyApplication(userId: string): Promise<HostApplicationRow | null> {
