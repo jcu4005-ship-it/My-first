@@ -41,6 +41,11 @@ const envSchema = z.object({
     .transform((v) => v as PaymentMode),
   NEXT_PUBLIC_TOSS_CLIENT_KEY: optionalString,
   TOSS_SECRET_KEY: optionalString,
+
+  // 운영자 카카오톡 알림 (모두 비우면 알림을 보내지 않음)
+  KAKAO_REST_API_KEY: optionalString,
+  KAKAO_REFRESH_TOKEN: optionalString,
+  KAKAO_CLIENT_SECRET: optionalString,
 });
 
 export type Env = z.infer<typeof envSchema>;

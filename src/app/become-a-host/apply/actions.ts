@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 
 import { getCurrentMember } from "@/lib/auth/session";
+import { notifyFounderNewHostApplication } from "@/lib/notify/founder";
 import { formValue, type FormState } from "@/lib/forms";
 import { rpcErrorMessage } from "@/lib/rpc-errors";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -44,6 +45,7 @@ export async function hostApplicationAction(_prev: FormState, formData: FormData
   if (intent === "submit") {
     const { error: submitError } = await supabase.rpc("submit_host_application");
     if (submitError) return { status: "error", message: rpcErrorMessage(submitError), values };
+    await notifyFounderNewHostApplication(); // 운영자에게 카카오톡 알림 (설정이 없으면 건너뜀, 실패해도 제출은 성공)
   }
   revalidatePath("/become-a-host/apply");
   revalidatePath("/me");
