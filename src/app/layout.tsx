@@ -5,6 +5,7 @@ import { DM_Sans, IBM_Plex_Mono, Instrument_Serif, Noto_Serif_KR } from "next/fo
 import { brand, displayName } from "@/config/brand";
 import { assertValidEnv } from "@/config/env";
 import { EnvironmentBanner } from "@/components/environment-banner";
+import { isComingSoon } from "@/lib/site-mode";
 import "./globals.css";
 
 const pretendard = localFont({
@@ -57,10 +58,13 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       className={`${pretendard.variable} ${displaySerif.variable} ${dmSans.variable} ${instrument.variable} ${plexMono.variable} h-full antialiased`}
     >
       <body className="theme-blue flex min-h-full flex-col">
-        <EnvironmentBanner
-          appEnv={env.NEXT_PUBLIC_APP_ENV}
-          paymentMode={env.NEXT_PUBLIC_PAYMENT_MODE}
-        />
+        {/* 임시 공개 모드(운영)에서는 결제 자체가 없으므로 "테스트 결제" 안내를 숨김 */}
+        {!(isComingSoon() && env.NEXT_PUBLIC_APP_ENV === "production") && (
+          <EnvironmentBanner
+            appEnv={env.NEXT_PUBLIC_APP_ENV}
+            paymentMode={env.NEXT_PUBLIC_PAYMENT_MODE}
+          />
+        )}
         {children}
       </body>
     </html>

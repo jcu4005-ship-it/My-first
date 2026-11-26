@@ -1,7 +1,9 @@
 import Link from "next/link";
 
+import { ComingSoonFooter } from "@/components/coming-soon/parts";
 import { BusinessInfoBlock } from "@/components/legal/business-info";
 import { brand, displayName } from "@/config/brand";
+import { isComingSoon } from "@/lib/site-mode";
 
 const LINKS = [
   { href: "/meetups", label: "프로그램" },
@@ -22,6 +24,7 @@ const POLICY_LINKS = [
 ];
 
 export function SiteFooter() {
+  if (isComingSoon()) return <ComingSoonFooter />;
   return (
     <footer className="mt-20 border-t border-border bg-linen/60">
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-4 py-10 sm:px-6">
@@ -43,7 +46,7 @@ export function SiteFooter() {
             </Link>
           ))}
         </nav>
-        <BusinessInfoBlock compact testId="footer-business-info" />
+        <BusinessInfoBlock compact testId="footer-business-info" hideEmpty={["intermediaryNotice"]} />
         <p className="border-t border-border pt-5 text-[13px] leading-relaxed text-muted-foreground">
           서비스 준비 중입니다. 현재 보이는 프로그램은 &lsquo;샘플&rsquo;로 표시된 예시이며 실제로 신청할 수 없습니다.
         </p>

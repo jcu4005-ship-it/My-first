@@ -31,6 +31,9 @@ const envSchema = z.object({
   NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: optionalString,
   SUPABASE_SECRET_KEY: optionalString,
 
+  // 임시 공개 모드(운영 DB 준비 전): 소개·약관만 보여 줌 (src/lib/site-mode.ts)
+  SITE_MODE: optionalString,
+
   NEXT_PUBLIC_PAYMENT_MODE: z
     .string()
     .default("test")
@@ -128,7 +131,12 @@ export function parseEnv(source: Record<string, string | undefined>): EnvResult 
   if (env.NEXT_PUBLIC_APP_ENV === "production" && !env.NEXT_PUBLIC_SITE_URL) {
     errors.push("NEXT_PUBLIC_SITE_URL: production 환경에서는 필수입니다.");
   }
-  if (env.NEXT_PUBLIC_APP_ENV === "production" || env.NEXT_PUBLIC_APP_ENV === "staging") {
+  if (env.SITE_MODE !== undefined && env.SITE_MODE !== "coming_soon") {
+    errors.push("SITE_MODE: 허용되는 값은 coming_soon 뿐입니다. (끄려면 이 환경변수를 지우세요)");
+  }
+  // 임시 공개 모드는 DB를 읽지 않으므로 운영에서도 Supabase 설정 없이 열 수 있음 (운영 배포 승인 확인 위 4번은 그대로)
+  const comingSoon = env.SITE_MODE === "coming_soon";
+  if (!comingSoon && (env.NEXT_PUBLIC_APP_ENV === "production" || env.NEXT_PUBLIC_APP_ENV === "staging")) {
     for (const name of [
       "NEXT_PUBLIC_SUPABASE_URL",
       "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY",

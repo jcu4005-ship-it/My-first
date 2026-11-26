@@ -5,7 +5,9 @@ import { Suspense } from "react";
 import { displayName } from "@/config/brand";
 import { LogoInline, LogoSymbol } from "@/components/brand/logo";
 import { Button } from "@/components/ui/button";
+import { ComingSoonHeader } from "@/components/coming-soon/parts";
 import { getCurrentMember } from "@/lib/auth/session";
+import { isComingSoon } from "@/lib/site-mode";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 import { MobileTabBar } from "./mobile-tab-bar";
@@ -86,6 +88,7 @@ const NAV = [
  * tabBar=false: 아래쪽에 자체 고정 버튼이 있는 화면(프로그램 상세)에서 탭 막대를 숨김.
  */
 export function SiteHeader({ tabBar = true, masthead = false }: { tabBar?: boolean; masthead?: boolean }) {
+  if (isComingSoon()) return <ComingSoonHeader />; // 임시 공개 모드: 열려 있지 않은 화면으로 가는 메뉴·로그인 없이
   return (
     <>
       <header className={`sticky top-0 z-30 bg-background/92 backdrop-blur ${masthead ? "" : "border-b border-border/70"}`}>

@@ -1,6 +1,8 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 
+import { comingSoonRoute, isComingSoon } from "@/lib/site-mode";
+
 /**
  * 요청 전처리 (Next.js 16의 proxy = 이전 middleware)
  * 1) Supabase 로그인 세션 갱신(쿠키)
@@ -20,6 +22,12 @@ function under(pathname: string, prefix: string) {
 export async function proxy(request: NextRequest) {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
+  // 임시 공개 모드(SITE_MODE=coming_soon): 열어 둔 화면만 보여 주고 나머지는 소개 페이지로
+  if (isComingSoon()) {
+    const decision = comingSoonRoute(request.nextUrl.pathname, { databaseConfigured: Boolean(url && key) });
+    if (decision.kind === "rewrite") return NextResponse.rewrite(new URL(decision.to, request.url));
+    if (decision.kind === "redirect") return NextResponse.redirect(new URL(decision.to, request.url));
+  }
   let response = NextResponse.next({ request });
   if (!url || !key) return response;
 
