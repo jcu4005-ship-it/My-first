@@ -6,6 +6,7 @@ import { requireAdmin } from "@/lib/auth/guards";
 import { CREATOR_STATUSES, creatorFieldLabel, creatorStatusLabel } from "@/lib/creators/constants";
 import { listCreatorApplications } from "@/lib/creators/queries";
 import { cn } from "@/lib/utils";
+import { formatDateTime } from "@/lib/format";
 
 export const metadata: Metadata = { title: "크리에이터 지원" };
 export const instant = false;
@@ -49,7 +50,7 @@ export default async function AdminCreatorsPage({ searchParams }: PageProps<"/ad
                   <StatusPill tone={a.status === "new" ? "warn" : a.status === "collaborating" ? "ok" : "muted"}>{creatorStatusLabel(a.status)}</StatusPill>
                 </span>
                 <span className="text-xs text-muted-foreground">
-                  {creatorFieldLabel(a.field)} · {new Date(a.applied_at).toLocaleString("ko-KR")}
+                  {creatorFieldLabel(a.field)} · {formatDateTime(a.applied_at)}
                 </span>
                 <span className="line-clamp-1 text-muted-foreground">{a.strength}</span>
               </Link>

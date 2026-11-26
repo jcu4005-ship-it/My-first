@@ -50,6 +50,11 @@ export function formatYmd(iso: string): string {
   return new Intl.DateTimeFormat("ko-KR", { timeZone: TZ, year: "numeric", month: "numeric", day: "numeric" }).format(new Date(iso));
 }
 
+/** 2026. 11. 9. 오후 2:05 (한국 시간 고정 — 서버가 UTC여도 같은 값. 관리자 화면 등 서버에서 그리는 시각 표시용) */
+export function formatDateTime(iso: string): string {
+  return new Intl.DateTimeFormat("ko-KR", { timeZone: TZ, year: "numeric", month: "numeric", day: "numeric", hour: "numeric", minute: "2-digit" }).format(new Date(iso));
+}
+
 /** 초대장 날짜 조각: { md: "11.15", day: "15", wd: "일", wdEn: "SUN", time: "19:30" } */
 export function ticketDate(iso: string) {
   const d = new Date(iso);

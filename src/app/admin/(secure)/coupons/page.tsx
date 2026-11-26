@@ -4,7 +4,7 @@ import { ActionForm } from "@/components/forms/action-form";
 import { StatusPill } from "@/components/forms/controls";
 import { requireAdmin } from "@/lib/auth/guards";
 import { listCouponsForAdmin } from "@/lib/coupons/queries";
-import { formatPrice } from "@/lib/format";
+import { formatPrice, formatYmd } from "@/lib/format";
 
 import { setCouponActiveAction } from "../actions";
 
@@ -39,7 +39,7 @@ export default async function AdminCouponsPage() {
                 <p className="mt-1 text-sm">{c.name} · {c.percent_off}% 할인{c.first_booking_only ? " · 첫 참여 전용" : ""}</p>
                 <p className="mt-1 text-xs text-muted-foreground" data-testid="coupon-usage">
                   사용 {c.used}{c.max_redemptions ? ` / ${c.max_redemptions}` : ""}회 · 할인 합계 {formatPrice(c.discount_total)}
-                  {c.ends_at ? ` · ${new Date(c.ends_at).toLocaleDateString("ko-KR")}까지` : ""}
+                  {c.ends_at ? ` · ${formatYmd(c.ends_at)}까지` : ""}
                 </p>
               </div>
               <ActionForm action={setCouponActiveAction} hidden={{ couponId: c.id, active: c.is_active ? "false" : "true" }}

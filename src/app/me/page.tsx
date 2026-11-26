@@ -53,6 +53,11 @@ async function MyPage({ member }: { member: Awaited<ReturnType<typeof requireMem
     .filter((b) => (b.status === "confirmed" || b.status === "pending_payment") && isFuture(b.starts_at))
     .sort((a, b) => a.starts_at.localeCompare(b.starts_at));
   const joined = profile?.created_at ? new Date(profile.created_at) : null;
+  // 한국 시간 기준 "2026.11" (서버가 UTC여도 월 경계에서 어긋나지 않게)
+  const joinedLabel = (d: Date) => {
+    const parts = new Intl.DateTimeFormat("ko-KR", { timeZone: "Asia/Seoul", year: "numeric", month: "numeric" }).formatToParts(d);
+    return `${parts.find((x) => x.type === "year")?.value}.${parts.find((x) => x.type === "month")?.value}`;
+  };
 
   const tiles = [
     { href: "/me/bookings", label: "내 예약", sub: `${upcoming.length}건`, icon: Ticket },
@@ -76,7 +81,7 @@ async function MyPage({ member }: { member: Awaited<ReturnType<typeof requireMem
           </h1>
           <p className="mt-0.5 truncate text-[12.5px] text-muted-foreground">
             {member.roles.map((r) => ROLE_LABEL[r]).join(" · ")}
-            {joined && ` · 가입 ${joined.getFullYear()}.${joined.getMonth() + 1}`}
+            {joined && ` · 가입 ${joinedLabel(joined)}`}
           </p>
         </div>
         <a href="#my-info" className="shrink-0 rounded-full border-[1.5px] border-border px-3 py-1.5 text-[13px] font-bold hover:border-gold">

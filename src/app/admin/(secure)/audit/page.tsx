@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 
 import { requireAdmin } from "@/lib/auth/guards";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { formatDateTime } from "@/lib/format";
 
 export const metadata: Metadata = { title: "감사 기록" };
 
@@ -26,7 +27,7 @@ export default async function Page() {
         <li key={log.id} className="rounded-lg border p-3" data-testid="audit-row" data-action={log.action}>
           <div className="flex flex-wrap justify-between gap-2">
             <span className="font-medium">{log.action}</span>
-            <time className="text-xs text-muted-foreground">{new Date(log.created_at).toLocaleString("ko-KR")}</time>
+            <time className="text-xs text-muted-foreground">{formatDateTime(log.created_at)}</time>
           </div>
           <p className="mt-1 break-all text-xs text-muted-foreground">
             {log.actor_kind} {log.actor_id ?? ""} → {log.target_type ?? ""} {log.target_id ?? ""}

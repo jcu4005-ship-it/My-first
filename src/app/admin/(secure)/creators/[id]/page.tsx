@@ -11,6 +11,7 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { RevealForm } from "../../reveal-form";
 import { addCreatorNoteAction, revealCreatorContactAction, setCreatorStatusAction } from "../actions";
 import { NoteForm, StatusForm } from "../creator-forms";
+import { formatDateTime } from "@/lib/format";
 
 export const metadata: Metadata = { title: "크리에이터 지원 상세" };
 export const instant = false;
@@ -33,7 +34,7 @@ export default async function AdminCreatorDetailPage({ params }: PageProps<"/adm
     ["함께하고 싶은 이유", app.motivation],
     ["SNS·포트폴리오", app.link_url],
     ["함께 해보고 싶은 활동", app.wished_activity],
-    ["지원 일시", new Date(app.applied_at).toLocaleString("ko-KR")],
+    ["지원 일시", formatDateTime(app.applied_at)],
   ];
 
   return (
@@ -76,7 +77,7 @@ export default async function AdminCreatorDetailPage({ params }: PageProps<"/adm
             {notes.map((n) => (
               <li key={n.id} className="border p-4 text-sm">
                 <p className="mb-2 text-xs text-muted-foreground">
-                  {CREATOR_NOTE_KINDS.find((k) => k.value === n.kind)?.label ?? n.kind} · {new Date(n.created_at).toLocaleString("ko-KR")}
+                  {CREATOR_NOTE_KINDS.find((k) => k.value === n.kind)?.label ?? n.kind} · {formatDateTime(n.created_at)}
                 </p>
                 <p className="whitespace-pre-line">{n.body}</p>
               </li>

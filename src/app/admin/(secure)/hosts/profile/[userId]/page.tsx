@@ -12,6 +12,7 @@ import { listHostApplications } from "@/lib/hosting/queries";
 
 import { setHostActiveAction, setHostSlugAction } from "../../../actions";
 import { HostListingForm } from "../../listing-form";
+import { formatDateTime } from "@/lib/format";
 
 export const metadata: Metadata = { title: "호스트 관리" };
 export const instant = false;
@@ -100,7 +101,7 @@ export default async function AdminHostProfilePage({ params }: PageProps<"/admin
           <ol className="flex flex-col gap-2 text-sm" data-testid="host-history">
             {history.map((h) => (
               <li key={h.id} className="flex flex-wrap gap-x-3 border-b pb-2">
-                <span className="text-muted-foreground">{new Date(h.created_at).toLocaleString("ko-KR")}</span>
+                <span className="text-muted-foreground">{formatDateTime(h.created_at)}</span>
                 <span className="font-medium">{ACTION_LABEL[h.action] ?? h.action}</span>
                 {h.reason && <span className="text-muted-foreground">— {h.reason}</span>}
               </li>
