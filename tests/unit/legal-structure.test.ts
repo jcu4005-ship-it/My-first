@@ -6,14 +6,15 @@ import { LEGAL_DOCUMENTS } from "@/config/legal";
 const empty = Object.fromEntries(BUSINESS_INFO_FIELDS.map((f) => [f.key, null])) as Record<BusinessInfoKey, string | null>;
 
 describe("사업자 정보 구조", () => {
-  it("전달받지 않은 정보는 비워 두고(임의 값 없음), 화면에는 입력 필요로 나온다", () => {
-    // 직접 입력해야 하는 항목은 코드에 값이 들어 있으면 안 된다 (호스팅 제공자는 실제로 쓰는 서비스를 적은 값)
-    for (const key of ["companyName", "representative", "businessNumber", "mailOrderNumber", "address", "csPhone", "csEmail", "csHours", "privacyOfficer", "intermediaryNotice"] as const) {
+  it("아직 전달받지 않은 정보는 비워 두고(임의 값 없음), 화면에는 입력 필요로 나온다", () => {
+    // 대표가 전달한 값(상호·대표자·사업자번호·주소·전화·이메일)만 채워져 있고, 나머지는 직접 입력 전까지 비어 있어야 한다
+    for (const key of ["mailOrderNumber", "csHours", "privacyOfficer", "intermediaryNotice"] as const) {
       expect(BUSINESS_INFO[key], key).toBeNull();
     }
     const rows = businessInfoRows(BUSINESS_INFO);
-    expect(rows.find((r) => r.key === "companyName")?.placeholder).toContain("입력 필요");
-    expect(missingBusinessInfo(BUSINESS_INFO)).toContain("사업자등록번호");
+    expect(rows.find((r) => r.key === "mailOrderNumber")?.placeholder).toContain("입력 필요");
+    expect(missingBusinessInfo(BUSINESS_INFO)).toContain("통신판매업 신고번호");
+    expect(businessInfoRows(BUSINESS_INFO).find((r) => r.key === "businessNumber")?.value).toMatch(/^\d{3}-\d{2}-\d{5}$/);
     expect(isBusinessInfoComplete(BUSINESS_INFO)).toBe(false);
   });
 

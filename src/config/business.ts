@@ -19,15 +19,15 @@ export type BusinessInfoKey =
   | "intermediaryNotice";
 
 export const BUSINESS_INFO: Record<BusinessInfoKey, string | null> = {
-  companyName: null, // 상호 (사업자등록증)
-  representative: null, // 대표자 이름
-  businessNumber: null, // 사업자등록번호 (000-00-00000)
+  companyName: "라운디", // 상호 (사업자등록증)
+  representative: "주찬욱", // 대표자 이름
+  businessNumber: "762-03-03732", // 사업자등록번호 (000-00-00000)
   mailOrderNumber: null, // 통신판매업 신고번호 (신고 후 발급)
-  address: null, // 사업장 주소 (사업자등록증)
-  csPhone: null, // 고객센터 전화번호
-  csEmail: null, // 고객센터 이메일
+  address: "서울특별시 마포구 임정로21길 75(신공덕동)", // 사업장 주소 (사업자등록증)
+  csPhone: "010-7574-4005", // 고객센터 전화번호
+  csEmail: "cksdnr5551@naver.com", // 고객센터 이메일
   csHours: null, // 고객센터 운영시간
-  // 아래는 프로젝트가 실제로 쓰는 서비스를 적은 값입니다. 계약·약관상 정확한 법인명은 확인 후 확정하세요.
+  // 호스팅 제공자는 프로젝트가 실제로 쓰는 서비스를 적은 값입니다. 계약·약관상 정확한 법인명은 확인 후 확정하세요.
   hosting: "Vercel Inc. (웹 호스팅), Supabase Inc. (데이터베이스·인증)",
   privacyOfficer: null, // 개인정보 보호책임자 (이름·연락처)
   // 통신판매중개 관련 고지 문구. 플랫폼의 법적 지위·책임 범위는 법률 검토 후 확정한 문구를 그대로 입력합니다. (임의로 적지 않음)
