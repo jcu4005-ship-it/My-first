@@ -56,30 +56,41 @@ export async function proxy(request: NextRequest) {
   };
   const deny = () => carry(NextResponse.rewrite(new URL("/denied", request.url)));
   const missing = () => carry(NextResponse.rewrite(new URL("/__not-found", request.url)));
+  // DB가 잠깐 응답하지 않을 때 "없는 페이지(404)"나 "권한 없음(403)"으로 오해시키지 않고, 잠시 뒤 다시 시도하도록 안내
+  const unavailable = () =>
+    carry(
+      new NextResponse("잠시 문제가 생겼어요. 잠시 뒤에 다시 시도해 주세요.", {
+        status: 503,
+        headers: { "Content-Type": "text/plain; charset=utf-8", "Retry-After": "30", "Cache-Control": "no-store" },
+      }),
+    );
 
   // ---- 공개 상세: 없거나 비공개면 404 ----
   const seg = pathname.split("/").filter(Boolean);
   if (seg[0] === "meetups" && seg.length === 2) {
     if (!UUID.test(seg[1])) return missing();
-    const { data: m } = await supabase.from("meetups").select("id").eq("id", seg[1]).eq("status", "published").maybeSingle();
+    const { data: m, error } = await supabase.from("meetups").select("id").eq("id", seg[1]).eq("status", "published").maybeSingle();
+    if (error) return response; // 조회 실패는 "없음"이 아님 → 화면의 오류 안내에 맡김
     return m ? response : missing();
   }
   if (seg[0] === "hosts" && seg.length === 2) {
     // /hosts/[slug] (예전 주소 /hosts/[사용자 id]도 허용 → 화면에서 slug 주소로 연결)
     const isId = UUID.test(seg[1]);
     if (!isId && !/^[a-z0-9][a-z0-9-]{1,40}[a-z0-9]$/.test(seg[1])) return missing();
-    const { data: h } = await supabase
+    const { data: h, error: hostError } = await supabase
       .from("host_profiles")
       .select("user_id")
       .eq(isId ? "user_id" : "slug", seg[1])
       .eq("status", "approved")
       .maybeSingle();
+    if (hostError) return response;
     return h ? response : missing();
   }
 
   if (seg[0] === "journal" && seg.length === 2) {
     if (!/^[a-z0-9][a-z0-9-]{1,40}[a-z0-9]$/.test(seg[1])) return missing();
-    const { data: c } = await supabase.from("contents").select("id").eq("slug", seg[1]).eq("status", "published").maybeSingle();
+    const { data: c, error } = await supabase.from("contents").select("id").eq("slug", seg[1]).eq("status", "published").maybeSingle();
+    if (error) return response;
     return c ? response : missing();
   }
 
@@ -96,17 +107,19 @@ export async function proxy(request: NextRequest) {
   // ---- 내 문의: 본인 문의만 (없거나 남의 문의면 404) ----
   if (seg[0] === "me" && seg[1] === "support" && seg.length === 3) {
     if (!UUID.test(seg[2])) return missing();
-    const { data: t } = await supabase.from("support_tickets").select("id").eq("id", seg[2]).eq("user_id", claims.sub).maybeSingle();
+    const { data: t, error } = await supabase.from("support_tickets").select("id").eq("id", seg[2]).eq("user_id", claims.sub).maybeSingle();
+    if (error) return unavailable();
     return t ? response : missing();
   }
 
   const needsRole = under(pathname, "/admin") || under(pathname, "/host/meetups") || under(pathname, "/host/contents");
   if (!needsRole && !(seg[0] === "checkout" && seg.length === 2)) return response;
 
-  const [{ data: profile }, { data: roleRows }] = await Promise.all([
+  const [{ data: profile, error: profileError }, { data: roleRows, error: rolesError }] = await Promise.all([
     supabase.from("profiles").select("status").eq("id", claims.sub).maybeSingle(),
     supabase.from("user_roles").select("role").eq("user_id", claims.sub),
   ]);
+  if (profileError || rolesError) return unavailable();
   const active = profile?.status === "active";
   const roles = new Set((roleRows ?? []).map((r) => r.role as string));
 
@@ -122,7 +135,8 @@ export async function proxy(request: NextRequest) {
     // 문의 답변 화면: 없는 문의면 404 (RLS: 관리자 2단계 인증만 조회)
     if (seg[1] === "support" && seg.length === 3) {
       if (!UUID.test(seg[2])) return missing();
-      const { data: t } = await supabase.from("support_tickets").select("id").eq("id", seg[2]).maybeSingle();
+      const { data: t, error } = await supabase.from("support_tickets").select("id").eq("id", seg[2]).maybeSingle();
+      if (error) return unavailable();
       if (!t) return missing();
     }
     return response;
@@ -133,7 +147,8 @@ export async function proxy(request: NextRequest) {
     if (!active || !roles.has("host")) return deny();
     if (seg.length >= 3 && seg[2] !== "new") {
       if (!UUID.test(seg[2])) return missing();
-      const { data: m } = await supabase.from("meetups").select("id").eq("id", seg[2]).eq("host_id", claims.sub).maybeSingle();
+      const { data: m, error } = await supabase.from("meetups").select("id").eq("id", seg[2]).eq("host_id", claims.sub).maybeSingle();
+      if (error) return unavailable();
       if (!m) return missing();
     }
     return response;
@@ -144,7 +159,8 @@ export async function proxy(request: NextRequest) {
     if (!active || !roles.has("host")) return deny();
     if (seg.length >= 3 && seg[2] !== "new") {
       if (!UUID.test(seg[2])) return missing();
-      const { data: c } = await supabase.from("contents").select("id").eq("id", seg[2]).eq("author_id", claims.sub).maybeSingle();
+      const { data: c, error } = await supabase.from("contents").select("id").eq("id", seg[2]).eq("author_id", claims.sub).maybeSingle();
+      if (error) return unavailable();
       if (!c) return missing();
     }
     return response;
@@ -153,7 +169,8 @@ export async function proxy(request: NextRequest) {
   // ---- 결제 화면: 본인 신청 ----
   if (seg[0] === "checkout") {
     if (!UUID.test(seg[1])) return missing();
-    const { data: b } = await supabase.from("bookings").select("id").eq("id", seg[1]).eq("user_id", claims.sub).maybeSingle();
+    const { data: b, error } = await supabase.from("bookings").select("id").eq("id", seg[1]).eq("user_id", claims.sub).maybeSingle();
+    if (error) return unavailable();
     return b ? response : missing();
   }
   return response;
