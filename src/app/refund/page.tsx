@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
-import { DraftNote, LegalSection } from "@/components/layout/legal";
+import { DraftNote, LegalMeta, LegalSection, ReviewNote } from "@/components/layout/legal";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { brand } from "@/config/brand";
@@ -18,8 +18,9 @@ export default function RefundPolicyPage() {
     <>
       <SiteHeader />
       <main className="mx-auto w-full max-w-3xl flex-1 px-4 py-12 sm:px-8 sm:py-16" data-testid="refund-policy">
-        <p className="text-[11px] font-extrabold tracking-[0.26em] text-ember">REFUND POLICY</p>
-        <h1 className="mt-2 text-[32px] font-extrabold tracking-[-0.04em] sm:text-[40px]">취소·환불 정책</h1>
+        <p className="cap text-[12px] font-semibold text-brand">Refund Policy</p>
+        <h1 className="font-display mt-3 text-[32px] font-light sm:text-[40px]">취소·환불 정책</h1>
+        <LegalMeta doc="refund" />
         <DraftNote testId="refund-draft-note" />
         <p className="mt-6 leading-relaxed">
           {brand.name}의 모든 프로그램은 같은 기준으로 환불돼요. 4~10명의 작은 자리라 직전 취소는 크리에이터와 다른 참가자에게 영향이 커서, 날짜에 따라 환불 비율이 달라요.
@@ -44,15 +45,18 @@ export default function RefundPolicyPage() {
           <p>예) 11월 20일 오후 3시 프로그램 → 11월 17일까지 취소 100% · 11월 18~19일 50% · 11월 20일 당일 환불 없음</p>
           <p>당일에도 취소는 할 수 있어요. 취소하면 자리가 대기 중인 분께 돌아가요.</p>
           <p>취소는 마이페이지 → 내 예약에서 직접 할 수 있고, 취소 전에 환불 금액을 먼저 보여 드려요.</p>
+          <ReviewNote doc="refund">참가자가 취소할 때의 환불 비율(3일 전까지 100% · 2~1일 전 50% · 당일 0%)이 청약철회, 소비자분쟁해결기준 등 관련 법령·기준과 충돌하지 않는지 확인합니다. 숫자는 대표 결정(2026-11-18)이고 시스템 계산과 같아요.</ReviewNote>
         </LegalSection>
 
         <LegalSection no={2} title="크리에이터 사정으로 취소될 때">
-          <p>크리에이터가 일정을 취소하면 날짜와 관계없이 <b>전액 환불</b>돼요. 취소 사유와 함께 알림으로 알려 드려요.</p>
+          <p>크리에이터가 일정을 취소하면 날짜와 관계없이 <b>전액 환불</b>돼요. 취소 사유와 함께 알림으로 알려 드려요. 참가자가 따로 취소 신청을 하지 않아도 돼요.</p>
+          <p>참가자의 취소와 크리에이터의 취소는 환불 기준이 달라요. 참가자가 취소하면 위 표의 비율이, 크리에이터 사정으로 취소되면 항상 전액이 적용돼요.</p>
         </LegalSection>
 
         <LegalSection no={3} title="환불 방법과 기간">
           <p>결제한 수단(카드 등)으로 환불돼요. 카드사에 따라 실제 반영까지 영업일 기준 3~7일 걸릴 수 있어요.</p>
           <p>무료 프로그램은 언제든 취소할 수 있어요.</p>
+          <ReviewNote doc="refund">결제수단별 환불 소요 기간(위 3~7일은 임시 안내), 부분 환불 시 결제대행 수수료의 처리, 환불 지연 시 안내는 결제대행사(PG) 계약과 정산 구조를 확인한 뒤 확정합니다. 지금은 테스트 결제만 운영 중이라 실제 환불은 일어나지 않아요.</ReviewNote>
         </LegalSection>
 
         <LegalSection no={4} title="결제는 플랫폼 안에서만">

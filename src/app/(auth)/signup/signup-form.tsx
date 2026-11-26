@@ -9,7 +9,7 @@ import { initialFormState } from "@/lib/forms";
 
 import { signUpAction } from "../actions";
 
-function Check({ name, label, required, error }: { name: string; label: string; required?: boolean; error?: string }) {
+function Check({ name, label, required, error, href }: { name: string; label: string; required?: boolean; error?: string; href?: string }) {
   return (
     <div>
       <label className="flex items-start gap-3 text-sm">
@@ -17,6 +17,12 @@ function Check({ name, label, required, error }: { name: string; label: string; 
         <span>
           <span className={required ? "font-medium" : "text-muted-foreground"}>{required ? "[필수]" : "[선택]"}</span>{" "}
           {label}
+          {href && (
+            <>
+              {" "}
+              <Link href={href} target="_blank" className="text-xs text-muted-foreground underline underline-offset-4">보기</Link>
+            </>
+          )}
         </span>
       </label>
       {error && (
@@ -80,8 +86,8 @@ export function SignUpForm({ inviteOnly = false }: { inviteOnly?: boolean }) {
           <p>동의를 거부할 수 있지만, 필수 항목에 동의하지 않으면 가입할 수 없어요.{" "}
             <Link href="/privacy" target="_blank" className="underline underline-offset-4">개인정보 처리방침 전문</Link></p>
         </div>
-        <Check name="agreeTerms" label="이용약관 동의" required error={e.agreeTerms} />
-        <Check name="agreePrivacy" label="개인정보 수집·이용 동의" required error={e.agreePrivacy} />
+        <Check name="agreeTerms" label="이용약관 동의" required error={e.agreeTerms} href="/terms" />
+        <Check name="agreePrivacy" label="개인정보 수집·이용 동의" required error={e.agreePrivacy} href="/privacy" />
         <Check name="confirmAge14" label="만 14세 이상입니다" required error={e.confirmAge14} />
         <Check name="agreeMarketing" label="이벤트·혜택 정보 수신 동의" />
       </fieldset>

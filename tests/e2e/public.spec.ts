@@ -300,6 +300,56 @@ test("화면을 옮겨도 글자가 보인다: 홈(네이비)에서 약관(밝�
   expect(ratio).toBeGreaterThanOrEqual(4.5);
 });
 
+test("사업자 정보·정책 링크: 모든 공개 화면 바닥글(홈·로그인·가입·고객센터)에 약관·개인정보·환불 링크와 사업자 정보 자리, 입력 전에는 '입력 필요' 표시", async ({ page }) => {
+  for (const url of ["/", "/login", "/signup", "/help", "/about"]) {
+    await page.goto(url);
+    const footer = page.getByRole("contentinfo").filter({ visible: true });
+    for (const name of ["이용약관", "개인정보 처리방침", "취소·환불 정책"]) {
+      await expect(footer.getByRole("link", { name, exact: true })).toBeVisible();
+    }
+    const info = footer.getByTestId("footer-business-info");
+    await expect(info).toContainText("상호");
+    await expect(info).toContainText("사업자등록번호");
+    await expect(info).toContainText("통신판매업 신고번호");
+    await expect(info).toContainText("개인정보 보호책임자");
+    // 아직 전달받지 않은 정보는 지어내지 않고 입력 필요로 표시
+    await expect(info.getByTestId("footer-business-info-pending")).toBeVisible();
+  }
+});
+
+test("약관·방침 문서 구조: 개정일·시행일·버전 표시(확정 전에는 임의 날짜 없음), 법률 검토 필요 표시, 개인정보 외부 서비스 표", async ({ page }) => {
+  for (const [url, id] of [["/terms", "terms"], ["/privacy", "privacy-policy"], ["/refund", "refund-policy"]] as const) {
+    await page.goto(url);
+    const doc = page.getByTestId(id);
+    const meta = doc.getByTestId("legal-meta");
+    await expect(meta).toContainText("개정일");
+    await expect(meta).toContainText("시행일");
+    await expect(meta).toContainText("draft-");
+    await expect(meta.getByTestId("legal-revised")).toContainText("확정 후 표시");
+    await expect(meta.getByTestId("legal-effective")).toContainText("확정 후 표시");
+    await expect(doc.getByTestId("review-note").first()).toContainText("법률 검토 필요");
+  }
+  await page.goto("/terms");
+  await expect(page.getByTestId("terms")).toContainText("참가자 취소");
+  await expect(page.getByTestId("terms")).toContainText("크리에이터 사정으로 취소");
+  await expect(page.getByTestId("terms").getByTestId("business-info")).toContainText("통신판매 관련 고지");
+  await page.goto("/privacy");
+  const services = page.getByTestId("privacy-services");
+  for (const name of ["Supabase", "Vercel", "결제대행사", "카카오톡", "AI 분석 도구"]) await expect(services).toContainText(name);
+  await expect(page.getByTestId("privacy-policy")).toContainText("크리에이터 지원 접수");
+  await expect(page.getByTestId("privacy-officer")).toContainText("입력 필요");
+  await page.goto("/refund");
+  await expect(page.getByTestId("refund-policy")).toContainText("참가자의 취소와 크리에이터의 취소는 환불 기준이 달라요");
+});
+
+test("가입 화면: 필수 약관 동의 칸마다 약관·방침 보기 링크", async ({ page }) => {
+  await page.goto("/signup");
+  const consents = page.getByRole("group", { name: "약관 동의" });
+  await expect(consents.getByRole("link", { name: "보기" })).toHaveCount(2);
+  await expect(consents.getByRole("link", { name: "보기" }).first()).toHaveAttribute("href", "/terms");
+  await expect(consents.getByRole("link", { name: "보기" }).nth(1)).toHaveAttribute("href", "/privacy");
+});
+
 test("약관·환불 정책: 바닥글에서 연결, 초안 표시, 환불 기준 3단계, 프로그램 상세에 같은 기준", async ({ page }) => {
   await page.goto("/");
   await page.getByRole("contentinfo").getByRole("link", { name: "이용약관" }).click();

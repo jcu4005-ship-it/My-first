@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { BusinessInfoBlock } from "@/components/legal/business-info";
 import { brand, displayName } from "@/config/brand";
 
 const LINKS = [
@@ -8,12 +9,16 @@ const LINKS = [
   { href: "/hosts", label: "크리에이터" },
   { href: "/journal", label: "저널" },
   { href: "/about", label: "라운디 이야기" },
-  { href: "/become-a-host", label: "크리에이터 안내·정책" },
+  { href: "/become-a-host", label: "크리에이터 안내" },
   { href: "/signup", label: "회원가입" },
   { href: "/help", label: "고객센터" },
+];
+
+/** 정책 문서: 약관·개인정보·환불은 어느 화면에서든 바닥글로 바로 갈 수 있어야 함 */
+const POLICY_LINKS = [
   { href: "/terms", label: "이용약관" },
-  { href: "/refund", label: "취소·환불 정책" },
   { href: "/privacy", label: "개인정보 처리방침" },
+  { href: "/refund", label: "취소·환불 정책" },
 ];
 
 export function SiteFooter() {
@@ -31,9 +36,16 @@ export function SiteFooter() {
             </Link>
           ))}
         </nav>
+        <nav aria-label="약관과 정책" className="flex flex-wrap gap-x-5 gap-y-2 border-t border-border pt-5 text-sm font-semibold" data-testid="footer-policy-links">
+          {POLICY_LINKS.map((l) => (
+            <Link key={l.href} href={l.href} className="hover:underline hover:underline-offset-4">
+              {l.label}
+            </Link>
+          ))}
+        </nav>
+        <BusinessInfoBlock compact testId="footer-business-info" />
         <p className="border-t border-border pt-5 text-[13px] leading-relaxed text-muted-foreground">
           서비스 준비 중입니다. 현재 보이는 프로그램은 &lsquo;샘플&rsquo;로 표시된 예시이며 실제로 신청할 수 없습니다.
-          사업자 정보와 통신판매중개 고지는 정식 오픈 전 확정 후 표시됩니다.
         </p>
       </div>
     </footer>

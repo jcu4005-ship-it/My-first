@@ -6,6 +6,7 @@ import { notFound, redirect } from "next/navigation";
 import { ActionForm } from "@/components/forms/action-form";
 import { SeatCircle } from "@/components/brand/seat-circle";
 import { Blue } from "@/components/layout/blue";
+import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { CheckLine, RefundLadder } from "@/components/trust/proofs";
 import { creatorPhoto } from "@/lib/hosting/avatar";
@@ -100,7 +101,9 @@ export default async function CheckoutPage({ params }: PageProps<"/checkout/[boo
             <CheckLine>크리에이터가 취소하면 날짜와 상관없이 전액 환불돼요</CheckLine>
             <CheckLine>문제가 생기면 1:1 문의로 운영팀이 도와요</CheckLine>
           </div>
-          <p className="mt-4 text-[13px] leading-relaxed text-muted-foreground">사업자 정보는 정식 오픈 전 확정 후 여기에 표시돼요.</p>
+          <p className="mt-4 text-[13px] leading-relaxed text-muted-foreground" data-testid="checkout-policy-links">
+            결제 전에 <Link href="/refund" className="font-semibold underline underline-offset-4">취소·환불 정책 전문</Link>과 <Link href="/terms" className="font-semibold underline underline-offset-4">이용약관</Link>을 확인할 수 있어요. 참가자가 취소할 때와 크리에이터 사정으로 취소될 때의 기준이 달라요.
+          </p>
         </section>
 
         {expired ? (
@@ -122,6 +125,7 @@ export default async function CheckoutPage({ params }: PageProps<"/checkout/[boo
           </div>
         )}
       </main>
+      <SiteFooter />
     </Blue>
   );
 }

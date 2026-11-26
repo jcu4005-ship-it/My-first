@@ -173,6 +173,10 @@ test("호스트 지원서(임시 저장·수정 요청·재제출) → 승인 �
   // 유료 모임 → 테스트 결제 화면 (실제 청구 없음)
   await expect(p).toHaveURL(/\/checkout\//);
   await expect(p.getByTestId("test-payment-notice")).toBeVisible();
+  // 결제 직전: 취소·환불 규정(참가자 취소/크리에이터 취소 구분)과 약관 링크, 사업자 정보가 있는 바닥글
+  await expect(p.getByTestId("checkout-policy-links")).toContainText("취소·환불 정책 전문");
+  await expect(p.getByTestId("checkout-assurance")).toContainText("크리에이터가 취소하면 날짜와 상관없이 전액 환불");
+  await expect(p.getByRole("contentinfo").getByRole("link", { name: "취소·환불 정책" })).toBeVisible();
   await expect(p.getByTestId("checkout")).toContainText("30,000원");
   await p.getByTestId("pay-test").click();
   await expect(p).toHaveURL(/\/me\/bookings\?booked=/);

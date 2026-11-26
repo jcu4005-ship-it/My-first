@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
+import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { requireMember } from "@/lib/auth/guards";
 import { listMyBookings } from "@/lib/bookings/queries";
@@ -29,6 +30,7 @@ export default async function ContactPage({ searchParams }: PageProps<"/help/con
           <ContactForm bookings={bookings} defaultCategory={isSupportCategory(sp.category) ? sp.category : undefined} />
         </div>
       </main>
+      <SiteFooter />
     </>
   );
 }
