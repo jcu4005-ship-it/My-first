@@ -81,6 +81,18 @@ export default async function AdminApplicationPage({ params }: PageProps<"/admin
         ))}
       </dl>
 
+      {app.status === "approved" && (
+        <section className="mt-8 flex flex-col gap-3 border p-5" data-testid="approved-manage">
+          <p className="font-semibold">승인된 크리에이터 관리</p>
+          <p className="text-sm text-muted-foreground">
+            승인한 크리에이터를 내리려면 <strong>활동 중지</strong>를 하세요. 페이지·프로그램이 공개 화면에서 사라지고 새 프로그램을 만들 수 없어요. 다시 활성화하면 그대로 돌아와요.
+          </p>
+          <Link href={`/admin/hosts/profile/${app.applicant_id}`} className="self-start border border-foreground px-4 py-2 text-sm font-semibold" data-testid="approved-manage-link">
+            활동 중지·관리로 이동
+          </Link>
+        </section>
+      )}
+
       {open && (
         <section className="mt-8 flex flex-col gap-5 border p-5" data-testid="review-actions">
           <p className="font-semibold">심사</p>

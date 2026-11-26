@@ -106,6 +106,7 @@ test("호스트 지원서(임시 저장·수정 요청·재제출) → 승인 �
   await admin.reload();
   await admin.getByTestId("application-detail").getByTestId("approve-host").getByRole("button", { name: "승인" }).click();
   await expect(admin.getByTestId("application-detail")).toHaveAttribute("data-status", "approved");
+  await expect(admin.getByTestId("approved-manage-link")).toHaveAttribute("href", /\/admin\/hosts\/profile\//); // 승인된 지원서에서 바로 활동 중지·관리로 이동
   await expect(admin.getByTestId("application-history")).toContainText("수정 요청");
 
   // 3. 호스트: 프로그램 만들기 → 일정 추가 → 검수 요청

@@ -75,7 +75,7 @@ export default async function AdminHostsPage({ searchParams }: PageProps<"/admin
           <li key={a.user_id} className="flex flex-col gap-3 border px-4 py-3" data-testid="host-row" data-name={a.display_name}>
             <span className="flex flex-wrap items-center gap-x-4 gap-y-1">
               <Link href={hostHref(a)} className="hover:underline">{a.display_name}</Link>
-              <Link href={`/admin/hosts/profile/${a.user_id}`} className="text-xs underline underline-offset-4" data-testid="manage-host">관리 (주소·활동 중지·이력)</Link>
+              <Link href={`/admin/hosts/profile/${a.user_id}`} className="border px-3 py-1.5 text-xs font-semibold hover:border-foreground" data-testid="manage-host">활동 중지·관리 (주소·이력)</Link>
             </span>
             <HostListingForm userId={a.user_id} pillar={a.primary_pillar} featured={a.is_featured} order={a.featured_order} />
           </li>
