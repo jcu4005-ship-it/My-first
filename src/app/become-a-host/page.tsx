@@ -58,7 +58,6 @@ const PRINCIPLES: { no: string; title: string; body: React.ReactNode }[] = [
       </Suspense>
     ),
   },
-  { no: "03", title: "직접 데려온 손님은 덜", body: "호스트 전용 추천 링크로 들어온 신청과 다시 찾아온 단골의 재참가에는 더 낮은 수수료를 적용할 예정입니다." },
 ];
 
 const STEPS = [
@@ -85,7 +84,7 @@ const WE_DO = [
 
 const ROADMAP: { phase: string; title: string; items: string[]; status: "now" | "next" | "later" }[] = [
   { phase: "Now", title: "첫 호스트와 함께", status: "now", items: ["호스트 지원·심사", "소개와 첫 프로그램 함께 다듬기", "프로그램 만들기·검수·공개", "신청·취소·환불 관리", "참가자 확인과 알림"] },
-  { phase: "Next", title: "정식 오픈 준비", status: "next", items: ["실제 결제 연결(정산 계산은 준비됨)", "호스트 전용 추천 링크", "호스트 유형 배지"] },
+  { phase: "Next", title: "정식 오픈 준비", status: "next", items: ["실제 결제 연결(정산 계산은 준비됨)"] },
   { phase: "Later", title: "함께 넓혀 갈 것", status: "later", items: ["멤버십과 멤버 우선 좌석", `${brand.name} Originals`, "참가자에서 호스트로 성장하는 과정", "프로그램 기획 지원 서비스", "문화·예술 분야로 확장"] },
 ];
 
@@ -114,7 +113,7 @@ export default function ForHostsPage() {
         {/* 수익 원칙 */}
         <Section id="policy" className="scroll-mt-20" aria-labelledby="policy-title">
           <SectionTitle id="policy-title">함께 버는 구조</SectionTitle>
-          <ol className="grid gap-3 sm:grid-cols-3 sm:gap-4">
+          <ol className="grid gap-3 sm:grid-cols-2 sm:gap-4">
             {PRINCIPLES.map((p, i) => (
               <li key={p.no}>
                 <Card className="h-full">
