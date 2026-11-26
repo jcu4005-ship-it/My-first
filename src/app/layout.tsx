@@ -56,7 +56,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       lang="ko"
       className={`${pretendard.variable} ${displaySerif.variable} ${dmSans.variable} ${instrument.variable} ${plexMono.variable} h-full antialiased`}
     >
-      <body className="flex min-h-full flex-col">
+      <body className="theme-blue flex min-h-full flex-col">
         <EnvironmentBanner
           appEnv={env.NEXT_PUBLIC_APP_ENV}
           paymentMode={env.NEXT_PUBLIC_PAYMENT_MODE}

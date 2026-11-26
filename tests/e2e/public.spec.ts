@@ -82,6 +82,8 @@ test("라운디 이야기 추천 카드: 남은 자리(글자)·참가비가 보
 
 test("호스트 안내: 정책·과정·약속·로드맵, 지원하기 연결, 메뉴에서 진입", async ({ page }) => {
   await page.goto("/");
+  // 홈 맨 아래에 크리에이터 모집 안내(지원 3분)가 있고 바로 지원서로 연결된다
+  await expect(page.getByTestId("home-host-cta").filter({ visible: true }).getByRole("link", { name: "크리에이터 지원하기" })).toHaveAttribute("href", "/become-a-host/apply");
   await page.getByRole("navigation", { name: "주요 메뉴" }).or(page.getByRole("navigation", { name: "주요 메뉴 (모바일)" }))
     .getByRole("link", { name: "크리에이터 지원", exact: true }).filter({ visible: true }).first().click();
   await expect(page).toHaveURL(/\/become-a-host$/);

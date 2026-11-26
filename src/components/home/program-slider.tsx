@@ -66,7 +66,7 @@ export function ProgramSlider({ slides }: { slides: ProgramSlide[] }) {
         {/* 크리에이터 사진 (맨 위) */}
         <Link
           href={cur.hostHref}
-          className="group relative block aspect-[4/4.6] overflow-hidden bg-muted md:aspect-auto md:min-h-[420px]"
+          className="group relative block aspect-[4/3.2] overflow-hidden bg-muted md:aspect-auto md:min-h-[420px]"
           data-testid="cover-story"
           aria-label={`${cur.name} — ${cur.role}`}
         >

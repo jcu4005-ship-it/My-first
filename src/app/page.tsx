@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Button } from "@/components/ui/button";
 import { ArrowRight, CalendarDays, Check, MapPin } from "lucide-react";
 
 import { SeatCircle } from "@/components/brand/seat-circle";
@@ -291,6 +292,26 @@ export default async function Home() {
               <Link href="/refund" className="underline-offset-4 hover:underline">취소·환불 정책</Link>
               <Link href="/help" className="underline-offset-4 hover:underline">고객센터</Link>
               <Link href="/become-a-host" className="underline-offset-4 hover:underline">크리에이터 지원</Link>
+            </div>
+          </div>
+        </section>
+
+        {/* 6. 크리에이터 모집 (호스트 확보가 지금 가장 중요) */}
+        <section className="mx-auto mt-16 w-full max-w-6xl px-4 sm:px-6" data-testid="home-host-cta" aria-labelledby="home-host-cta-title">
+          <div className="border-t border-foreground pt-8">
+            <p className="cap-kr text-[13px] font-semibold text-brand">— 크리에이터 모집</p>
+            <h2 id="home-host-cta-title" className="font-display mt-3 text-[28px] leading-[1.3] font-light break-keep sm:text-[36px]">
+              당신만의 세계가 있다면,<br />
+              <span className="it-serif text-brand">먼저 들려주세요.</span>
+            </h2>
+            <p className="mt-4 max-w-xl text-[15px] leading-relaxed text-muted-foreground">
+              전문가가 아니어도 괜찮아요. 지원은 3분이면 끝나고 입장료는 없어요. 소개와 첫 프로그램은 운영팀이 함께 다듬어요.
+            </p>
+            <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-3">
+              <Button asChild size="lg">
+                <Link href="/become-a-host/apply">크리에이터 지원하기</Link>
+              </Button>
+              <Link href="/become-a-host" className="text-[15px] font-semibold underline underline-offset-4">호스트 안내 보기</Link>
             </div>
           </div>
         </section>

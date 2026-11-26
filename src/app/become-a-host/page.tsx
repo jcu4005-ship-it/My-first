@@ -58,13 +58,13 @@ const PRINCIPLES: { no: string; title: string; body: React.ReactNode }[] = [
       </Suspense>
     ),
   },
-  { no: "03", title: "직접 데려온 손님은 덜", body: "호스트 전용 추천 링크로 들어온 신청과 다시 찾아온 단골의 재수강에는 더 낮은 수수료를 적용할 예정입니다." },
+  { no: "03", title: "직접 데려온 손님은 덜", body: "호스트 전용 추천 링크로 들어온 신청과 다시 찾아온 단골의 재참가에는 더 낮은 수수료를 적용할 예정입니다." },
 ];
 
 const STEPS = [
-  { no: "01", title: "지원", body: "경력, 자격·수상, 포트폴리오, 가르쳐 본 경험을 보내 주세요." },
-  { no: "02", title: "심사", body: "운영팀이 경력과 포트폴리오를 확인합니다. 반려되면 사유를 알려 드리고, 보완해 다시 지원할 수 있습니다." },
-  { no: "03", title: "프로그램 만들기", body: "난이도와 '참가자가 얻는 것'을 담아 프로그램을 만들고 일정을 추가합니다." },
+  { no: "01", title: "지원", body: "활동 이름과 연락처, 그리고 간단한 질문 3개에 답해 주세요. 3분이면 돼요." },
+  { no: "02", title: "심사", body: "운영팀이 답을 읽고 연락드려요. 더 듣고 싶은 이야기는 통화로 여쭤봐요. 반려되면 사유를 알려 드리고, 보완해 다시 지원할 수 있습니다." },
+  { no: "03", title: "프로그램 만들기", body: "운영팀과 함께 첫 모임의 제목, 인원, 진행 순서, '참가자가 얻는 것'을 정하고 일정을 추가합니다." },
   { no: "04", title: "검수·공개", body: `운영팀 검수를 거쳐 공개됩니다. 신청·결제·취소·환불은 모두 ${brand.name}이 처리합니다.` },
   { no: "05", title: "정산", body: "프로그램이 끝나고 7일이 지나 분쟁이 없으면 정산 대상이 됩니다. 월 2회, 운영팀이 직접 확인해 지급합니다." },
 ];
@@ -80,11 +80,11 @@ const PROMISES = [
 const HOST_TYPES = [
   { name: "Expert", body: "경력 심사를 통과한 현업 전문가" },
   { name: "Creator", body: "자신의 콘텐츠와 관점을 가진 크리에이터" },
-  { name: "Community Host", body: `${brand.name}에서 배우고 성장해 가르치는 사람이 된 호스트 (준비 중)` },
+  { name: "Community Host", body: `${brand.name}에 참가자로 왔다가 자기 모임을 여는 사람 (준비 중)` },
 ];
 
 const ROADMAP: { phase: string; title: string; items: string[]; status: "now" | "next" | "later" }[] = [
-  { phase: "Now", title: "첫 호스트와 함께", status: "now", items: ["호스트 지원·심사", "프로그램 만들기·검수·공개", "신청·취소·환불 관리", "참가자 확인과 알림"] },
+  { phase: "Now", title: "첫 호스트와 함께", status: "now", items: ["호스트 지원·심사", "소개와 첫 프로그램 함께 다듬기", "프로그램 만들기·검수·공개", "신청·취소·환불 관리", "참가자 확인과 알림"] },
   { phase: "Next", title: "정식 오픈 준비", status: "next", items: ["실제 결제 연결(정산 계산은 준비됨)", "호스트 전용 추천 링크", "호스트 유형 배지"] },
   { phase: "Later", title: "함께 넓혀 갈 것", status: "later", items: ["멤버십과 멤버 우선 좌석", `${brand.name} Originals`, "참가자에서 호스트로 성장하는 과정", "프로그램 기획 지원 서비스", "문화·예술 분야로 확장"] },
 ];
@@ -95,8 +95,8 @@ export default function ForHostsPage() {
       <SiteHeader />
       <main className="flex-1" data-testid="for-hosts">
         <PageHero
-          title={<>당신의 전문성을,<br />누군가의 성장으로.</>}
-          description={<>입장료 없이 시작하고, 프로그램이 판매될 때만 함께 나눕니다. 모집과 결제, 운영은 {brand.name}이 맡습니다.</>}
+          title={<>당신의 세계를,<br />사람들과 나누는 자리로.</>}
+          description={<>전문가가 아니어도 괜찮아요. 입장료 없이 지원하고, 프로그램이 판매될 때만 함께 나눕니다. 소개와 첫 프로그램은 운영팀이 함께 다듬고, 모집과 결제, 운영은 {brand.name}이 맡습니다.</>}
         >
           <div className="mt-7 flex flex-wrap gap-3">
             <Button asChild size="lg">
@@ -132,7 +132,7 @@ export default function ForHostsPage() {
 
         {/* 호스트 유형 */}
         <Section aria-labelledby="types-title">
-          <SectionTitle id="types-title">이런 분들이 가르칩니다</SectionTitle>
+          <SectionTitle id="types-title">이런 분들이 모입니다</SectionTitle>
           <ul className="grid gap-3 sm:grid-cols-3 sm:gap-4">
             {HOST_TYPES.map((t) => (
               <li key={t.name} className="rounded-2xl bg-linen/70 px-5 py-4">
@@ -207,7 +207,7 @@ export default function ForHostsPage() {
         <Section>
           <div className="flex flex-col items-start gap-5 rounded-3xl bg-linen/70 p-6 sm:flex-row sm:items-center sm:justify-between sm:p-8">
             <p className="max-w-xl font-display text-xl leading-snug font-bold break-keep text-forest sm:text-2xl">
-              가르칠 수 있는 무언가가 있다면, 그 이야기를 들려주세요.
+              당신만의 이야기가 있다면, 먼저 들려주세요.
             </p>
             <Button asChild size="lg">
               <Link href="/become-a-host/apply">호스트 지원하기</Link>

@@ -67,7 +67,7 @@ export default async function HostDashboard() {
       <main className="mx-auto w-full max-w-4xl flex-1 px-4 py-8 sm:px-8" data-testid="host-home">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
-            <p className="text-xs tracking-[0.25em] text-accent">HOST</p>
+            <p className="text-xs tracking-[0.25em] text-brand">HOST</p>
             <h1 className="mt-1 font-display text-3xl font-bold">{host.display_name}</h1>
             <span className="mt-1 flex gap-4 text-sm">
               <Link href={hostHref(host)} className="text-muted-foreground underline underline-offset-4">공개 프로필 보기</Link>
