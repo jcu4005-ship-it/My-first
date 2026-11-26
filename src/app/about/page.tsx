@@ -257,7 +257,7 @@ function CreatorFeature({ host, tone, program, wide }: { host: HostDetail; tone:
 /* ---------- 7. 크리에이터 모집 + 실제 심사 기준 ---------- */
 
 const CURATION = [
-  { title: "크리에이터 심사", body: "작업과 기획안을 운영팀이 직접 확인해요." },
+  { title: "크리에이터 심사", body: "지원서와 인터뷰를 운영팀이 직접 확인해요." },
   { title: "공개 전 검수", body: "모든 프로그램과 글은 검수를 거친 뒤에만 공개돼요." },
   { title: "작은 정원", body: "한 사람 한 사람을 볼 수 있는 인원으로만 열어요." },
 ];

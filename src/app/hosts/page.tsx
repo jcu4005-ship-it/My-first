@@ -100,7 +100,7 @@ export default async function HostsPage({ searchParams }: PageProps<"/hosts">) {
             <div>
               <h1 className="text-[34px] leading-tight font-display font-bold tracking-[-0.02em] break-keep sm:text-[52px]">{info ? info.ko : "크리에이터"}</h1>
               <p className="mt-2 max-w-xl text-[14.5px] leading-relaxed text-muted-foreground">
-                {info ? info.description : "자기만의 작업과 시선을 가진 사람들. 팔로우하면 그 사람의 새 원 소식을 먼저 받아요."}
+                {info ? info.description : "자기만의 이야기를 가진 사람들. 팔로우하면 그 사람의 새 원 소식을 먼저 받아요."}
               </p>
             </div>
             <form action="/hosts" method="get" role="search" className="flex w-full gap-2 sm:max-w-sm" data-testid="host-search">

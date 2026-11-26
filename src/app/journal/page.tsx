@@ -10,7 +10,7 @@ import { listPublishedContents } from "@/lib/contents/queries";
 import { CONTENT_TYPES, contentTypeInfo, isContentType } from "@/lib/contents/types";
 
 export const instant = false;
-export const metadata: Metadata = { title: "저널", description: "호스트의 작업 이야기, 인터뷰, 포트폴리오." };
+export const metadata: Metadata = { title: "저널", description: "호스트의 이야기, 인터뷰, 포트폴리오." };
 
 export default async function JournalPage({ searchParams }: PageProps<"/journal">) {
   const sp = (await searchParams) as { type?: string };
@@ -25,7 +25,7 @@ export default async function JournalPage({ searchParams }: PageProps<"/journal"
       <main className="flex-1">
         <PageHero
           title={info ? info.ko : "호스트의 이야기"}
-          description="프로그램 너머의 작업과 생각. 호스트가 쓰고 운영팀이 검토한 글만 실립니다."
+          description="프로그램 너머의 이야기. 호스트가 쓰고 운영팀이 검토한 글만 실립니다."
         />
         <div className="sticky top-16 z-20 border-b border-border/60 bg-background/95 backdrop-blur">
           <nav aria-label="콘텐츠 종류" className="relative mx-auto w-full max-w-6xl overflow-x-auto px-4 no-scrollbar sm:px-6">
