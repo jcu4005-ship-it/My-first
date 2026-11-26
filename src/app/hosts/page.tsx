@@ -11,7 +11,7 @@ import { PILLARS, isPillar, pillarInfo } from "@/config/pillars";
 import { listHosts } from "@/lib/meetups/queries";
 
 export const instant = false;
-export const metadata: Metadata = { title: "크리에이터", description: "자기만의 작업과 전문성을 가진 크리에이터를 소개합니다." };
+export const metadata: Metadata = { title: "크리에이터", description: "한 사람의 고유한 이야기를 가진 크리에이터를 소개합니다." };
 
 type Search = { pillar?: string; q?: string };
 

@@ -268,8 +268,8 @@ export default async function Home() {
             <Head en="How it works" title="라운디는 이렇게 운영해요" />
             <div className="mt-6 grid gap-6 md:grid-cols-3 md:gap-8">
               <div>
-                <b className="text-[17px]">1. 사람을 먼저 심사해요</b>
-                <p className="mt-1.5 text-[15px] leading-relaxed text-muted-foreground">경력과 작업, 기획안을 운영팀이 직접 확인한 크리에이터만 원을 열 수 있어요.</p>
+                <b className="text-[17px]">1. 사람과 먼저 대화해요</b>
+                <p className="mt-1.5 text-[15px] leading-relaxed text-muted-foreground">운영팀이 질문으로 그 사람만의 강점과 이야기를 찾고, 함께 기획한 크리에이터만 원을 열 수 있어요.</p>
               </div>
               <div>
                 <b className="text-[17px]">2. 공개 전에 검수해요</b>

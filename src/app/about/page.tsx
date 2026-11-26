@@ -275,7 +275,7 @@ function JoinBand() {
             당신의 관점을 봅니다.
           </h2>
           <p className="mt-5 max-w-lg text-[15px] leading-relaxed text-[#f3f0ea]/80 sm:text-[17px]">
-            자기만의 작업과 전문성이 있다면 충분해요. 첫 프로그램은 함께 기획하고, 가입비 없이 판매될 때만 나눕니다.
+            자기만의 강점과 이야기가 있다면 충분해요. 질문으로 함께 찾고, 첫 프로그램도 함께 기획하고, 가입비 없이 판매될 때만 나눕니다.
           </p>
           <Link
             href="/become-a-host/apply"

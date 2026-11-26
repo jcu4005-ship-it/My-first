@@ -138,5 +138,5 @@ test("크리에이터의 다른 프로그램 · 호스트 프로필 체크리스
   const list = host.getByTestId("profile-checklist");
   await expect(list).toBeVisible();
   await expect(list.getByTestId("checklist-item").filter({ hasText: "첫 프로그램 공개" })).toHaveAttribute("data-done", "true");
-  await expect(list.getByTestId("checklist-item").filter({ hasText: "작업 철학" })).toHaveAttribute("data-done", "false");
+  await expect(list.getByTestId("checklist-item").filter({ hasText: "모임에서 중요하게 여기는 것" })).toHaveAttribute("data-done", "false");
 });

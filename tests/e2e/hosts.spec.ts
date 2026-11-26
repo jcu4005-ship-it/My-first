@@ -47,9 +47,9 @@ test("호스트 프로필 관리: 직업·작업 철학 저장, 사진 올리기
   await expect(page).toHaveURL(/\/host\/profile$/);
 
   const form = page.getByTestId("host-profile-form");
-  await form.getByLabel("직업·전문 분야 (한 줄)").fill("광고 사진가 · 스튜디오 운영");
+  await form.getByLabel("나를 소개하는 한 줄").fill("광고 사진가 · 스튜디오 운영");
   await form.getByLabel("호스트 소개").fill("10년간 브랜드 광고 사진을 찍었습니다. 빛을 읽는 법을 알려 드려요.");
-  await form.getByLabel("작업 철학 (선택)").fill("장비보다 보는 눈을 먼저 기릅니다.");
+  await form.getByLabel("모임에서 중요하게 여기는 것 (선택)").fill("장비보다 보는 눈을 먼저 기릅니다.");
   await form.getByLabel("경력").fill("광고 사진 스튜디오 포토그래퍼 10년, 브랜드 캠페인 다수");
   await form.getByTestId("avatar-input").setInputFiles({ name: "me.png", mimeType: "image/png", buffer: PNG });
   await expect(form.getByTestId("avatar-preview")).toBeVisible();

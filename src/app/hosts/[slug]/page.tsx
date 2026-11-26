@@ -96,7 +96,7 @@ export default async function HostPage({ params }: PageProps<"/hosts/[slug]">) {
     },
     host.teaching_experience && {
       key: "teaching",
-      label: "가르친 경험",
+      label: "함께해 본 경험",
       value: host.teaching_experience,
       pre: false,
     },

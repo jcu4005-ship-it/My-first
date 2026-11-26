@@ -477,7 +477,7 @@ export default async function MeetupDetailPage({ params }: PageProps<"/meetups/[
                       )}
                       {hostFull?.teaching_experience && (
                         <div className="grid grid-cols-[5.5rem_1fr] gap-2 border-t border-border py-3">
-                          <dt className="font-bold">가르친 경험</dt>
+                          <dt className="font-bold">함께해 본 경험</dt>
                           <dd className="leading-relaxed">{hostFull.teaching_experience}</dd>
                         </div>
                       )}

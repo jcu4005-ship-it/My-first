@@ -63,8 +63,8 @@ const PRINCIPLES: { no: string; title: string; body: React.ReactNode }[] = [
 
 const STEPS = [
   { no: "01", title: "지원", body: "활동 이름과 연락처, 그리고 간단한 질문 3개에 답해 주세요. 3분이면 돼요." },
-  { no: "02", title: "심사", body: "운영팀이 답을 읽고 연락드려요. 더 듣고 싶은 이야기는 통화로 여쭤봐요. 반려되면 사유를 알려 드리고, 보완해 다시 지원할 수 있습니다." },
-  { no: "03", title: "프로그램 만들기", body: "운영팀과 함께 첫 모임의 제목, 인원, 진행 순서, '참가자가 얻는 것'을 정하고 일정을 추가합니다." },
+  { no: "02", title: "대화와 심사", body: "운영팀이 답을 읽고 연락드려요. 질문 몇 가지를 더 나누며 강점을 함께 찾아요. 반려되면 사유를 알려 드리고, 보완해 다시 지원할 수 있습니다." },
+  { no: "03", title: "공동 기획", body: "운영팀과 함께 당신만의 첫 프로그램을 기획하고 일정을 추가합니다. 제목, 인원, 진행 순서, '참가자가 얻는 것'을 함께 정해요." },
   { no: "04", title: "검수·공개", body: `운영팀 검수를 거쳐 공개됩니다. 신청·결제·취소·환불은 모두 ${brand.name}이 처리합니다.` },
   { no: "05", title: "정산", body: "프로그램이 끝나고 7일이 지나 분쟁이 없으면 정산 대상이 됩니다. 월 2회, 운영팀이 직접 확인해 지급합니다." },
 ];
@@ -77,10 +77,10 @@ const PROMISES = [
   "호스트 사정으로 일정이 취소되면 참가자에게는 전액 환불됩니다.",
 ];
 
-const HOST_TYPES = [
-  { name: "Expert", body: "경력 심사를 통과한 현업 전문가" },
-  { name: "Creator", body: "자신의 콘텐츠와 관점을 가진 크리에이터" },
-  { name: "Community Host", body: `${brand.name}에 참가자로 왔다가 자기 모임을 여는 사람 (준비 중)` },
+const WE_DO = [
+  { name: "발견", body: "몇 가지 질문으로 당신의 강점, 경험, 말투 속에서 당신만 만들 수 있는 이야기를 함께 찾아요." },
+  { name: "기획", body: "찾은 이야기를 사람들이 모이고 싶은 프로그램으로 함께 기획해요. 제목, 인원, 진행 순서까지요." },
+  { name: "브랜딩", body: "소개글과 프로필, 첫 모임의 분위기까지 당신의 말투로 다듬어 사람들에게 보여 드려요." },
 ];
 
 const ROADMAP: { phase: string; title: string; items: string[]; status: "now" | "next" | "later" }[] = [
@@ -130,11 +130,11 @@ export default function ForHostsPage() {
           </Suspense>
         </Section>
 
-        {/* 호스트 유형 */}
+        {/* 라운디가 함께하는 일 */}
         <Section aria-labelledby="types-title">
-          <SectionTitle id="types-title">이런 분들이 모입니다</SectionTitle>
-          <ul className="grid gap-3 sm:grid-cols-3 sm:gap-4">
-            {HOST_TYPES.map((t) => (
+          <SectionTitle id="types-title">라운디가 함께하는 일</SectionTitle>
+          <ul className="grid gap-3 sm:grid-cols-3 sm:gap-4" data-testid="we-do">
+            {WE_DO.map((t) => (
               <li key={t.name} className="rounded-2xl bg-linen/70 px-5 py-4">
                 <span className="block font-display text-lg font-bold text-forest">{t.name}</span>
                 <span className="mt-1 block text-sm leading-relaxed text-muted-foreground">{t.body}</span>

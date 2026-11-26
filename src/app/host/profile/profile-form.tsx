@@ -20,14 +20,14 @@ export function HostProfileForm({ userId, avatarPath, defaults }: { userId: stri
       <FormMessage message={state.message} tone={state.status === "success" ? "success" : "error"} />
       <AvatarField userId={userId} initialPath={avatarPath} />
       <Field name="displayName" label="호스트 이름" defaultValue={v.displayName} error={e.displayName} />
-      <Field name="occupation" label="직업·전문 분야 (한 줄)" defaultValue={v.occupation} error={e.occupation} hint="예: 광고 사진가 · 스튜디오 운영" />
+      <Field name="occupation" label="나를 소개하는 한 줄" defaultValue={v.occupation} error={e.occupation} hint="예: 골목의 오래된 가게를 사진으로 남기는 사람" />
       <Field name="headline" label="한 줄 소개" defaultValue={v.headline} error={e.headline} />
       <TextareaField name="bio" label="호스트 소개" rows={5} defaultValue={v.bio} error={e.bio} />
-      <TextareaField name="philosophy" label="작업 철학 (선택)" rows={3} defaultValue={v.philosophy} error={e.philosophy}
-        hint="무엇을 중요하게 여기며 가르치는지. 호스트 페이지에 인용처럼 크게 보여요." />
+      <TextareaField name="philosophy" label="모임에서 중요하게 여기는 것 (선택)" rows={3} defaultValue={v.philosophy} error={e.philosophy}
+        hint="어떤 마음으로 사람들을 만나는지. 호스트 페이지에 인용처럼 크게 보여요." />
       <TextareaField name="career" label="경력" rows={3} defaultValue={v.career} error={e.career} />
       <Field name="credentials" label="자격증·수상·학력 (선택)" defaultValue={v.credentials} error={e.credentials} />
-      <Field name="teachingExperience" label="가르쳐 본 경험 (선택)" defaultValue={v.teachingExperience} error={e.teachingExperience} />
+      <Field name="teachingExperience" label="사람들과 함께해 본 경험 (선택)" defaultValue={v.teachingExperience} error={e.teachingExperience} />
       <Field name="portfolioUrl" label="포트폴리오 링크 (선택)" defaultValue={v.portfolioUrl} error={e.portfolioUrl} placeholder="https://" />
       <Field name="expertise" label="전문 분야 (쉼표로 구분)" defaultValue={v.expertise} error={e.expertise} />
       <Field name="instagram" label="인스타그램 (선택)" defaultValue={v.instagram} error={e.instagram} placeholder="@아이디" />
