@@ -39,6 +39,9 @@
 - 방법 B: Vercel → Settings → Git → Production Branch를 작업 브랜치로 바꾸고 배포
 - 배포가 끝나면 Vercel Deployments에서 Production 배포가 **Ready**인지 확인
 
+## 검색 차단 파일 (정식 오픈 때 삭제)
+- `public/robots.txt`(`Disallow: /`)가 검색 엔진 수집을 막고 있습니다 (예전 임시 운영 브랜치에서 가져온 것). **정식 오픈 때 이 파일을 삭제**하세요. 소개 페이지의 noindex 표시와 같은 목적입니다.
+
 ## 끄는 법 (정식 오픈 때)
 1. 운영 DB·메일·PG 준비 완료, Supabase 환경변수 입력
 2. Vercel Production 환경변수에서 `SITE_MODE` 삭제 → 다시 배포
