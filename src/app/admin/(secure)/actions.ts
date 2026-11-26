@@ -445,9 +445,12 @@ export async function advanceSettlementAction(_prev: FormState, formData: FormDa
   return { status: "success", message: parsed.data.action === "confirm" ? "정산을 확정했어요." : "지급 완료로 기록했어요. 호스트에게 알림이 가요." };
 }
 
+/** 빈 칸·공백을 0으로 바꿔 버리는 z.coerce.number 의 함정을 막음 (수수료가 조용히 0%가 되는 실수 방지) */
+const filledNumber = (message: string) => z.preprocess((v) => (typeof v === "string" && v.trim() === "" ? undefined : v), z.coerce.number(message));
+
 const commissionSchema = z.object({
-  ratePercent: z.coerce.number("수수료율을 숫자로 입력해 주세요.").min(0, "0~50% 사이로 입력해 주세요.").max(50, "0~50% 사이로 입력해 주세요."),
-  freeMonths: z.coerce.number("기간을 숫자로 입력해 주세요.").int("개월 수는 정수로 입력해 주세요.").min(0, "0~24개월 사이로 입력해 주세요.").max(24, "0~24개월 사이로 입력해 주세요."),
+  ratePercent: filledNumber("수수료율을 숫자로 입력해 주세요.").pipe(z.number().min(0, "0~50% 사이로 입력해 주세요.").max(50, "0~50% 사이로 입력해 주세요.")),
+  freeMonths: filledNumber("기간을 숫자로 입력해 주세요.").pipe(z.number().int("개월 수는 정수로 입력해 주세요.").min(0, "0~24개월 사이로 입력해 주세요.").max(24, "0~24개월 사이로 입력해 주세요.")),
   reason: adminReasonSchema,
 });
 
