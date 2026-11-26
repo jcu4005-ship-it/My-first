@@ -11,6 +11,7 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 import { revealApplicationContactAction, reviewApplicationAction } from "../../actions";
 import { RevealForm } from "../../reveal-form";
+import { formatDateTime } from "@/lib/format";
 
 export const metadata: Metadata = { title: "지원서 상세" };
 export const instant = false;
@@ -51,7 +52,7 @@ export default async function AdminApplicationPage({ params }: PageProps<"/admin
     ["만들고 싶은 모임", app.program_proposal],
     ["참가자에게 줄 가치", app.value_to_participants],
     ["희망 운영 방식", app.preferred_format],
-    ["자료 이용 동의", app.consented_at ? new Date(app.consented_at).toLocaleString("ko-KR") : "미동의"],
+    ["자료 이용 동의", app.consented_at ? formatDateTime(app.consented_at) : "미동의"],
   ];
 
   return (
@@ -117,7 +118,7 @@ export default async function AdminApplicationPage({ params }: PageProps<"/admin
           <ol className="flex flex-col gap-2 text-sm" data-testid="application-history">
             {history.map((h) => (
               <li key={h.id} className="flex flex-wrap gap-x-3 border-b pb-2">
-                <span className="text-muted-foreground">{new Date(h.created_at).toLocaleString("ko-KR")}</span>
+                <span className="text-muted-foreground">{formatDateTime(h.created_at)}</span>
                 <span className="font-medium">{ACTION_LABEL[h.action] ?? h.action}</span>
                 {h.reason && <span className="text-muted-foreground">— {h.reason}</span>}
               </li>

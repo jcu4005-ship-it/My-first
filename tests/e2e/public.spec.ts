@@ -300,6 +300,14 @@ test("화면을 옮겨도 글자가 보인다: 홈(네이비)에서 약관(밝�
   expect(ratio).toBeGreaterThanOrEqual(4.5);
 });
 
+test("상태 확인 주소(/api/health): 데이터베이스 응답 여부를 알려 주고 비밀 값은 담지 않는다", async ({ page }) => {
+  await page.goto("/api/health");
+  const body = JSON.parse(await page.locator("body").innerText());
+  expect(body.status).toBe("ok");
+  expect(body.database).toBe("ok"); // 연결된 데이터베이스가 응답함 (끊기면 503 + degraded)
+  expect(JSON.stringify(body)).not.toMatch(/sb_secret|service_role|eyJ/);
+});
+
 test("사업자 정보·정책 링크: 모든 공개 화면 바닥글(홈·로그인·가입·고객센터)에 약관·개인정보·환불 링크와 사업자 정보 자리, 입력 전에는 '입력 필요' 표시", async ({ page }) => {
   for (const url of ["/", "/login", "/signup", "/help", "/about"]) {
     await page.goto(url);

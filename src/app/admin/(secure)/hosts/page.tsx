@@ -10,6 +10,7 @@ import { listHostApplications } from "@/lib/hosting/queries";
 import { cn } from "@/lib/utils";
 
 import { HostListingForm } from "./listing-form";
+import { formatYmd } from "@/lib/format";
 
 export const metadata: Metadata = { title: "호스트 심사" };
 export const instant = false;
@@ -59,7 +60,7 @@ export default async function AdminHostsPage({ searchParams }: PageProps<"/admin
                   <span className="mt-1 block text-sm text-muted-foreground">{a.headline}</span>
                 </span>
                 <span className="flex items-center gap-3 text-xs text-muted-foreground">
-                  {a.submitted_at && new Date(a.submitted_at).toLocaleDateString("ko-KR")}
+                  {a.submitted_at && formatYmd(a.submitted_at)}
                   <StatusPill tone={a.status === "approved" ? "ok" : a.status === "rejected" ? "muted" : "warn"}>{APPLICATION_STATUS_LABEL[a.status]}</StatusPill>
                 </span>
               </Link>

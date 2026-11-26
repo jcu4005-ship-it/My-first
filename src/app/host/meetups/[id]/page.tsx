@@ -8,7 +8,7 @@ import { SiteHeader } from "@/components/site-header";
 import { brand } from "@/config/brand";
 import { Button } from "@/components/ui/button";
 import { requireRole } from "@/lib/auth/guards";
-import { formatDate, formatPrice, formatTime, isFuture } from "@/lib/format";
+import { formatDate, formatPrice, formatTime, isFuture, formatDateTime } from "@/lib/format";
 import { MEETUP_STATUS_LABEL, getHostSessionsAndParticipants, getMyMeetup, getWaitlistCounts, listMySessionNotices, listSessionOpensAt } from "@/lib/hosting/queries";
 
 import {
@@ -121,7 +121,7 @@ export default async function ManageMeetupPage({ params, searchParams }: PagePro
               할인 금액은 호스트 정산액에서 빠져요. 예: 참가비 4만 원에 10% 쿠폰이면 3만 6천 원을 받아요. 언제든 철회할 수 있고, 이미 받은 신청에는 영향이 없어요.
             </p>
             {meetup.accept_coupons && meetup.coupons_consented_at && (
-              <p className="text-xs text-muted-foreground">동의한 시각: {new Date(meetup.coupons_consented_at).toLocaleString("ko-KR")}</p>
+              <p className="text-xs text-muted-foreground">동의한 시각: {formatDateTime(meetup.coupons_consented_at)}</p>
             )}
             {meetup.accept_coupons ? (
               <ActionForm action={couponConsentAction} hidden={{ meetupId: meetup.id, accept: "false" }} label="쿠폰 허용 철회" testId="coupon-withdraw" />

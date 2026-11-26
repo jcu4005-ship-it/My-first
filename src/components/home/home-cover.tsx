@@ -64,7 +64,7 @@ export function HomeCover({ meetups, people }: { meetups: MeetupCardData[]; peop
           </h1>
           <p className="it-serif mt-4 text-[30px] text-brand sm:text-[40px]">a table for four to ten.</p>
           <p className="mt-6 ml-[74px] max-w-sm text-[15.5px] leading-[1.8] text-muted-foreground sm:text-[17px]">
-            자기만의 작업과 관점을 가진 사람과 4~10명이 둘러앉아요. 결제와 환불은 라운디 안에서만 해요.
+            자기만의 이야기를 가진 사람과 4~10명이 둘러앉아요. 결제와 환불은 라운디 안에서만 해요.
           </p>
         </div>
       </div>
