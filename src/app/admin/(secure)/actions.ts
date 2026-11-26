@@ -7,6 +7,7 @@ import { checkAdminForAction } from "@/lib/auth/guards";
 import { formValue, type FormState } from "@/lib/forms";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { adminReasonSchema, fieldErrors } from "@/lib/validation/auth";
+import { isRealDate } from "@/lib/validation/meetup";
 
 const FORBIDDEN: FormState = { status: "error", message: "관리자 2단계 인증이 필요합니다. 다시 로그인해 주세요." };
 
@@ -225,7 +226,7 @@ const couponCreateSchema = z.object({
   percent: z.coerce.number().int().min(1).max(10, "할인율은 최대 10%예요 (호스트 동의 한도)."),
   firstOnly: z.enum(["on", "off"]),
   max: z.string().trim().regex(/^\d*$/, "사용 한도는 숫자로 입력해 주세요."),
-  endsOn: z.string().trim().regex(/^(\d{4}-\d{2}-\d{2})?$/, "날짜를 확인해 주세요."),
+  endsOn: z.string().trim().regex(/^(\d{4}-\d{2}-\d{2})?$/, "날짜를 확인해 주세요.").refine((v) => v === "" || isRealDate(v), "존재하는 날짜를 입력해 주세요."),
 });
 
 /** 쿠폰 발급 (관리자 2단계 인증, 감사 기록은 DB 함수가 남김) */
@@ -334,7 +335,7 @@ const inviteSchema = z.object({
   code: z.string().trim().toUpperCase().regex(/^[A-Z0-9][A-Z0-9-]{3,18}[A-Z0-9]$/, "영문 대문자·숫자·하이픈 5~20자로 입력해 주세요."),
   note: z.string().trim().max(100, "메모는 100자까지예요.").optional().default(""),
   maxUses: z.coerce.number().int("숫자로 입력해 주세요.").min(1, "1회 이상이어야 해요.").max(1000, "1000회까지 가능해요."),
-  expiresOn: z.string().trim().regex(/^(\d{4}-\d{2}-\d{2})?$/).optional().default(""),
+  expiresOn: z.string().trim().regex(/^(\d{4}-\d{2}-\d{2})?$/).refine((v) => v === "" || isRealDate(v)).optional().default(""),
 });
 
 /** 초대 코드 발급 */

@@ -99,18 +99,26 @@ export type MeetupFormInput = z.infer<typeof meetupFormSchema>;
 
 const KST_OFFSET = "+09:00";
 
+/** 실제로 있는 날짜인지(2월 31일 같은 값은 자바스크립트가 3월 3일로 바꿔 버려서 따로 확인) */
+export const isRealDate = (v: string) => {
+  const [y, m, d] = v.split("-").map(Number);
+  const t = new Date(Date.UTC(y, m - 1, d));
+  return t.getUTCFullYear() === y && t.getUTCMonth() === m - 1 && t.getUTCDate() === d;
+};
+const TIME = /^([01]\d|2[0-3]):[0-5]\d$/;
+
 export const sessionFormSchema = z
   .object({
-    date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "날짜를 선택해 주세요."),
-    startTime: z.string().regex(/^\d{2}:\d{2}$/, "시작 시간을 선택해 주세요."),
-    endTime: z.string().regex(/^\d{2}:\d{2}$/, "끝나는 시간을 선택해 주세요."),
+    date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "날짜를 선택해 주세요.").refine(isRealDate, "존재하는 날짜를 선택해 주세요."),
+    startTime: z.string().regex(TIME, "시작 시간을 선택해 주세요."),
+    endTime: z.string().regex(TIME, "끝나는 시간을 선택해 주세요."),
     area: z.string().trim().min(2, "동네를 입력해 주세요. (예: 성수동)").max(30),
     venueName: z.string().trim().min(2, "장소 이름을 입력해 주세요.").max(60),
     addressDetail: z.string().trim().max(200, "상세 주소는 200자 이내로 입력해 주세요."),
     capacity: z.coerce.number().int("정원을 숫자로 입력해 주세요.").min(1, "정원은 1명 이상이에요.").max(200, "정원은 200명 이하로 입력해 주세요."),
     // 열림 시각(드롭, 선택): 둘 다 비우면 지금처럼 바로 신청. 날짜·시각은 같이 입력
-    opensDate: z.string().regex(/^(\d{4}-\d{2}-\d{2})?$/, "오픈 일자를 확인해 주세요.").default(""),
-    opensTime: z.string().regex(/^(\d{2}:\d{2})?$/, "오픈 시각을 확인해 주세요.").default(""),
+    opensDate: z.string().regex(/^(\d{4}-\d{2}-\d{2})?$/, "오픈 일자를 확인해 주세요.").refine((v) => v === "" || isRealDate(v), "존재하는 날짜를 선택해 주세요.").default(""),
+    opensTime: z.string().regex(/^(([01]\d|2[0-3]):[0-5]\d)?$/, "오픈 시각을 확인해 주세요.").default(""),
   })
   .transform((v) => ({
     ...v,

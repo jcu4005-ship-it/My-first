@@ -12,7 +12,7 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { fieldErrors } from "@/lib/validation/auth";
 import { HOST_AVATAR_BUCKET } from "@/lib/hosting/avatar";
 import { getMyMeetup } from "@/lib/hosting/queries";
-import { hostProfileSchema, meetupFormSchema, sessionFormSchema } from "@/lib/validation/meetup";
+import { hostProfileSchema, isRealDate, meetupFormSchema, sessionFormSchema } from "@/lib/validation/meetup";
 
 const LOGIN_REQUIRED: FormState = { status: "error", message: "로그인이 필요합니다." };
 const NOT_HOST: FormState = { status: "error", message: "승인된 호스트만 할 수 있어요." };
@@ -426,8 +426,8 @@ export async function duplicateMeetupAction(_prev: FormState, formData: FormData
 const opensAtSchema = z.object({
   sessionId: z.uuid(),
   meetupId: z.uuid(),
-  opensDate: z.string().regex(/^(\d{4}-\d{2}-\d{2})?$/),
-  opensTime: z.string().regex(/^(\d{2}:\d{2})?$/),
+  opensDate: z.string().regex(/^(\d{4}-\d{2}-\d{2})?$/).refine((v) => v === "" || isRealDate(v)),
+  opensTime: z.string().regex(/^(([01]\d|2[0-3]):[0-5]\d)?$/),
 });
 
 /** 일정의 열림 시각 정하기·지우기 (둘 다 비우면 지움 = 바로 신청 가능). 규칙은 DB 함수가 최종 확인 */
