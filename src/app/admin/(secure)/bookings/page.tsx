@@ -54,7 +54,7 @@ export default async function AdminBookingsPage({ searchParams }: PageProps<"/ad
       {rows.length === 0 ? (
         <p className="mt-8 text-sm text-muted-foreground">신청이 없어요.</p>
       ) : (
-        <div className="mt-6 overflow-x-auto rounded-xl border">
+        <div className="mt-6 overflow-x-auto rounded-xl border" tabIndex={0} role="region" aria-label="신청 목록 표 (좌우로 스크롤)">
           <table className="w-full min-w-[640px] text-sm">
             <thead className="bg-secondary/60 text-left text-xs text-muted-foreground">
               <tr>

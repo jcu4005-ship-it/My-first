@@ -89,7 +89,7 @@ export default async function HostSettlementsPage() {
             아직 결제된 신청이 없어요. 무료 프로그램은 정산할 금액이 없어요.
           </p>
         ) : (
-          <div className="mt-6 overflow-x-auto rounded-xl border">
+          <div className="mt-6 overflow-x-auto rounded-xl border" tabIndex={0} role="region" aria-label="정산 목록 표 (좌우로 스크롤)">
             <table className="w-full min-w-[620px] text-sm">
               <thead className="bg-secondary/60 text-left text-xs text-muted-foreground">
                 <tr>

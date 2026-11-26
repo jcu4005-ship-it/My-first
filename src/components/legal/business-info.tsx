@@ -15,7 +15,7 @@ export function BusinessInfoBlock({ compact = false, className, testId = "busine
         {rows.map((r) => (
           <div key={r.key} className={cn(compact ? "flex flex-wrap gap-x-2" : "contents")}>
             <dt className="text-muted-foreground">{r.label}</dt>
-            <dd className={cn(!r.value && "text-muted-foreground/70 italic")} data-placeholder={r.value ? undefined : "true"}>
+            <dd className={cn(!r.value && "text-muted-foreground italic")} data-placeholder={r.value ? undefined : "true"}>
               {r.value ?? `[${r.placeholder}]`}
             </dd>
           </div>

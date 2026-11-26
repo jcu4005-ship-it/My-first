@@ -84,7 +84,7 @@ export default function PrivacyPage() {
         </p>
 
         <LegalSection no={1} title="모으는 정보와 이유, 보관 기간">
-          <div className="overflow-x-auto border">
+          <div className="overflow-x-auto border" tabIndex={0} role="region" aria-label="수집하는 정보 표 (좌우로 스크롤)">
             <table className="w-full min-w-[640px] text-left text-sm">
               <thead className="bg-muted/50">
                 <tr><th className="p-3">항목</th><th className="p-3">언제</th><th className="p-3">왜</th><th className="p-3">언제 지우나</th></tr>
@@ -136,7 +136,7 @@ export default function PrivacyPage() {
 
         <LegalSection no={5} title="처리를 맡기는 곳과 쓰는 외부 서비스">
           <p>서비스 운영을 위해 아래 외부 서비스를 이용해요. 쓰는 서비스가 바뀌거나 늘면 이 표를 먼저 고쳐요.</p>
-          <div className="overflow-x-auto border">
+          <div className="overflow-x-auto border" tabIndex={0} role="region" aria-label="외부 서비스 표 (좌우로 스크롤)">
             <table className="w-full min-w-[640px] text-left text-sm" data-testid="privacy-services">
               <thead className="bg-muted/50">
                 <tr><th className="p-3">서비스</th><th className="p-3">맡기는 일</th><th className="p-3">전달되는 정보</th><th className="p-3">상태</th></tr>
@@ -169,9 +169,9 @@ export default function PrivacyPage() {
         <LegalSection no={7} title="개인정보 보호책임자와 문의">
           <dl className="grid gap-x-6 gap-y-2 text-sm sm:grid-cols-[9rem_1fr]" data-testid="privacy-officer">
             <dt className="text-muted-foreground">개인정보 보호책임자</dt>
-            <dd className={officer ? undefined : "text-muted-foreground/70 italic"}>{officer ?? "[보호책임자 이름·연락처 입력 필요]"}</dd>
+            <dd className={officer ? undefined : "text-muted-foreground italic"}>{officer ?? "[보호책임자 이름·연락처 입력 필요]"}</dd>
             <dt className="text-muted-foreground">문의 이메일</dt>
-            <dd className={csEmail ? undefined : "text-muted-foreground/70 italic"}>{csEmail ?? "[고객센터 이메일 입력 필요]"}</dd>
+            <dd className={csEmail ? undefined : "text-muted-foreground italic"}>{csEmail ?? "[고객센터 이메일 입력 필요]"}</dd>
           </dl>
           <ReviewNote doc="privacy">개인정보 보호책임자 지정 의무 해당 여부와 연락처 표시 방식은 사업자 정보 확정 후 확인합니다.</ReviewNote>
         </LegalSection>

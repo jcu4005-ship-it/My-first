@@ -458,3 +458,21 @@ test("320px 폰: 주요 공개 화면에 가로 넘침이 없다", async ({ brow
   }
   await ctx.close();
 });
+
+// 접근성 자동 점검(axe): 이름 없는 버튼·링크, 라벨 없는 입력, 대비 부족, 키보드로 못 가는 스크롤 영역 등이 다시 생기지 않도록
+test("접근성(axe): 주요 공개 화면에 심각한 위반이 없다", async ({ browser }) => {
+  const axeSrc = (await import("node:fs")).readFileSync(require.resolve("axe-core/axe.min.js"), "utf8");
+  const ctx = await newContext(browser, { viewport: { width: 390, height: 800 } });
+  const page = await ctx.newPage();
+  for (const path of ["/", "/about", "/meetups", "/hosts", "/become-a-host", "/apply", "/login", "/signup", "/privacy", "/terms", "/refund"]) {
+    await page.goto(path, { waitUntil: "networkidle" });
+    await page.evaluate(axeSrc);
+    const violations = await page.evaluate(async () => {
+      // @ts-expect-error axe는 위에서 주입됨
+      const res = await axe.run({ exclude: [['[aria-hidden="true"]']] }, { runOnly: ["wcag2a", "wcag2aa"] });
+      return res.violations.map((v: { id: string; nodes: unknown[] }) => `${v.id}(${v.nodes.length})`);
+    });
+    expect(violations, `${path} 접근성 위반`).toEqual([]);
+  }
+  await ctx.close();
+});
