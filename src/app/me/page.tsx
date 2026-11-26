@@ -171,7 +171,7 @@ async function MyPage({ member }: { member: Awaited<ReturnType<typeof requireMem
             </Link>
           </div>
         ) : (
-          <ul className={`flex gap-2 overflow-x-auto p-3 no-scrollbar ${sheet}`}>
+          <ul className={`relative flex gap-2 overflow-x-auto p-3 no-scrollbar ${sheet}`}>
             {followed.map(({ host, next }) => {
               const avatar = creatorPhoto(host);
               return (

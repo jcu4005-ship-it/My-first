@@ -24,7 +24,7 @@ export function CategoryChips({
   counts?: Record<string, number>;
 }) {
   return (
-    <nav aria-label="카테고리" className="-mx-4 overflow-x-auto px-4 no-scrollbar sm:mx-0 sm:px-0">
+    <nav aria-label="카테고리" className="relative -mx-4 overflow-x-auto px-4 no-scrollbar sm:mx-0 sm:px-0">
       <ul className="flex w-max gap-2 py-3">
         <li>
           <Link href={allHref} className={chipClass(!active)} aria-current={!active ? "page" : undefined}>

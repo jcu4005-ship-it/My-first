@@ -24,7 +24,7 @@ export function MagazineCover({ meetups, people }: { meetups: MeetupCardData[]; 
     <section aria-labelledby="hero-title">
       <div className="mx-auto w-full max-w-6xl px-4 pt-1 sm:px-6">
         <LogoWordmarkChair className="w-full text-brand" />
-        <div className="mt-3 flex justify-between cap border-y border-foreground py-2.5 text-[10.5px] tracking-[0.12em] whitespace-nowrap sm:mt-4 sm:text-[12px]">
+        <div className="mt-3 flex flex-wrap justify-between gap-x-3 cap border-y border-foreground py-2.5 text-[10.5px] tracking-[0.08em] sm:mt-4 sm:flex-nowrap sm:whitespace-nowrap sm:text-[12px] sm:tracking-[0.12em]">
           <span>
             ISSUE No.{String(ISSUE.no).padStart(2, "0")} — {ISSUE.season}
           </span>

@@ -25,7 +25,7 @@ function PillarTabs({ active, q }: { active?: string; q?: string }) {
   };
   const tab = chipClass;
   return (
-    <nav aria-label="분류" className="-mx-4 overflow-x-auto px-4 no-scrollbar sm:mx-0 sm:px-0">
+    <nav aria-label="분류" className="relative -mx-4 overflow-x-auto px-4 no-scrollbar sm:mx-0 sm:px-0">
       <ul className="flex w-max gap-2 py-3">
         <li><Link href={href()} className={tab(!active)} aria-current={!active ? "page" : undefined} data-testid="pillar-tab">전체</Link></li>
         {PILLARS.map((p) => (

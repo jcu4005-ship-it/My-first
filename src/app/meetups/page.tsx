@@ -59,7 +59,7 @@ export default async function MeetupsPage({ searchParams }: PageProps<"/meetups"
               />
               <button type="submit" className="h-12 shrink-0 rounded-2xl bg-foreground px-5 text-sm font-bold text-background hover:bg-foreground/90">검색</button>
             </form>
-            <nav aria-label="대분류" className="flex max-w-full gap-1.5 overflow-x-auto no-scrollbar">
+            <nav aria-label="대분류" className="relative flex max-w-full gap-1.5 overflow-x-auto no-scrollbar">
               {[{ slug: undefined, label: "All", ko: "전체" }, ...PILLARS].map((p) => (
                 <Link
                   key={p.label}

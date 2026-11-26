@@ -28,7 +28,7 @@ export default async function JournalPage({ searchParams }: PageProps<"/journal"
           description="프로그램 너머의 작업과 생각. 호스트가 쓰고 운영팀이 검토한 글만 실립니다."
         />
         <div className="sticky top-16 z-20 border-b border-border/60 bg-background/95 backdrop-blur">
-          <nav aria-label="콘텐츠 종류" className="mx-auto w-full max-w-6xl overflow-x-auto px-4 no-scrollbar sm:px-6">
+          <nav aria-label="콘텐츠 종류" className="relative mx-auto w-full max-w-6xl overflow-x-auto px-4 no-scrollbar sm:px-6">
             <ul className="flex w-max gap-2 py-3">
               <li><Link href="/journal" className={tab(!type)} aria-current={!type ? "page" : undefined} data-testid="content-type-tab">전체</Link></li>
               {CONTENT_TYPES.map((t) => (
