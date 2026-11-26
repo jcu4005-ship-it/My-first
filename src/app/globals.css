@@ -1,0 +1,285 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+/*
+ * 디자인 토큰 — 색·글꼴·모서리 값은 여기서만 정의합니다.
+ * 방향 (2026-11-17 승인 "문화 잡지"): 종이 바탕, 잉크 검정, 딥 포레스트(브랜드), 안개 회색, 신호색 Ember(화면당 한두 곳).
+ * 팔레트: Paper #F3F0EA · Ink #121311 · Forest #1C3326 · Fog #8A877F · Ember #D2522B · Card #FBFAF7
+ * 대비: 작은 본문 글자는 ink·muted-foreground·forest만 사용 (아이보리 바탕에서 4.5:1 이상). sage는 큰 글자·장식에만.
+ * 시스템 다크 모드에 따라 색을 뒤집지 않습니다 (브랜드 화면 고정).
+ */
+:root {
+  --forest: #1c3326;
+  --forest-deep: #132219;
+  --forest-soft: #2c4536;
+  --ink: #121311;
+  --cream: #f3f0ea;
+  --linen: #e7e3db;
+  --sage: #8a9a7e;
+  --mint: #c9d1bf;
+  --fog: #8a877f;
+  --clay: #d2522b;               /* Ember: 마지막 자리·호 번호 등 화면당 한두 곳 */
+  --white: #ffffff;
+
+  --background: var(--cream);
+  --foreground: var(--ink);
+  --card: #fbfaf7;
+  --muted: var(--linen);
+  --muted-foreground: #5c5a54;
+  --border: #dcd7cd;
+  --primary: var(--forest);
+  --primary-foreground: #ffffff;
+  --secondary: var(--linen);
+  --secondary-foreground: var(--ink);
+  --accent: var(--forest);
+  --accent-foreground: #ffffff;
+  --destructive: #a33a2a;
+  --notice: #ebe7dd;               /* 테스트 모드·샘플 안내 띠 */
+  --notice-foreground: #2f3a32;
+  --ring: var(--forest);
+  --radius: 1rem;
+  color-scheme: light;
+  /* 10번 에디토리얼 매거진 (대표 선택 2026-11-21): Main Blue · Soft Blue · Warm Ivory · Charcoal. 로고의 O는 언제나 시그니처 의자. */
+  --brand-green: #193b63; /* (예전 이름) 브랜드 블루 = Main Blue: 로고·제호·강조 글자·주요 버튼 */
+  --navy: #193b63;     /* Main Blue: 주요 버튼 */
+  --gold: #193b63;     /* (예전 이름) 핵심 버튼 = Main Blue. 골드는 쓰지 않음 */
+  --gold-ink: #ffffff; /* 버튼 위 글자 */
+  --ice: #f7f7f3;
+  --white: #ffffff;
+  --text-main: #252b33;
+  --text-sub: #5b6470;
+  --line: #d9dbd6;
+  --soft: #e6eff8;     /* Soft Blue */
+  --navy-2: #254a78;
+  --navy-3: #3b5f8c;
+  --lit: #8fa3bd;
+  --ivory: #ffffff;
+}
+
+/*
+ * 갤러리 테마 (참가자 화면, 대표 승인 2026-11-21): 흰 바탕 · 거의 검정 글자 · 크고 굵은 제목 · 큰 사진.
+ * 네이비(#101D38)는 버튼·강조에만, 골드(#C6A46A)는 "이 자리에 앉기"·결제·선택 상태에만.
+ * 대비: 본문 #111827 / 보조 #4b5563 는 흰 바탕 위 7:1 이상. 골드 글자는 쓰지 않음(밝은 바탕에서 안 읽힘).
+ */
+.theme-blue {
+  --background: #f7f7f3;
+  --foreground: #252b33;
+  --card: #ffffff;
+  --muted: #eceee9;
+  --muted-foreground: #5b6470;
+  --border: #d9dbd6;
+  --primary: var(--navy);
+  --primary-foreground: #f7f7f3;
+  --secondary: #eceee9;
+  --secondary-foreground: #252b33;
+  --accent: #eceee9;
+  --accent-foreground: #252b33;
+  --destructive: #b3382b;
+  --notice: #eceee9;
+  --notice-foreground: #252b33;
+  --ring: var(--navy);
+  --forest: var(--navy);
+  --forest-deep: var(--navy);
+  --forest-soft: #d9dbd6;
+  --linen: #eceee9;
+  --cream: #f7f7f3;
+  --clay: var(--navy);
+  --fog: #5b6470;
+  --sage: #5b6470;
+  --mint: #d9dbd6;
+  --seat-lit: #8fa3bd;
+  --seat-you: var(--brand-green);
+  --seat-dim: #d9dbd6;
+  color-scheme: light;
+  background-color: #f7f7f3;
+  color: var(--foreground);
+}
+.theme-blue ::selection { background: var(--gold); color: var(--gold-ink); }
+/* 고급 매거진 (대표 승인 2026-11-21): 얇은 세리프 제목 · 간격 넓은 영문 라벨 · 직각 · 가는 선 */
+.theme-blue .font-display {
+  font-family: var(--font-display-serif), var(--font-pretendard), serif;
+  font-weight: 400;
+  letter-spacing: -0.045em;
+}
+.theme-blue .cap {
+  font-family: var(--font-dm), var(--font-pretendard), sans-serif;
+  font-size: 12px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  font-weight: 500;
+}
+.theme-blue .fade-in { animation: fade-in 0.6s ease-out; }
+@keyframes fade-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+.theme-blue .cap-kr { letter-spacing: 0.06em; text-transform: none; }
+.theme-blue .it-serif { font-family: var(--font-instrument), var(--font-display-serif), serif; font-style: italic; font-weight: 400; }
+/* 모서리는 직각에 가깝게 (동그란 아바타·아이콘 버튼은 그대로) */
+.theme-blue [class*="rounded-["],
+.theme-blue .rounded-xl,
+.theme-blue .rounded-2xl,
+.theme-blue .rounded-3xl,
+.theme-blue .rounded-lg { border-radius: 2px; }
+.theme-blue [class*="shadow-["]:not([data-testid="seat-table"]) { box-shadow: none; }
+.theme-blue > header { border-bottom: 0; }
+.theme-blue > [data-tabbar] [aria-current="page"] { color: var(--brand-green); }
+.theme-blue > header [data-testid="unread-count"] { color: #ffffff; }
+/* (예전 Deep Blue 영역 이름 — 이제 흰 바탕과 같은 모습) */
+.on-deep { background-color: transparent; }
+/* 긴 정보 패널: 흰색 + 얇은 테두리 */
+.theme-blue .sheet,
+.sheet {
+  --background: #ffffff;
+  --foreground: #252b33;
+  --card: #f7f7f3;
+  --muted: #eceee9;
+  --muted-foreground: #5b6470;
+  --border: #d9dbd6;
+  --secondary: #eceee9;
+  --secondary-foreground: #252b33;
+  --notice: #eceee9;
+  --notice-foreground: #252b33;
+  --forest: var(--navy);
+  --clay: var(--navy);
+  --linen: #f4f2ec;
+  --destructive: #b3382b;
+  --primary: var(--navy);
+  --primary-foreground: #ffffff;
+  --ring: var(--navy);
+  color-scheme: light;
+  background-color: #ffffff;
+  border: 1px solid #d9dbd6;
+  color: #252b33;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-notice: var(--notice);
+  --color-notice-foreground: var(--notice-foreground);
+  --color-ring: var(--ring);
+  --color-forest: var(--forest);
+  --color-forest-deep: var(--forest-deep);
+  --color-forest-soft: var(--forest-soft);
+  --color-ink: var(--ink);
+  --color-cream: var(--cream);
+  --color-linen: var(--linen);
+  --color-sage: var(--sage);
+  --color-mint: var(--mint);
+  --color-clay: var(--clay);
+  --color-ember: var(--clay);
+  --color-fog: var(--fog);
+  --radius-sm: calc(var(--radius) - 8px);
+  --radius-md: calc(var(--radius) - 4px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+  --font-sans: var(--font-pretendard), system-ui, sans-serif;
+  --font-display: var(--font-display-serif), var(--font-pretendard), serif;
+  --font-num: var(--font-plex-mono), ui-monospace, monospace;
+  --color-navy: var(--navy);
+  --color-navy-2: var(--navy-2);
+  --color-navy-3: var(--navy-3);
+  --color-gold: var(--gold);
+  --color-gold-ink: var(--gold-ink);
+  --color-lit: var(--lit);
+  --color-brand: var(--brand-green);
+  --color-soft: var(--soft);
+  --color-ivory: var(--ivory);
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-family: var(--font-sans);
+    word-break: keep-all; /* 한글 단어 단위 줄바꿈 */
+    /* 아이보리 종이 + 아주 옅은 입자 */
+    background-color: var(--cream);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.2 0 0 0 0 0.18 0 0 0 0 0.12 0 0 0 .05 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-size: 160px 160px;
+  }
+  /* 휴대폰 아래 탭 막대가 있으면 마지막 내용이 가려지지 않도록 */
+  @media (width < 48rem) {
+    body:has([data-tabbar]) {
+      padding-bottom: calc(4rem + env(safe-area-inset-bottom));
+    }
+  }
+}
+
+@layer components {
+  /* 작은 소제목 라벨 */
+  .eyebrow {
+    @apply text-xs font-medium tracking-[0.08em];
+  }
+  /* 옆으로 넘기는 줄에서 스크롤바 숨김 (스와이프는 그대로) */
+  .no-scrollbar {
+    scrollbar-width: none;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  /* 둥근 알약 모양 라벨 (분류·상태) */
+  .pill {
+    @apply inline-flex items-center rounded-full px-3 py-1 text-xs font-medium;
+  }
+  /* 종이색 시트 (세이지 바닥 위로 올라오는 본문) */
+  .paper {
+    --notch: #f7f4ee;
+    background-color: #f7f4ee;
+  }
+  /* 초대장 티켓: 카드 + 절취선(.perf, 양 끝 반원 홈) */
+  .ticket {
+    @apply relative rounded-[18px] bg-card;
+    border: 1px solid var(--border);
+  }
+  .perf {
+    @apply relative mx-3 border-t-[1.5px] border-dashed border-border;
+  }
+  .perf::before,
+  .perf::after {
+    content: "";
+    @apply absolute -top-[9px] size-4 rounded-full;
+    background: var(--notch, var(--background));
+  }
+  .perf::before { left: -21px; }
+  .perf::after { right: -21px; }
+  /* 호스트 서명 ("— 민재 드림") */
+  .sign {
+    font-family: var(--font-display);
+    @apply text-muted-foreground;
+  }
+  /* 어두운 섹션 */
+  .section-dark {
+    @apply bg-forest-deep text-cream;
+    --foreground: var(--cream);
+    --muted-foreground: #b7c4bb;
+    --border: #35503f;
+    --ring: var(--cream);
+  }
+}
+
+/* 당신 자리 의자: 천천히 숨 쉬는 금빛 (움직임 줄이기 설정이면 멈춤) */
+@keyframes seat-breathe {
+  0%, 100% { opacity: 0.75; }
+  50% { opacity: 1; }
+}
+.seat-glow { animation: seat-breathe 2.6s ease-in-out infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

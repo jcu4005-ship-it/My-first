@@ -1,0 +1,150 @@
+name: Staging deploy & verify
+
+# 스테이징을 한 번에 준비·배포·검증합니다. (운영은 건드리지 않음)
+#  1) Supabase 키 조회  2) DB 구조(+샘플) 반영·권한 테스트  3) Vercel Preview 환경변수·배포
+#  4) Supabase 로그인 설정·메일 문구·사이트 주소  5) 배포 주소에서 자동 검증
+# 안전장치: 수동 실행 + "staging" 입력 + GitHub Environment "staging" 승인자 승인,
+#           운영 프로젝트와 같으면 중단, 비밀 값은 로그에서 가림, 실결제 없음
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: '실행하려면 staging 을 입력하세요'
+        required: true
+      seed_samples:
+        description: '샘플 모임·호스트(화면에 "샘플" 표시) 넣기 — yes가 아니면 남은 샘플을 지움'
+        required: false
+        default: 'no'
+      run_e2e:
+        description: '배포 주소에서 자동 검증 실행'
+        required: false
+        default: 'yes'
+
+concurrency:
+  group: staging
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  staging:
+    if: github.event.inputs.confirm == 'staging'
+    runs-on: ubuntu-latest
+    environment: staging
+    timeout-minutes: 45
+    env:
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      SUPABASE_DB_PASSWORD: ${{ secrets.STAGING_DB_PASSWORD }}
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      PROJECT_REF: ${{ vars.STAGING_PROJECT_REF || 'jgfjsvwlhfqommszeiqk' }}
+      PRODUCTION_PROJECT_REF: ${{ vars.PRODUCTION_PROJECT_REF }}
+      VERCEL_PROJECT: ${{ vars.VERCEL_PROJECT || 'my-first' }}
+      VERCEL_TEAM_SLUG: ${{ vars.VERCEL_TEAM_SLUG || 'jcu4005-7409' }}
+      DEPLOY_BRANCH: ${{ github.ref_name }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+      - name: 안전 확인
+        run: |
+          for v in SUPABASE_ACCESS_TOKEN SUPABASE_DB_PASSWORD VERCEL_TOKEN; do
+            if [ -z "${!v}" ]; then echo "::error::$v 가 staging Environment secrets에 없습니다 (docs/STAGING_SETUP.md)"; exit 1; fi
+          done
+          if [ -n "$PRODUCTION_PROJECT_REF" ] && [ "$PROJECT_REF" = "$PRODUCTION_PROJECT_REF" ]; then
+            echo "::error::대상이 운영 프로젝트입니다. 중단합니다."; exit 1
+          fi
+          if [ "$DEPLOY_BRANCH" = "main" ]; then echo "::error::main(운영 브랜치)에서는 실행하지 않습니다"; exit 1; fi
+      - run: npm ci
+
+      - name: "1. Supabase 키 조회"
+        run: node scripts/staging/supabase-keys.mjs
+
+      - name: "2-1. 스테이징 DB 연결"
+        run: npx supabase link --project-ref "$PROJECT_REF"
+      - name: "2-2. 적용될 변경 미리보기"
+        run: npx supabase db push --remote --dry-run
+      - name: "2-3. DB 구조 반영"
+        run: npx supabase db push --remote --yes
+      # db push --include-seed 는 이미 넣은 seed 파일을 다시 실행하지 않으므로 직접 실행
+      # (seed.sql은 다시 실행해도 is_sample 샘플 행만 교체하도록 작성됨)
+      - name: "2-3b. 샘플 데이터 넣기·교체 (seed_samples=yes 일 때만)"
+        if: github.event.inputs.seed_samples == 'yes'
+        run: npx supabase db query --remote --yes -f supabase/seed.sql
+      - name: "2-3c. 스테이징 시험용 서비스 설정 (초대제 끔·유료 신청 허용)"
+        run: npx supabase db query --remote --yes -f supabase/staging-settings.sql
+      # 대표 요청(2026-11-14): 스테이징 화면에는 실제 첫 호스트만. 샘플을 넣지 않는 실행에서는 남은 샘플을 지움
+      - name: "2-3d. 샘플 호스트·프로그램 정리 (seed_samples=yes 가 아닐 때)"
+        if: github.event.inputs.seed_samples != 'yes'
+        run: npx supabase db query --remote --yes -f supabase/staging-remove-samples.sql
+      - name: "2-3e. 실제 첫 호스트 3명 (이름·분야만, 이미 있으면 그대로)"
+        run: npx supabase db query --remote --yes -f supabase/first-hosts.sql
+      - name: "2-3f. 체험용 프로그램 (대표가 참가자로 직접 신청해 보기 · 스테이징 전용, 이미 있으면 일정만 보충)"
+        run: npx supabase db query --remote --yes -f supabase/staging-demo-programs.sql
+      - name: "2-3g. 첫 호스트 3명 가상 소개 (시연용 · 모든 글에 '가상 소개' 표시 · 본인이 채운 내용은 덮어쓰지 않음)"
+        run: npx supabase db query --remote --yes -f supabase/staging-demo-creator-profiles.sql
+      - name: "2-4. DB 권한 테스트 (pgTAP, 모두 ROLLBACK)"
+        run: npx supabase test db --remote --yes
+      - name: "2-5. DB 구조 검사"
+        run: npx supabase db lint --remote --level warning --fail-on warning
+
+      - name: "3. Vercel Preview 환경변수 설정·배포"
+        run: node scripts/staging/vercel-deploy.mjs
+
+      - name: "4-1. Supabase 로그인 설정·메일 문구·사이트 주소"
+        run: node scripts/staging/supabase-auth.mjs
+      - name: "4-2. Supabase 로그인 설정 확인"
+        run: node scripts/check-staging-auth-config.mjs
+
+      - name: "5-1. 자동 검증용 우회 값 준비"
+        if: github.event.inputs.run_e2e == 'yes'
+        run: node scripts/staging/vercel-bypass.mjs
+      - name: "5-2. 배포 상태 확인 (/api/health)"
+        if: github.event.inputs.run_e2e == 'yes'
+        run: |
+          body=$(curl -sS --fail -H "x-vercel-protection-bypass: $VERCEL_AUTOMATION_BYPASS_SECRET" "$STAGING_APP_URL/api/health")
+          echo "$body"
+          node -e '
+            const h = JSON.parse(process.argv[1]); const p = [];
+            if (h.appEnv !== "staging") p.push(`appEnv=${h.appEnv}`);
+            if (h.paymentMode !== "test") p.push(`paymentMode=${h.paymentMode}`);
+            if (h.livePaymentsEnabled !== false) p.push("livePaymentsEnabled");
+            if (!h.integrations?.supabase) p.push("Supabase 미연결");
+            if (!h.integrations?.supabaseServer) p.push("서버 비밀키 미설정");
+            if (p.length) { console.error("::error::" + p.join(", ")); process.exit(1); }' "$body"
+      - name: "5-3a. 스테이징에 샘플 호스트가 있는지 확인 (공개 정보만 조회 — 첫 호스트의 예시 프로그램은 제외)"
+        if: github.event.inputs.run_e2e == 'yes'
+        run: |
+          n=$(curl -sS --fail -H "apikey: $STAGING_SUPABASE_PUBLISHABLE_KEY" \
+            "$STAGING_SUPABASE_URL/rest/v1/host_profiles?select=user_id&is_sample=eq.true&limit=1" | node -e 'let d="";process.stdin.on("data",c=>d+=c).on("end",()=>console.log(JSON.parse(d).length))')
+          if [ "$n" -gt 0 ]; then echo "TEST_EXPECT_SAMPLES=yes" >> "$GITHUB_ENV"; echo "샘플 있음 → 샘플 화면 검사 포함"; else echo "샘플 없음 → 샘플 화면 검사 제외"; fi
+      - name: "5-3. Playwright 브라우저 설치"
+        if: github.event.inputs.run_e2e == 'yes'
+        run: npx playwright install --with-deps chromium
+      - name: "5-4. 배포 주소 E2E (상태 코드·권한·호스트 신청·승인·모임·신청·테스트 결제·환불·호스트 취소·탈퇴·비밀키 노출)"
+        if: github.event.inputs.run_e2e == 'yes'
+        env:
+          TEST_TARGET: staging
+        run: |
+          export TEST_APP_URL="$STAGING_APP_URL" TEST_SUPABASE_URL="$STAGING_SUPABASE_URL"
+          export TEST_SUPABASE_PUBLISHABLE_KEY="$STAGING_SUPABASE_PUBLISHABLE_KEY" TEST_SUPABASE_SECRET_KEY="$STAGING_SUPABASE_SECRET_KEY"
+          npx playwright test 2>&1 | tee staging-e2e.log
+          exit "${PIPESTATUS[0]}"
+      # 테스트 계정·기록은 지우지 않고, 자동 테스트가 만든 호스트만 공개 목록에서 숨김 (E2E 실패해도 실행)
+      - name: "5-4b. 자동 테스트 호스트를 공개 목록에서 숨기기"
+        if: always()
+        run: npx supabase db query --remote --yes -f supabase/staging-hide-test-hosts.sql
+      - name: "5-5. 비밀 값이 출력물에 없는지 확인"
+        if: always() && github.event.inputs.run_e2e == 'yes'
+        run: |
+          for v in VERCEL_AUTOMATION_BYPASS_SECRET STAGING_SUPABASE_SECRET_KEY; do
+            if [ -n "${!v}" ] && grep -rqF -- "${!v}" staging-e2e.log test-results 2>/dev/null; then
+              echo "::error::$v 값이 테스트 출력물에서 발견되었습니다"; exit 1
+            fi
+          done
+          echo "출력물에 비밀 값 없음"
+      - name: 스테이징 주소
+        if: always()
+        run: echo "스테이징 주소 → ${STAGING_APP_URL:-아직 없음}"

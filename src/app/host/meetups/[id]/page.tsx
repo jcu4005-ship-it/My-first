@@ -1,0 +1,245 @@
+import type { Metadata } from "next";
+import Link from "next/link";
+import { notFound } from "next/navigation";
+
+import { ActionForm } from "@/components/forms/action-form";
+import { StatusPill } from "@/components/forms/controls";
+import { SiteHeader } from "@/components/site-header";
+import { brand } from "@/config/brand";
+import { Button } from "@/components/ui/button";
+import { requireRole } from "@/lib/auth/guards";
+import { formatDate, formatPrice, formatTime, isFuture } from "@/lib/format";
+import { MEETUP_STATUS_LABEL, getHostSessionsAndParticipants, getMyMeetup, getWaitlistCounts, listMySessionNotices, listSessionOpensAt } from "@/lib/hosting/queries";
+
+import {
+  couponConsentAction,
+  duplicateMeetupAction,
+  hostCancelMeetupAction,
+  hostCancelSessionAction,
+  markAttendanceAction,
+  meetupStatusAction,
+  sendSessionNoticeAction,
+  sessionStatusAction,
+} from "../../actions";
+import { AddSessionForm, CapacityForm, OpensAtForm } from "./session-forms";
+import { isNotYetOpen, kstDateKey, kstTime, opensLabel } from "@/lib/meetups/drops";
+
+/** 입력칸에 채울 한국 날짜·시각 */
+const kstDateTime = (iso: string) => ({ date: kstDateKey(iso), time: kstTime(iso) });
+
+export const metadata: Metadata = { title: "프로그램 관리" };
+export const instant = false;
+
+const SESSION_LABEL = { open: "모집 중", closed: "모집 마감", cancelled: "취소됨", completed: "종료" } as const;
+
+export default async function ManageMeetupPage({ params, searchParams }: PageProps<"/host/meetups/[id]">) {
+  const { id } = await params;
+  const { saved, repriced, copied } = (await searchParams) as { saved?: string; repriced?: string; copied?: string };
+  const member = await requireRole("host", `/host/meetups/${id}`);
+  const meetup = await getMyMeetup(member.id, id);
+  if (!meetup) notFound();
+  const [{ sessions, participants }, notices, waitCounts, opensAtBy] = await Promise.all([
+    getHostSessionsAndParticipants(meetup.id),
+    listMySessionNotices(meetup.id),
+    getWaitlistCounts(meetup.id),
+    listSessionOpensAt(meetup.id),
+  ]);
+  const editable = ["draft", "pending_review", "rejected", "published"].includes(meetup.status);
+
+  return (
+    <>
+      <SiteHeader />
+      <main className="mx-auto w-full max-w-4xl flex-1 px-4 py-8 sm:px-8">
+        <Link href="/host" className="text-sm text-muted-foreground">← 내 프로그램</Link>
+        {saved && (
+          <p className="mt-4 rounded-xl bg-notice px-4 py-3 text-sm text-notice-foreground" data-testid="saved-notice">
+            {copied ? "복제했어요. 제목과 내용을 다듬고, 일정을 추가한 뒤 검수를 요청해 주세요." : "저장했어요."}
+          </p>
+        )}
+        {repriced && (
+          <p className="mt-4 rounded-xl bg-notice px-4 py-3 text-sm text-notice-foreground" data-testid="repriced-notice">
+            참가비를 올려서 다시 검수를 받아요. 운영팀이 승인하면 새 참가비로 다시 공개돼요. 그동안은 목록에 보이지 않아요.
+          </p>
+        )}
+
+        <div className="mt-4 flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <StatusPill tone={meetup.status === "published" ? "ok" : meetup.status === "pending_review" ? "warn" : meetup.status === "rejected" ? "accent" : "muted"}>
+              {MEETUP_STATUS_LABEL[meetup.status]}
+            </StatusPill>
+            <h1 className="mt-2 font-display text-3xl font-bold" data-testid="manage-title">{meetup.title}</h1>
+            <p className="mt-1 text-sm text-muted-foreground">{formatPrice(meetup.price)} · 1회 최대 {meetup.max_quantity_per_booking}명</p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {editable && (
+              <Button asChild variant="outline" size="sm">
+                <Link href={`/host/meetups/${meetup.id}/edit`}>내용 수정</Link>
+              </Button>
+            )}
+            {meetup.status === "published" && (
+              <Button asChild variant="ghost" size="sm">
+                <Link href={`/meetups/${meetup.id}`}>공개 페이지</Link>
+              </Button>
+            )}
+            <ActionForm action={duplicateMeetupAction} hidden={{ meetupId: meetup.id }} label="복제해서 새로 만들기" variant="ghost" testId="duplicate-meetup" />
+          </div>
+        </div>
+
+        {meetup.status === "rejected" && meetup.review_note && (
+          <p className="mt-4 rounded-xl bg-destructive/10 px-4 py-3 text-sm text-destructive">반려 사유: {meetup.review_note}</p>
+        )}
+
+        <section className="mt-6 flex flex-wrap gap-3">
+          {(meetup.status === "draft" || meetup.status === "rejected") && (
+            <ActionForm action={meetupStatusAction} hidden={{ meetupId: meetup.id, action: "submit" }} label="검수 요청하기" variant="default" size="default" testId="submit-review" />
+          )}
+          {meetup.status === "pending_review" && (
+            <>
+              <p className="w-full text-sm text-muted-foreground">운영팀이 검토 중이에요. 승인되면 공개됩니다.</p>
+              <ActionForm action={meetupStatusAction} hidden={{ meetupId: meetup.id, action: "withdraw" }} label="검수 요청 취소" />
+            </>
+          )}
+          {meetup.status === "published" && (
+            <ActionForm action={meetupStatusAction} hidden={{ meetupId: meetup.id, action: "close" }} label="모집 종료하기"
+              confirmText="모집을 종료하면 목록에서 내려가요. 계속할까요?" />
+          )}
+          {["published", "pending_review"].includes(meetup.status) && sessions.some((s) => s.status !== "cancelled" && isFuture(s.starts_at)) && (
+            <ActionForm action={hostCancelMeetupAction} hidden={{ meetupId: meetup.id }} label="프로그램 전체 취소" variant="ghost"
+              note={{ name: "reason", placeholder: "취소 사유 (신청자에게 전달)" }}
+              confirmText="앞으로의 모든 일정을 취소할까요? 신청자에게 알림이 가고 결제는 전액 환불됩니다." testId="cancel-meetup" />
+          )}
+        </section>
+
+        {meetup.price > 0 && (
+          <section className="mt-8 flex flex-col gap-3 border p-5" data-testid="coupon-consent" data-accept={meetup.accept_coupons ? "true" : "false"}>
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <h2 className="font-semibold">참가자 할인 쿠폰</h2>
+              <StatusPill tone={meetup.accept_coupons ? "ok" : "muted"}>{meetup.accept_coupons ? "허용 중" : "허용 안 함"}</StatusPill>
+            </div>
+            <p className="text-sm leading-relaxed text-muted-foreground">
+              수수료 0% 기간 동안에는 {brand.name}이 발급한 쿠폰(최대 10% 할인)을 이 프로그램에 쓸 수 있게 해 주세요.
+              할인 금액은 호스트 정산액에서 빠져요. 예: 참가비 4만 원에 10% 쿠폰이면 3만 6천 원을 받아요. 언제든 철회할 수 있고, 이미 받은 신청에는 영향이 없어요.
+            </p>
+            {meetup.accept_coupons && meetup.coupons_consented_at && (
+              <p className="text-xs text-muted-foreground">동의한 시각: {new Date(meetup.coupons_consented_at).toLocaleString("ko-KR")}</p>
+            )}
+            {meetup.accept_coupons ? (
+              <ActionForm action={couponConsentAction} hidden={{ meetupId: meetup.id, accept: "false" }} label="쿠폰 허용 철회" testId="coupon-withdraw" />
+            ) : (
+              <ActionForm action={couponConsentAction} hidden={{ meetupId: meetup.id, accept: "true" }} label="동의하고 쿠폰 허용" variant="default" testId="coupon-accept" />
+            )}
+          </section>
+        )}
+
+        {meetup.status === "published" && !sessions.some((s) => s.status !== "cancelled" && isFuture(s.starts_at)) && (
+          <p className="mt-6 rounded-xl bg-notice px-4 py-3 text-sm text-notice-foreground" data-testid="no-upcoming-warning">
+            공개 중이지만 다가오는 일정이 없어서 프로그램 목록과 크리에이터 페이지에 보이지 않아요. 아래에서 새 일정을 추가해 주세요.
+          </p>
+        )}
+
+        <section className="mt-10">
+          <h2 className="mb-4 text-lg font-semibold">일정과 참가자</h2>
+          {sessions.length === 0 && <p className="mb-4 text-sm text-muted-foreground">아직 일정이 없어요. 아래에서 첫 일정을 추가해 주세요.</p>}
+          <ul className="flex flex-col gap-4">
+            {sessions.map((s) => {
+              const people = participants.filter((p) => p.session_id === s.id && p.status === "confirmed");
+              const future = isFuture(s.starts_at);
+              return (
+                <li key={s.id} className="rounded-2xl border p-5" data-testid="host-session">
+                  <div className="flex flex-wrap items-start justify-between gap-3">
+                    <div>
+                      <p className="font-semibold">{formatDate(s.starts_at)} {formatTime(s.starts_at)}</p>
+                      <p className="text-sm text-muted-foreground">{s.area} · {s.venue_name}{s.address_detail ? ` · ${s.address_detail}` : ""}</p>
+                      {opensAtBy[s.id] && (
+                        <p className="mt-1 text-sm font-semibold" data-testid="session-opens-at">
+                          {isNotYetOpen({ opens_at: opensAtBy[s.id] }) ? `열림 시각 · ${opensLabel(opensAtBy[s.id])} (열리기 전)` : `열림 시각 · ${opensLabel(opensAtBy[s.id])} (열림)`}
+                        </p>
+                      )}
+                    </div>
+                    <div className="text-right">
+                      {/* 시간이 지난 일정은 상태와 관계없이 "종료" (취소된 일정은 그대로 "취소됨") */}
+                      <StatusPill tone={s.status === "open" && future ? "ok" : "muted"}>
+                        <span data-testid="session-state">{s.status !== "cancelled" && !future ? SESSION_LABEL.completed : SESSION_LABEL[s.status]}</span>
+                      </StatusPill>
+                      <p className="mt-1 text-sm" data-testid="session-seats">신청 {s.reserved_count} / {s.capacity}명</p>
+                      <Link href={`/host/meetups/${meetup.id}/roster?session=${s.id}`} className="text-xs underline underline-offset-4" data-testid="roster-link">출석부 인쇄</Link>
+                      {(waitCounts[s.id] ?? 0) > 0 && (
+                        <p className="text-xs text-clay" data-testid="session-waitlist">대기 {waitCounts[s.id]}명 · 정원을 늘리면 알림이 가요</p>
+                      )}
+                    </div>
+                  </div>
+
+                  {people.length > 0 ? (
+                    future ? (
+                      <ul className="mt-4 flex flex-wrap gap-2" data-testid="participant-list">
+                        {people.map((p) => (
+                          <li key={p.booking_id} className="rounded-full bg-secondary px-3 py-1 text-sm">
+                            {p.nickname}{p.quantity > 1 ? ` 외 ${p.quantity - 1}명` : ""}
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      // 시작된 일정: 출석 체크 (불참으로 체크한 신청은 후기를 쓸 수 없어요)
+                      <ul className="mt-4 flex flex-col divide-y rounded-xl border" data-testid="participant-list">
+                        {people.map((p) => (
+                          <li key={p.booking_id} className="flex flex-wrap items-center justify-between gap-2 px-3 py-2.5" data-testid="attendance-row">
+                            <span className="text-sm">
+                              {p.nickname}{p.quantity > 1 ? ` 외 ${p.quantity - 1}명` : ""}
+                              <span className="ml-2 text-xs text-muted-foreground" data-testid="attendance-state">
+                                {p.attended === true ? "참석" : p.attended === false ? "불참" : "출석 체크 전"}
+                              </span>
+                            </span>
+                            <span className="flex gap-1.5">
+                              <ActionForm action={markAttendanceAction} hidden={{ meetupId: meetup.id, bookingId: p.booking_id, attended: "true" }}
+                                label="참석" variant={p.attended === true ? "default" : "outline"} testId="mark-attended" />
+                              <ActionForm action={markAttendanceAction} hidden={{ meetupId: meetup.id, bookingId: p.booking_id, attended: "false" }}
+                                label="불참" variant={p.attended === false ? "default" : "ghost"} testId="mark-absent" />
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+                    )
+                  ) : (
+                    <p className="mt-4 text-sm text-muted-foreground">아직 신청자가 없어요.</p>
+                  )}
+
+                  {people.length > 0 && s.status !== "cancelled" && (
+                    <div className="mt-4 border-t pt-4" data-testid="session-notice">
+                      <p className="mb-2 text-sm font-semibold">참가자에게 공지 보내기 <span className="font-normal text-muted-foreground">(확정 참가자 모두에게 알림, 일정당 10번까지)</span></p>
+                      <ActionForm action={sendSessionNoticeAction} hidden={{ meetupId: meetup.id, sessionId: s.id }} label="공지 보내기"
+                        note={{ name: "body", placeholder: "예: 입구는 건물 뒤편이에요. 5분 일찍 와 주세요." }} testId="notice-form" />
+                      {notices.filter((n) => n.session_id === s.id).length > 0 && (
+                        <ul className="mt-3 flex flex-col gap-1.5 text-xs text-muted-foreground" data-testid="notice-history">
+                          {notices.filter((n) => n.session_id === s.id).map((n) => (
+                            <li key={n.id}>
+                              {formatDate(n.created_at)} {formatTime(n.created_at)} · {n.recipients}명 · <span className="text-foreground">{n.body}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
+                  )}
+
+                  {editable && future && s.status !== "cancelled" && (
+                    <div className="mt-4 flex flex-wrap items-start gap-3 border-t pt-4">
+                      <CapacityForm meetupId={meetup.id} sessionId={s.id} capacity={s.capacity} />
+                      {s.status === "open" && future && s.reserved_count === 0 && (
+                        <OpensAtForm meetupId={meetup.id} sessionId={s.id} current={opensAtBy[s.id] ? kstDateTime(opensAtBy[s.id]) : undefined} />
+                      )}
+                      {s.status === "open" && <ActionForm action={sessionStatusAction} hidden={{ meetupId: meetup.id, sessionId: s.id, action: "close" }} label="모집 마감" variant="ghost" />}
+                      {s.status === "closed" && <ActionForm action={sessionStatusAction} hidden={{ meetupId: meetup.id, sessionId: s.id, action: "open" }} label="모집 재개" variant="ghost" />}
+                      <ActionForm action={hostCancelSessionAction} hidden={{ meetupId: meetup.id, sessionId: s.id }} label="일정 취소" variant="ghost"
+                        note={{ name: "reason", placeholder: "취소 사유 (신청자에게 전달)" }}
+                        confirmText="이 일정을 취소할까요? 신청자에게 알림이 가고 결제는 전액 환불됩니다." testId="cancel-session" />
+                    </div>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+          {editable && <div className="mt-6"><AddSessionForm meetupId={meetup.id} /></div>}
+        </section>
+      </main>
+    </>
+  );
+}

@@ -1,0 +1,122 @@
+import Link from "next/link";
+import { Mail, Search } from "lucide-react";
+import { Suspense } from "react";
+
+import { displayName } from "@/config/brand";
+import { LogoInline, LogoSymbol } from "@/components/brand/logo";
+import { Button } from "@/components/ui/button";
+import { ComingSoonHeader } from "@/components/coming-soon/parts";
+import { getCurrentMember } from "@/lib/auth/session";
+import { isComingSoon } from "@/lib/site-mode";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
+
+import { MobileTabBar } from "./mobile-tab-bar";
+import { SavesSync } from "./saved";
+
+const iconButton =
+  "relative inline-flex size-10 items-center justify-center rounded-full text-foreground transition-colors hover:bg-linen";
+
+async function AccountNav() {
+  const member = await getCurrentMember().catch(() => null);
+  if (!member) {
+    return (
+      <nav className="flex items-center gap-2 text-sm" aria-label="계정">
+        <Link href="/login" className="px-2 py-2 font-semibold text-foreground hover:text-forest">
+          로그인
+        </Link>
+        <Button asChild size="sm" className="hidden sm:inline-flex">
+          <Link href="/signup">가입하기</Link>
+        </Button>
+      </nav>
+    );
+  }
+  const link = "hidden px-2 py-2 text-muted-foreground hover:text-foreground md:inline";
+  return (
+    <nav className="flex items-center gap-1 text-sm whitespace-nowrap" data-testid="account-nav" aria-label="계정">
+      {member.roles.includes("admin") && (
+        <Link href="/admin" className={link}>
+          관리자
+        </Link>
+      )}
+      {member.roles.includes("host") && (
+        <Link href="/host" className={link}>
+          호스트 공간
+        </Link>
+      )}
+      <Link href="/me/bookings" className={link}>
+        내 자리
+      </Link>
+      <UnreadBadge userId={member.id} />
+      <SavesSync />
+      <Link href="/me" className="hidden max-w-28 truncate px-2 py-2 font-medium md:inline" data-testid="nav-nickname">
+        {member.nickname}
+      </Link>
+    </nav>
+  );
+}
+
+async function UnreadBadge({ userId }: { userId: string }) {
+  const supabase = await createSupabaseServerClient();
+  const { count } = await supabase
+    .from("notifications")
+    .select("id", { count: "exact", head: true })
+    .eq("user_id", userId)
+    .is("read_at", null);
+  return (
+    <Link href="/me/notifications" className={iconButton} aria-label={`알림 ${count ?? 0}개`} data-testid="nav-notifications">
+      <Mail aria-hidden strokeWidth={1.6} />
+      {!!count && (
+        <span className="absolute -top-1 -right-1 min-w-4 rounded-full bg-clay px-1 text-center text-[10px] leading-4 text-white" data-testid="unread-count">
+          {count > 9 ? "9+" : count}
+        </span>
+      )}
+    </Link>
+  );
+}
+
+const NAV = [
+  { href: "/meetups", label: "둘러보기" },
+  { href: "/drops", label: "열리는 원" },
+  { href: "/hosts", label: "크리에이터" },
+  { href: "/journal", label: "저널" },
+  { href: "/become-a-host", label: "크리에이터 지원" },
+];
+
+/**
+ * 사이트 머리글: 이름 + 큰 메뉴 4개(PC) + 검색·알림 아이콘.
+ * 휴대폰에서는 위쪽 메뉴 대신 아래 탭 막대(홈·탐색·호스트·예약·마이)를 씁니다.
+ * tabBar=false: 아래쪽에 자체 고정 버튼이 있는 화면(프로그램 상세)에서 탭 막대를 숨김.
+ */
+export function SiteHeader({ tabBar = true, masthead = false }: { tabBar?: boolean; masthead?: boolean }) {
+  if (isComingSoon()) return <ComingSoonHeader />; // 임시 공개 모드: 열려 있지 않은 화면으로 가는 메뉴·로그인 없이
+  return (
+    <>
+      <header className={`sticky top-0 z-30 bg-background/92 backdrop-blur ${masthead ? "" : "border-b border-border/70"}`}>
+        <div className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between gap-3 px-4 sm:px-6">
+          <div className="flex items-center gap-10 whitespace-nowrap">
+            <Link href="/" className="flex items-center text-brand" aria-label={`${displayName()} 홈`} data-testid="site-logo">
+              {/* 메인은 아래에 큰 제호가 있으므로 심볼만 */}
+              {masthead ? <LogoSymbol className="w-6" /> : <LogoInline />}
+            </Link>
+            <nav aria-label="주요 메뉴" className="hidden items-center gap-7 md:flex">
+              {NAV.map((n) => (
+                <Link key={n.href} href={n.href} className="text-[13.5px] font-medium tracking-[0.02em] text-foreground/75 transition-colors hover:text-foreground">
+                  {n.label}
+                </Link>
+              ))}
+            </nav>
+          </div>
+          <div className="flex items-center gap-2">
+            <Link href="/meetups#search" className={iconButton} aria-label="프로그램 검색">
+              <Search aria-hidden strokeWidth={1.6} />
+            </Link>
+            <Suspense fallback={<div className="h-10 w-10" />}>
+              <AccountNav />
+            </Suspense>
+          </div>
+        </div>
+      </header>
+      {tabBar && <MobileTabBar />}
+    </>
+  );
+}
