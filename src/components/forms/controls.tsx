@@ -20,14 +20,14 @@ export function SelectField({
   className?: string;
 }) {
   return (
-    <div className={cn("flex flex-col gap-2", className)}>
+    <div className={cn("flex min-w-0 flex-col gap-2", className)}>
       <Label htmlFor={name}>{label}</Label>
       <select
         id={name}
         name={name}
         defaultValue={defaultValue}
         aria-invalid={error ? true : undefined}
-        className="h-11 rounded-xl border border-border bg-white px-3 text-base sm:text-sm"
+        className="h-11 w-full min-w-0 max-w-full rounded-xl border border-border bg-white px-3 text-base sm:text-sm"
       >
         {options.map((o) => (
           <option key={o.value} value={o.value}>

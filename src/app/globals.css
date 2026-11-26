@@ -202,6 +202,10 @@
   * {
     @apply border-border;
   }
+  /* fieldset 기본값(min-width: min-content) 때문에 긴 선택지가 있으면 좁은 화면에서 칸이 넘치는 것을 방지 */
+  fieldset {
+    min-width: 0;
+  }
   body {
     @apply bg-background text-foreground;
     font-family: var(--font-sans);

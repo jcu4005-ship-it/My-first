@@ -446,3 +446,15 @@ test("홈 맨 위: ROUNDI 제호 바로 아래 프로그램 슬라이드, 크리
   await expect(page.getByTestId("slider-title")).toHaveText(first!);
   await expect(page.getByTestId("slider-cta")).toHaveAttribute("href", /^\/meetups\/[0-9a-f-]{36}$/);
 });
+
+// 좁은 휴대폰(320px)에서 가로 스크롤이 생기지 않아야 함 — 보이지 않는 글자·긴 선택지가 칸을 밀어내는 문제 재발 방지
+test("320px 폰: 주요 공개 화면에 가로 넘침이 없다", async ({ browser }) => {
+  const ctx = await newContext(browser, { viewport: { width: 320, height: 700 } });
+  const page = await ctx.newPage();
+  for (const path of ["/", "/about", "/meetups", "/hosts", "/journal", "/become-a-host", "/apply", "/login", "/signup", "/help", "/terms", "/privacy", "/refund"]) {
+    await page.goto(path, { waitUntil: "networkidle" });
+    const over = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+    expect(over, `${path} 가로 넘침(px)`).toBeLessThanOrEqual(0);
+  }
+  await ctx.close();
+});
