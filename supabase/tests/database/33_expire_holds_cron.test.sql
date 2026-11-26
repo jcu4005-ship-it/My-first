@@ -1,7 +1,7 @@
 -- 결제하지 않고 떠난 사람의 자리 잡기(10분)는 아무도 신청하지 않아도 자동으로 풀려야 한다 (예약 작업)
 begin;
 \ir _helpers.psql
-select plan(8);
+select plan(10);
 
 select pg_temp.create_member('eh@test.local', 'expHost') as h \gset
 select pg_temp.create_member('ep@test.local', 'expP') as p \gset
@@ -26,6 +26,10 @@ select pg_temp.login_as(:'q');
 select lives_ok($$ select public.book_session(current_setting('t.sid')::uuid, 1) $$, '풀린 자리에 다른 사람이 신청할 수 있다');
 select pg_temp.logout();
 select ok(exists (select 1 from cron.job where jobname = 'roundi-expire-holds' and schedule = '* * * * *'), '매분 예약 작업 등록');
+
+-- 실행 기록 정리 작업: 등록되어 있고, 실제로 7일 지난 기록만 지운다
+select ok(exists (select 1 from cron.job where jobname = 'roundi-purge-cron-history' and schedule = '20 19 * * *'), '실행 기록 정리 작업 등록');
+select lives_ok($$ delete from cron.job_run_details where end_time < now() - interval '7 days' $$, '정리 명령이 실제로 실행된다');
 
 select * from finish();
 rollback;
