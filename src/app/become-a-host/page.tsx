@@ -99,8 +99,8 @@ export default function ForHostsPage() {
         >
           <div className="mt-7 flex flex-wrap gap-3">
             <Button asChild size="lg">
-              <Link href="/become-a-host/apply">
-                호스트 지원하기
+              <Link href="/apply">
+                크리에이터 지원하기
                 <ArrowRight aria-hidden strokeWidth={1.8} />
               </Link>
             </Button>
@@ -209,7 +209,7 @@ export default function ForHostsPage() {
               당신만의 이야기가 있다면, 먼저 들려주세요.
             </p>
             <Button asChild size="lg">
-              <Link href="/become-a-host/apply">호스트 지원하기</Link>
+              <Link href="/apply">크리에이터 지원하기</Link>
             </Button>
           </div>
         </Section>

@@ -11,6 +11,7 @@ export default function AdminLayout({ children }: LayoutProps<"/">) {
         <nav className="mb-8 flex gap-1 overflow-x-auto border-b text-sm whitespace-nowrap" aria-label="관리자 메뉴">
           <Link href="/admin" className="px-3 py-3 text-muted-foreground hover:text-foreground">대시보드</Link>
           <Link href="/admin/meetups" className="px-3 py-3 text-muted-foreground hover:text-foreground">프로그램 심사</Link>
+          <Link href="/admin/creators" className="px-3 py-3 text-muted-foreground hover:text-foreground">크리에이터 지원</Link>
           <Link href="/admin/hosts" className="px-3 py-3 text-muted-foreground hover:text-foreground">호스트 심사</Link>
           <Link href="/admin/bookings" className="px-3 py-3 text-muted-foreground hover:text-foreground">신청 현황</Link>
           <Link href="/admin/settlements" className="px-3 py-3 text-muted-foreground hover:text-foreground">정산</Link>

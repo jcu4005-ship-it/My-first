@@ -112,10 +112,10 @@ export default async function MeetupsPage({ searchParams }: PageProps<"/meetups"
             <div className="rounded-3xl border border-dashed border-border px-6 py-16 text-center" data-testid="empty-state">
               <p className="text-xl font-extrabold">아직 열린 원이 없어요</p>
               <p className="mt-2 text-sm text-muted-foreground">
-                곧 새로운 프로그램이 열립니다. 이 분야의 전문가라면 호스트로 신청해 주세요.
+                곧 새로운 프로그램이 열립니다. 이 분야의 이야기를 가진 분이라면 지원해 주세요.
               </p>
-              <Link href="/become-a-host/apply" className="mt-5 inline-block text-sm font-semibold text-forest underline-offset-4 hover:underline">
-                호스트 지원하기
+              <Link href="/apply" className="mt-5 inline-block text-sm font-semibold text-forest underline-offset-4 hover:underline">
+                크리에이터 지원하기
               </Link>
             </div>
           )}

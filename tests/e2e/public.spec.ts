@@ -83,7 +83,7 @@ test("라운디 이야기 추천 카드: 남은 자리(글자)·참가비가 보
 test("호스트 안내: 정책·과정·약속·로드맵, 지원하기 연결, 메뉴에서 진입", async ({ page }) => {
   await page.goto("/");
   // 홈 맨 아래에 크리에이터 모집 안내(지원 3분)가 있고 바로 지원서로 연결된다
-  await expect(page.getByTestId("home-host-cta").filter({ visible: true }).getByRole("link", { name: "크리에이터 지원하기" })).toHaveAttribute("href", "/become-a-host/apply");
+  await expect(page.getByTestId("home-host-cta").filter({ visible: true }).getByRole("link", { name: "크리에이터 지원하기" })).toHaveAttribute("href", "/apply");
   await page.getByRole("navigation", { name: "주요 메뉴" }).or(page.getByRole("navigation", { name: "주요 메뉴 (모바일)" }))
     .getByRole("link", { name: "크리에이터 지원", exact: true }).filter({ visible: true }).first().click();
   await expect(page).toHaveURL(/\/become-a-host$/);
@@ -94,8 +94,8 @@ test("호스트 안내: 정책·과정·약속·로드맵, 지원하기 연결, 
   await expect(main.getByTestId("commission-note")).toContainText("결제로만 받아요");
   await expect(main.getByTestId("commission-note")).toContainText("수수료 20% 제외");
   await expect(main.getByTestId("roadmap")).toContainText("앞으로의 계획");
-  await main.getByRole("link", { name: "호스트 지원하기" }).first().click();
-  await expect(page).toHaveURL(/\/login\?next=%2Fbecome-a-host%2Fapply/); // 비로그인은 로그인으로
+  await main.getByRole("link", { name: "크리에이터 지원하기" }).first().click();
+  await expect(page).toHaveURL(/\/apply$/); // 로그인 없이 바로 지원서
   await page.goto("/for-hosts"); // 예전 주소
   await expect(page).toHaveURL(/\/become-a-host$/);
 });
@@ -214,7 +214,7 @@ test("목록: 프로그램 카테고리 필터, 비공개·비활성 카테고�
   await expect(photoCards.filter({ hasText: "골목 사진" })).toHaveCount(1);
 
   await page.goto("/meetups?category=wellness");
-  await expect(page.getByTestId("empty-state")).toContainText("호스트로 신청");
+  await expect(page.getByTestId("empty-state")).toContainText("지원해 주세요");
 });
 
 test("상세: 난이도·배우는 것·일정·남은 자리·마감·호스트 경력·샘플 신청 불가 표시", async ({ page }) => {

@@ -309,7 +309,7 @@ export default async function Home() {
             </p>
             <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-3">
               <Button asChild size="lg">
-                <Link href="/become-a-host/apply">크리에이터 지원하기</Link>
+                <Link href="/apply">크리에이터 지원하기</Link>
               </Button>
               <Link href="/become-a-host" className="text-[15px] font-semibold underline underline-offset-4">호스트 안내 보기</Link>
             </div>
