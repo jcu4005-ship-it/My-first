@@ -7,8 +7,8 @@ const empty = Object.fromEntries(BUSINESS_INFO_FIELDS.map((f) => [f.key, null]))
 
 describe("사업자 정보 구조", () => {
   it("아직 전달받지 않은 정보는 비워 두고(임의 값 없음), 화면에는 입력 필요로 나온다", () => {
-    // 대표가 전달한 값(상호·대표자·사업자번호·주소·전화·이메일)만 채워져 있고, 나머지는 직접 입력 전까지 비어 있어야 한다
-    for (const key of ["mailOrderNumber", "csHours", "privacyOfficer", "intermediaryNotice"] as const) {
+    // 대표가 전달한 값만 채워져 있고, 통신판매업 신고번호·통신판매 고지 문구는 확정 전까지 비어 있어야 한다
+    for (const key of ["mailOrderNumber", "intermediaryNotice"] as const) {
       expect(BUSINESS_INFO[key], key).toBeNull();
     }
     const rows = businessInfoRows(BUSINESS_INFO);

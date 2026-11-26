@@ -26,10 +26,10 @@ export const BUSINESS_INFO: Record<BusinessInfoKey, string | null> = {
   address: "서울특별시 마포구 임정로21길 75(신공덕동)", // 사업장 주소 (사업자등록증)
   csPhone: "010-7574-4005", // 고객센터 전화번호
   csEmail: "cksdnr5551@naver.com", // 고객센터 이메일
-  csHours: null, // 고객센터 운영시간
+  csHours: "평일 10:00~18:00", // 고객센터 운영시간
   // 호스팅 제공자는 프로젝트가 실제로 쓰는 서비스를 적은 값입니다. 계약·약관상 정확한 법인명은 확인 후 확정하세요.
   hosting: "Vercel Inc. (웹 호스팅), Supabase Inc. (데이터베이스·인증)",
-  privacyOfficer: null, // 개인정보 보호책임자 (이름·연락처)
+  privacyOfficer: "주찬욱 (대표자) · cksdnr5551@naver.com", // 개인정보 보호책임자 (이름·연락처)
   // 통신판매중개 관련 고지 문구. 플랫폼의 법적 지위·책임 범위는 법률 검토 후 확정한 문구를 그대로 입력합니다. (임의로 적지 않음)
   intermediaryNotice: null,
 };

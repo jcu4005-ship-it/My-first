@@ -312,6 +312,7 @@ test("사업자 정보·정책 링크: 모든 공개 화면 바닥글(홈·로�
     await expect(info).toContainText("사업자등록번호");
     await expect(info).toContainText("통신판매업 신고번호");
     await expect(info).toContainText("개인정보 보호책임자");
+    await expect(info).toContainText("평일 10:00~18:00");
     // 아직 전달받지 않은 정보는 지어내지 않고 입력 필요로 표시
     await expect(info.getByTestId("footer-business-info-pending")).toBeVisible();
   }
@@ -337,7 +338,7 @@ test("약관·방침 문서 구조: 개정일·시행일·버전 표시(확정 �
   const services = page.getByTestId("privacy-services");
   for (const name of ["Supabase", "Vercel", "결제대행사", "카카오톡", "AI 분석 도구"]) await expect(services).toContainText(name);
   await expect(page.getByTestId("privacy-policy")).toContainText("크리에이터 지원 접수");
-  await expect(page.getByTestId("privacy-officer")).toContainText("입력 필요");
+  await expect(page.getByTestId("privacy-officer")).toContainText("주찬욱");
   await page.goto("/refund");
   await expect(page.getByTestId("refund-policy")).toContainText("참가자의 취소와 크리에이터의 취소는 환불 기준이 달라요");
 });
