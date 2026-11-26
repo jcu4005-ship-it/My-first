@@ -35,8 +35,9 @@ describe("설계안 v1.0 잠금 규칙", () => {
 });
 
 describe("브랜드 설정", () => {
-  it("가칭 표기를 선택적으로 붙인다", () => {
+  it("가칭 표기는 가칭 설정이 켜진 경우에만 붙는다 (지금은 꺼져 있어 이름만 보인다)", () => {
     expect(displayName()).toBe(brand.name);
-    expect(displayName({ withPlaceholderMark: true })).toBe(`${brand.name} (가칭)`);
+    expect(displayName({ withPlaceholderMark: true })).toBe(brand.isPlaceholderName ? `${brand.name} (가칭)` : brand.name);
+    expect(brand.isPlaceholderName).toBe(false);
   });
 });
