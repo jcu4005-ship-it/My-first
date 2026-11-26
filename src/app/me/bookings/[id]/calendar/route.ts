@@ -5,7 +5,7 @@ import { getCurrentMember } from "@/lib/auth/session";
 import { listMyBookings } from "@/lib/bookings/queries";
 
 const UUID = /^[0-9a-f-]{36}$/;
-const esc = (s: string) => s.replace(/\\/g, "\\\\").replace(/([,;])/g, "\\$1").replace(/\r?\n/g, "\\n");
+const esc = (s: string) => s.replace(/\\/g, "\\\\").replace(/([,;])/g, "\\$1").replace(/\r\n|\r|\n/g, "\\n");
 const stamp = (iso: string) => new Date(iso).toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, "");
 
 /**

@@ -50,7 +50,7 @@ export function MagazineCover({ meetups, people }: { meetups: MeetupCardData[]; 
             됩니다.
           </h1>
           <p className="mt-5 max-w-md text-[15.5px] leading-[1.8] text-muted-foreground sm:mt-6 sm:text-[17px]">
-            자기만의 작업과 관점을 가진 사람을 발견하고, 4~10명의 작은 자리로 연결합니다.
+            자기만의 이야기를 가진 사람을 발견하고, 4~10명의 작은 자리로 연결합니다.
           </p>
           <div className="mt-8 flex flex-wrap gap-2.5 sm:mt-10">
             <Link href="/hosts" className="cap cap-kr inline-flex h-[54px] items-center gap-3 border border-foreground bg-foreground px-6 text-background" data-testid="hero-cta">

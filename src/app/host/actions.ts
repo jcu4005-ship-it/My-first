@@ -1,5 +1,6 @@
 "use server";
 
+import { LOCKED } from "@/config/platform-policy";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
@@ -172,7 +173,7 @@ export async function sessionStatusAction(_prev: FormState, formData: FormData):
   return { status: "success", message: "변경했어요." };
 }
 
-const capacitySchema = z.object({ sessionId: z.uuid(), meetupId: z.uuid(), capacity: z.coerce.number().int().min(1).max(200) });
+const capacitySchema = z.object({ sessionId: z.uuid(), meetupId: z.uuid(), capacity: z.coerce.number().int().min(1).max(LOCKED.sessionCapacity.max) });
 
 export async function updateCapacityAction(_prev: FormState, formData: FormData): Promise<FormState> {
   const member = await activeMember();
@@ -182,7 +183,7 @@ export async function updateCapacityAction(_prev: FormState, formData: FormData)
     meetupId: formValue(formData, "meetupId"),
     capacity: formValue(formData, "capacity"),
   });
-  if (!parsed.success) return { status: "error", message: "정원은 1~200명 사이로 입력해 주세요." };
+  if (!parsed.success) return { status: "error", message: `정원은 1~${LOCKED.sessionCapacity.max}명 사이로 입력해 주세요. 작은 자리(${LOCKED.sessionCapacity.min}~${LOCKED.sessionCapacity.max}명)를 지향해요.` };
   const supabase = await createSupabaseServerClient();
   const { data, error } = await supabase
     .from("meetup_sessions")

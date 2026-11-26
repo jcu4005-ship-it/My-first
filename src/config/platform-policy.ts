@@ -13,6 +13,8 @@ export const LOCKED = {
   livePaymentsEnabled: false,
   /** 예약 1건당 인원 허용 범위 (호스트가 이 범위 안에서 프로그램별 설정) */
   bookingQuantity: { min: 1, max: 4, default: 1 },
+  /** 프로그램(일정) 정원 범위 — 사이트 전체가 "4~10명의 작은 자리"를 약속하므로 개설·정원 변경에서 지킴 */
+  sessionCapacity: { min: 4, max: 10 },
   /** 인원 변경·부분 취소는 MVP 제외 */
   partialCancellationEnabled: false,
   bookingQuantityChangeEnabled: false,

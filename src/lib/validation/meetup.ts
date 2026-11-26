@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { LOCKED } from "@/config/platform-policy";
+
 import { OFF_PLATFORM_MESSAGE, hasOffPlatformPayment } from "./off-platform";
 
 /** 모든 글 입력칸: 길이 제한 + 플랫폼 밖 결제·연락 안내 금지 */
@@ -107,7 +109,7 @@ export const sessionFormSchema = z
     area: z.string().trim().min(2, "동네를 입력해 주세요. (예: 성수동)").max(30),
     venueName: z.string().trim().min(2, "장소 이름을 입력해 주세요.").max(60),
     addressDetail: z.string().trim().max(200, "상세 주소는 200자 이내로 입력해 주세요."),
-    capacity: z.coerce.number().int("정원을 숫자로 입력해 주세요.").min(1, "정원은 1명 이상이에요.").max(200, "정원은 200명 이하로 입력해 주세요."),
+    capacity: z.coerce.number().int("정원을 숫자로 입력해 주세요.").min(LOCKED.sessionCapacity.min, `정원은 ${LOCKED.sessionCapacity.min}명 이상이에요. 작은 자리(${LOCKED.sessionCapacity.min}~${LOCKED.sessionCapacity.max}명)를 만들어 주세요.`).max(LOCKED.sessionCapacity.max, `정원은 ${LOCKED.sessionCapacity.max}명 이하로 입력해 주세요. 작은 자리(${LOCKED.sessionCapacity.min}~${LOCKED.sessionCapacity.max}명)를 지향해요.`),
     // 열림 시각(드롭, 선택): 둘 다 비우면 지금처럼 바로 신청. 날짜·시각은 같이 입력
     opensDate: z.string().regex(/^(\d{4}-\d{2}-\d{2})?$/, "오픈 일자를 확인해 주세요.").default(""),
     opensTime: z.string().regex(/^(\d{2}:\d{2})?$/, "오픈 시각을 확인해 주세요.").default(""),

@@ -7,7 +7,7 @@ const UUID = /^[0-9a-f-]{36}$/;
 
 /** iCalendar 글자 규칙: 쉼표·세미콜론·역슬래시·줄바꿈 이스케이프 */
 function esc(s: string) {
-  return s.replace(/\\/g, "\\\\").replace(/([,;])/g, "\\$1").replace(/\r?\n/g, "\\n");
+  return s.replace(/\\/g, "\\\\").replace(/([,;])/g, "\\$1").replace(/\r\n|\r|\n/g, "\\n");
 }
 
 function stamp(iso: string) {
