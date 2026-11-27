@@ -1,3 +1,4 @@
+import { COUPONS_ENABLED } from "@/config/platform-policy";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { BadgeCheck, CalendarDays, CircleHelp, CreditCard, MapPin, Package, Users } from "lucide-react";
@@ -360,7 +361,7 @@ export default async function MeetupDetailPage({ params }: PageProps<"/meetups/[
                       maxQuantity={meetup.max_quantity_per_booking}
                       sessions={bookingSessions}
                       state={viewerState}
-                      acceptCoupons={meetup.accept_coupons && meetup.price > 0}
+                      acceptCoupons={COUPONS_ENABLED && meetup.accept_coupons && meetup.price > 0}
                       face={avatar ?? meetup.cover_image_url}
                       initial={initial}
                     />

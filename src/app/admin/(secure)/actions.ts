@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
+import { COUPONS_ENABLED } from "@/config/platform-policy";
 import { checkAdminForAction } from "@/lib/auth/guards";
 import { formValue, type FormState } from "@/lib/forms";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -232,6 +233,7 @@ const couponCreateSchema = z.object({
 /** 쿠폰 발급 (관리자 2단계 인증, 감사 기록은 DB 함수가 남김) */
 export async function createCouponAction(_prev: FormState, formData: FormData): Promise<FormState> {
   if (!(await checkAdminForAction())) return FORBIDDEN;
+  if (!COUPONS_ENABLED) return { status: "error", message: "쿠폰 기능은 지금 꺼져 있어요." };
   const values = {
     code: formValue(formData, "code"),
     name: formValue(formData, "name"),
@@ -262,6 +264,7 @@ const couponActiveSchema = z.object({ couponId: z.uuid(), active: z.enum(["true"
 
 export async function setCouponActiveAction(_prev: FormState, formData: FormData): Promise<FormState> {
   if (!(await checkAdminForAction())) return FORBIDDEN;
+  if (!COUPONS_ENABLED) return { status: "error", message: "쿠폰 기능은 지금 꺼져 있어요." };
   const parsed = couponActiveSchema.safeParse({ couponId: formValue(formData, "couponId"), active: formValue(formData, "active") });
   if (!parsed.success) return { status: "error", message: "잘못된 요청입니다." };
   const supabase = await createSupabaseServerClient();

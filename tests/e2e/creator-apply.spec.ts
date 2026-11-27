@@ -53,6 +53,7 @@ test("크리에이터 지원: 로그인 없이 1분 지원 → 검증·중복 �
   await form.getByLabel("5. ROUNDI와 함께해 보고 싶은 이유는 무엇인가요?").fill("내 경험을 사람들과 나누고 싶어요");
   await form.getByLabel("연락받을 휴대폰 번호").fill("12345");
   await form.getByLabel("6. 운영 중인 SNS 또는 포트폴리오가 있나요?").fill("http://not-secure.example");
+  await form.getByTestId("age19").getByRole("checkbox").check();
   await form.getByTestId("consent").getByRole("checkbox").check();
   await form.getByRole("button", { name: "지원하기" }).click();
   await expect(form.getByText("휴대폰 번호 형식을 확인")).toBeVisible();
@@ -78,6 +79,7 @@ test("크리에이터 지원: 로그인 없이 1분 지원 → 검증·중복 �
   await again.getByLabel("4. 지금까지 관련해서 해본 활동이나 경험이 있나요?").fill("출판사에서 편집을 했어요");
   await again.getByLabel("5. ROUNDI와 함께해 보고 싶은 이유는 무엇인가요?").fill("새로운 활동을 해보고 싶어요");
   await again.getByLabel("연락받을 휴대폰 번호").fill(phone.replace(/-/g, ""));
+  await again.getByTestId("age19").getByRole("checkbox").check();
   await again.getByTestId("consent").getByRole("checkbox").check();
   await again.getByRole("button", { name: "지원하기" }).click();
   await expect(again.getByText("이미 접수된 지원이 있어요")).toBeVisible();

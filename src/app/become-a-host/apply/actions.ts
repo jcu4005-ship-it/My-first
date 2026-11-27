@@ -15,7 +15,7 @@ export async function hostApplicationAction(_prev: FormState, formData: FormData
   const member = await getCurrentMember();
   if (!member || member.status !== "active") return { status: "error", message: "로그인이 필요합니다." };
   const intent = formValue(formData, "intent") === "submit" ? "submit" : "save";
-  const values = Object.fromEntries(APPLICATION_KEYS.map((k) => [k, k === "consent" ? (formData.get("consent") === "on" ? "on" : "") : formValue(formData, k)]));
+  const values = Object.fromEntries(APPLICATION_KEYS.map((k) => [k, k === "consent" || k === "age19" ? (formData.get(k) === "on" ? "on" : "") : formValue(formData, k)]));
   const parsed = (intent === "submit" ? applicationSubmitSchema : applicationDraftSchema).safeParse(values);
   if (!parsed.success) {
     return { status: "error", message: intent === "submit" ? "제출 전에 표시된 항목을 확인해 주세요." : "입력 내용을 확인해 주세요.", fieldErrors: fieldErrors(parsed.error), values };

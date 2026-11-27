@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 
 import { ActionForm } from "@/components/forms/action-form";
 import { StatusPill } from "@/components/forms/controls";
+import { COUPONS_ENABLED } from "@/config/platform-policy";
 import { requireAdmin } from "@/lib/auth/guards";
 import { listCouponsForAdmin } from "@/lib/coupons/queries";
 import { formatPrice, formatYmd } from "@/lib/format";
@@ -15,6 +17,7 @@ export const instant = false;
 
 export default async function AdminCouponsPage() {
   await requireAdmin("/admin/coupons");
+  if (!COUPONS_ENABLED) notFound(); // 쿠폰 기능은 일단 꺼 둠 (config/platform-policy.ts)
   const coupons = await listCouponsForAdmin();
   return (
     <div className="flex flex-col gap-8">

@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 
+import { COUPONS_ENABLED } from "@/config/platform-policy";
 import { getCurrentMember } from "@/lib/auth/session";
 import { formValue, type FormState } from "@/lib/forms";
 import { rpcErrorMessage } from "@/lib/rpc-errors";
@@ -309,6 +310,7 @@ export async function couponConsentAction(_prev: FormState, formData: FormData):
   const member = await activeMember();
   if (!member) return LOGIN_REQUIRED;
   if (!member.roles.includes("host")) return NOT_HOST;
+  if (!COUPONS_ENABLED) return { status: "error", message: "쿠폰 기능은 지금 꺼져 있어요." };
   const parsed = couponConsentSchema.safeParse({ meetupId: formValue(formData, "meetupId"), accept: formValue(formData, "accept") });
   if (!parsed.success) return { status: "error", message: "잘못된 요청입니다." };
   const supabase = await createSupabaseServerClient();

@@ -1,5 +1,6 @@
 "use server";
 
+import { COUPONS_ENABLED } from "@/config/platform-policy";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
@@ -25,6 +26,7 @@ export async function bookAction(_prev: FormState, formData: FormData): Promise<
     couponCode: formValue(formData, "couponCode"),
   });
   if (!parsed.success) return { status: "error", message: parsed.error.issues[0]?.message ?? "입력값을 확인해 주세요." };
+  if (!COUPONS_ENABLED && parsed.data.couponCode) return { status: "error", message: "쿠폰은 지금 사용할 수 없어요." };
   const member = await getCurrentMember();
   if (!member) redirect(`/login?next=${encodeURIComponent(`/meetups/${parsed.data.meetupId}`)}`);
 
@@ -51,6 +53,7 @@ export type CouponPreview = { ok: true; code: string; percent: number; discount:
 
 /** 쿠폰 미리보기 — 금액은 DB가 계산 (신청할 때 다시 확인) */
 export async function previewCouponAction(input: { sessionId: string; quantity: number; code: string }): Promise<CouponPreview> {
+  if (!COUPONS_ENABLED) return { ok: false, message: "쿠폰은 지금 사용할 수 없어요." };
   const parsed = previewSchema.safeParse(input);
   if (!parsed.success) return { ok: false, message: parsed.error.issues[0]?.message ?? "쿠폰 코드를 확인해 주세요." };
   const member = await getCurrentMember();

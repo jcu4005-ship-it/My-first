@@ -11,6 +11,7 @@ const base = {
   phone: "010-1234-5678",
   link: "",
   wish: "",
+  age19: "on",
   consent: "on",
 };
 
@@ -35,6 +36,7 @@ describe("크리에이터 지원 입력 검사", () => {
     expect(creatorApplicationSchema.safeParse({ ...base, link: "http://x.example" }).success).toBe(false);
     expect(creatorApplicationSchema.safeParse({ ...base, link: "https://x.example/me" }).success).toBe(true);
     expect(creatorApplicationSchema.safeParse({ ...base, consent: "" }).success).toBe(false);
+    expect(creatorApplicationSchema.safeParse({ ...base, age19: "" }).success).toBe(false); // 만 19세 확인 필수
   });
 
   it("휴대폰 번호 형식을 검사한다", () => {

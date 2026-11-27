@@ -14,7 +14,7 @@ export async function submitCreatorApplicationAction(_prev: FormState, formData:
     return { status: "success", message: "지원이 접수되었습니다." };
   }
   const values = Object.fromEntries(
-    CREATOR_APPLICATION_KEYS.map((k) => [k, k === "consent" ? (formData.get("consent") === "on" ? "on" : "") : formValue(formData, k)]),
+    CREATOR_APPLICATION_KEYS.map((k) => [k, k === "consent" || k === "age19" ? (formData.get(k) === "on" ? "on" : "") : formValue(formData, k)]),
   );
   const parsed = creatorApplicationSchema.safeParse(values);
   if (!parsed.success) {

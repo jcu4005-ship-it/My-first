@@ -27,7 +27,9 @@ export const creatorApplicationSchema = z.object({
   phone,
   link: optionalUrl,
   wish: z.string().trim().max(1000, "1000자 이내로 적어 주세요."),
+  /** 호스트(크리에이터)는 만 19세 이상 (2026-11-27 대표 결정). 확인 칸만 받고 DB에는 저장하지 않음 */
+  age19: z.literal("on", "호스트는 만 19세 이상만 지원할 수 있어요."),
   consent: z.literal("on", "개인정보 수집·이용에 동의해 주세요."),
 });
 
-export const CREATOR_APPLICATION_KEYS = ["name", "field", "strength", "experience", "motivation", "phone", "link", "wish", "consent"] as const;
+export const CREATOR_APPLICATION_KEYS = ["name", "field", "strength", "experience", "motivation", "phone", "link", "wish", "age19", "consent"] as const;

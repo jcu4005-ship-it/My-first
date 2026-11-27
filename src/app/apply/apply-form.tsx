@@ -69,6 +69,13 @@ export function ApplyForm() {
       </div>
 
       <div className="flex flex-col gap-6">
+        <label className="flex items-start gap-3 text-sm" data-testid="age19">
+          <input type="checkbox" name="age19" defaultChecked={v.age19 === "on"} className="mt-0.5 size-4" />
+          <span>
+            만 19세 이상입니다. (호스트는 만 19세 이상만 지원할 수 있어요.)
+            {e.age19 && <span className="mt-1 block text-destructive">{e.age19}</span>}
+          </span>
+        </label>
         <label className="flex items-start gap-3 text-sm" data-testid="consent">
           <input type="checkbox" name="consent" defaultChecked={v.consent === "on"} className="mt-0.5 size-4" />
           <span>

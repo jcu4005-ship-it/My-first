@@ -36,6 +36,8 @@ export const applicationDraftSchema = z.object({
   valueToParticipants: t(1000, "참가자에게 줄 가치"),
   preferredFormat: t(500, "희망 운영 방식"),
   consent: z.enum(["on", ""]).default(""),
+  /** 호스트는 만 19세 이상 (2026-11-27 대표 결정). 임시 저장은 허용, 제출할 때 필수. DB에는 저장하지 않음 */
+  age19: z.enum(["on", ""]).default(""),
 });
 
 /** 제출: 필수 항목까지 확인 (DB 함수도 같은 규칙으로 다시 확인) */
@@ -46,10 +48,11 @@ export const applicationSubmitSchema = applicationDraftSchema.superRefine((v, ct
   need(v.passion.length >= 10, "passion", "시간 가는 줄 모르고 하는 일을 10자 이상 적어 주세요.");
   need(v.oftenAsked.length >= 10, "oftenAsked", "주변 사람들이 자주 묻거나 부탁하는 것을 10자 이상 적어 주세요.");
   need(v.programProposal.length >= 20, "programProposal", "만들고 싶은 모임을 20자 이상 적어 주세요.");
+  need(v.age19 === "on", "age19", "호스트는 만 19세 이상만 지원할 수 있어요.");
   need(v.consent === "on", "consent", "개인정보·제출 자료 이용에 동의해 주세요.");
 });
 
 export const APPLICATION_KEYS = [
   "displayName", "contactPhone", "pillar", "fields", "headline", "bio", "career", "credentials", "portfolioUrl",
-  "teachingExperience", "instagram", "passion", "oftenAsked", "programProposal", "valueToParticipants", "preferredFormat", "consent",
+  "teachingExperience", "instagram", "passion", "oftenAsked", "programProposal", "valueToParticipants", "preferredFormat", "age19", "consent",
 ] as const;

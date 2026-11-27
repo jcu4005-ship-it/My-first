@@ -1,3 +1,4 @@
+import { COUPONS_ENABLED } from "@/config/platform-policy";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight, Check } from "lucide-react";
@@ -41,7 +42,7 @@ async function CommissionNote() {
   return (
     <p className="mt-4 rounded-xl bg-notice px-4 py-3 text-sm leading-relaxed text-notice-foreground" data-testid="commission-note">
       예) 참가비 30,000원 → 수수료 {rate} 제외 → 호스트 정산 {Math.round(30000 * (1 - st.commission_rate_bp / 10000)).toLocaleString("ko-KR")}원. 수수료율은 결제되는 순간의 비율로 고정되고, 프로그램이 끝나고 7일 뒤 정산이 확정됩니다.
-      {st.commission_free_months > 0 && <> 수수료 0% 기간({st.commission_free_months}개월) 동안에는 호스트가 프로그램마다 동의하면 {brand.name} 참가자 할인 쿠폰(최대 10%, 호스트 부담)을 쓸 수 있습니다.</>}{" "}
+      {COUPONS_ENABLED && st.commission_free_months > 0 && <> 수수료 0% 기간({st.commission_free_months}개월) 동안에는 호스트가 프로그램마다 동의하면 {brand.name} 참가자 할인 쿠폰(최대 10%, 호스트 부담)을 쓸 수 있습니다.</>}{" "}
       참가비는 반드시 {brand.name} 결제로만 받아요. 계좌 송금·현장 결제 안내는 할 수 없어요. 지금은 테스트 결제만 운영 중이며 실제 청구·지급은 없습니다.
     </p>
   );

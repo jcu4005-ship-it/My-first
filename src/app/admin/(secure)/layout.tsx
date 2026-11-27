@@ -1,3 +1,4 @@
+import { COUPONS_ENABLED } from "@/config/platform-policy";
 import Link from "next/link";
 
 import { SiteHeader } from "@/components/site-header";
@@ -17,7 +18,7 @@ export default function AdminLayout({ children }: LayoutProps<"/">) {
           <Link href="/admin/settlements" className="px-3 py-3 text-muted-foreground hover:text-foreground">정산</Link>
           <Link href="/admin/reviews" className="px-3 py-3 text-muted-foreground hover:text-foreground">후기</Link>
           <Link href="/admin/contents" className="px-3 py-3 text-muted-foreground hover:text-foreground">콘텐츠</Link>
-          <Link href="/admin/coupons" className="px-3 py-3 text-muted-foreground hover:text-foreground">쿠폰</Link>
+          {COUPONS_ENABLED && <Link href="/admin/coupons" className="px-3 py-3 text-muted-foreground hover:text-foreground">쿠폰</Link>}
           <Link href="/admin/support" className="px-3 py-3 text-muted-foreground hover:text-foreground">문의함</Link>
           <Link href="/admin/launch" className="px-3 py-3 text-muted-foreground hover:text-foreground">운영 설정</Link>
           <Link href="/admin/members" className="px-3 py-3 text-muted-foreground hover:text-foreground">회원</Link>

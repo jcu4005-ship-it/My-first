@@ -60,6 +60,7 @@ test("호스트 지원서(임시 저장·수정 요청·재제출) → 승인 �
   const form2 = host.getByTestId("host-application-form");
   await form2.getByLabel("주변 사람들이 나에게 자주 묻거나 부탁하는 것은 무엇인가요?").fill("친구들이 글을 쓰기 전에 구조를 같이 잡아 달라고 자주 부탁해요.");
   await form2.getByLabel("만들고 싶은 모임을 편하게 적어 주세요").fill("글쓰기 입문 직장인과 2시간 동안 에세이 한 편을 같이 써 보는 모임");
+  await form2.getByTestId("age19").getByRole("checkbox").check();
   await form2.getByTestId("consent").getByRole("checkbox").check();
   await form2.getByRole("button", { name: "지원서 제출하기" }).click();
   await expect(host.getByTestId("application-status")).toHaveAttribute("data-status", "submitted");
@@ -100,6 +101,7 @@ test("호스트 지원서(임시 저장·수정 요청·재제출) → 승인 �
   await expect(host.getByTestId("revision-note")).toContainText("준비물을 추가");
   const form3 = host.getByTestId("host-application-form");
   await form3.getByLabel("만들고 싶은 모임을 편하게 적어 주세요").fill("글쓰기 입문 직장인과 2시간 동안 에세이 한 편을 같이 써 보는 모임. 준비물은 노트북이에요.");
+  await form3.getByTestId("age19").getByRole("checkbox").check(); // 제출할 때마다 만 19세 확인 (DB에는 저장하지 않음)
   await form3.getByRole("button", { name: "지원서 제출하기" }).click();
   await expect(host.getByTestId("application-status")).toHaveAttribute("data-status", "submitted");
 

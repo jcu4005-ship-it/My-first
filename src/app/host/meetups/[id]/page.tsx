@@ -1,3 +1,4 @@
+import { COUPONS_ENABLED } from "@/config/platform-policy";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -110,7 +111,7 @@ export default async function ManageMeetupPage({ params, searchParams }: PagePro
           )}
         </section>
 
-        {meetup.price > 0 && (
+        {COUPONS_ENABLED && meetup.price > 0 && (
           <section className="mt-8 flex flex-col gap-3 border p-5" data-testid="coupon-consent" data-accept={meetup.accept_coupons ? "true" : "false"}>
             <div className="flex flex-wrap items-center justify-between gap-2">
               <h2 className="font-semibold">참가자 할인 쿠폰</h2>

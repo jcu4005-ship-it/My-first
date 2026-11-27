@@ -33,3 +33,10 @@ export const INITIAL_SETTINGS = {
   /** 결제 대기 좌석 확보 시간(분) */
   bookingHoldMinutes: 10,
 } as const;
+
+/**
+ * 참가자 할인 쿠폰 기능 스위치. 2026-11-27 대표 결정으로 "일단 끔".
+ * - false 이면 쿠폰 관련 화면(관리자 메뉴·호스트 동의·신청 화면 입력칸·안내 문구)이 모두 숨겨지고, 서버도 쿠폰 사용·발급·동의를 막습니다.
+ * - DB 표와 함수는 그대로 둡니다(기존 구조·데이터 무영향). true 로 바꾸면 기능이 다시 열립니다.
+ */
+export const COUPONS_ENABLED = false as boolean;

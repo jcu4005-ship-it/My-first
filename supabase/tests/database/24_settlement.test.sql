@@ -16,7 +16,9 @@ update public.host_profiles set reviewed_at = now() - interval '7 months' where 
 update public.host_profiles set reviewed_at = now() where user_id = :'h2';
 
 select is((select commission_rate_bp from public.app_settings), 2000, '기본 수수료율 20%');
-select is((select commission_free_months from public.app_settings), 6, '기본 0% 기간 6개월');
+select is((select commission_free_months from public.app_settings), 0, '기본 0% 기간 없음 (수수료는 항상 20%)');
+-- 0% 기간 기능은 남아 있으므로, 아래 시험에서는 이 안에서만 6개월로 켜서 동작을 계속 검증 (시험이 끝나면 되돌려짐)
+update public.app_settings set commission_free_months = 6;
 
 -- 결제 → 정산 행
 select pg_temp.login_as(:'p');
